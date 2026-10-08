@@ -1,5 +1,10 @@
+import { describeLocation } from "../../components/location-picker/cities.ts";
+import { useCities } from "../../components/location-picker/city-browser.tsx";
+import { GearIcon } from "@primer/octicons-react";
+import { LocationPickerControls } from "../../components/location-picker/controls.tsx";
+import { locationLabel } from "../../components/location-picker/location.ts";
 import type { JSX } from "preact";
-import { useRef, useState } from "preact/hooks";
+import { useMemo, useRef, useState } from "preact/hooks";
 import { UrlHandler } from "../../boot/url-handler.tsx";
 import type { State } from "../../boot/url-state.ts";
 import {
@@ -33,6 +38,15 @@ interface Drag {
 }
 
 function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
+  const [catalogue] = useCities();
+  const place = useMemo(
+    () =>
+      catalogue.kind === "ready"
+        ? describeLocation(us.location, catalogue.cities)
+        : locationLabel(us.location),
+    [catalogue, us.location.latitude, us.location.longitude],
+  );
+  const [pickingLocation, setPickingLocation] = useState(false);
   const [yearScrubbing, setYearScrubbing] = useState(false);
   const minutes = localMinutes(us.seconds);
   const drag = useRef<Drag | undefined>(undefined);
@@ -260,16 +274,43 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
         </svg>
         <TimeStrips
           uss={[us, setUs]}
+          place={place}
           yearScrubbing={yearScrubbing}
           onYearScrubbingChange={setYearScrubbing}
         />
       </div>
       <p id="analogue-clock-strip-help" class="muted">
-        London · {currentYear.year}. Sunlight and moon position are shown for London.
+        {place}{" "}
+        <button
+          type="button"
+          class="analogue-clock-location-button"
+          aria-label="Choose location"
+          aria-expanded={pickingLocation}
+          aria-controls="analogue-clock-location-picker"
+          onClick={() => setPickingLocation((open) => !open)}
+        >
+          <GearIcon size={16} />
+        </button>{" "}
+        · {currentYear.year}. London time (Europe/London). Sunlight and moon position use the
+        selected location.
         <br />
         Tap or drag a time strip to change the time. Use arrow keys when a clock or time strip is
         focused.
       </p>
+      {pickingLocation && (
+        <section id="analogue-clock-location-picker" aria-label="Choose location">
+          <LocationPickerControls
+            uss={[
+              us.location,
+              (update) =>
+                setUs((previous) => ({
+                  ...previous,
+                  location: typeof update === "function" ? update(previous.location) : update,
+                })),
+            ]}
+          />
+        </section>
+      )}
     </section>
   );
 }

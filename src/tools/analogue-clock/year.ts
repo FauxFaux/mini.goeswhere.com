@@ -1,5 +1,8 @@
 import "temporal-polyfill/global";
 import { Temporal } from "temporal-polyfill";
+import { getPosition } from "suncalc";
+import { londonLocation } from "../../components/location-picker/location.ts";
+import type { Location } from "../../components/location-picker/projection.ts";
 import { getSunTimes } from "sunrise-sunset-js/temporal";
 
 export const londonTimezone = "Europe/London";
@@ -45,8 +48,10 @@ export function wallSeconds(time: { hour: number; minute: number; second: number
   return time.hour * 3600 + time.minute * 60 + time.second;
 }
 
-export function sunCycle(date: Temporal.PlainDate) {
-  const times = getSunTimes(51.5074, -0.1278, date, { timezoneId: londonTimezone });
+export function sunCycle(date: Temporal.PlainDate, location: Location = londonLocation) {
+  const times = getSunTimes(location.latitude, location.longitude, date, {
+    timezoneId: londonTimezone,
+  });
   const local = (instant: { epochMilliseconds: number } | null | undefined) =>
     instant
       ? Temporal.Instant.fromEpochMilliseconds(instant.epochMilliseconds).toZonedDateTimeISO(
@@ -55,27 +60,57 @@ export function sunCycle(date: Temporal.PlainDate) {
       : undefined;
   const sunrise = local(times.sunrise);
   const sunset = local(times.sunset);
-  const dawn = local(times.twilight?.civilDawn);
-  const dusk = local(times.twilight?.civilDusk);
-  if (!sunrise || !sunset) throw new Error("Sunrise or sunset is unavailable for London.");
-  const sunriseSeconds = wallSeconds(sunrise);
-  const sunsetSeconds = wallSeconds(sunset);
-  const transitionSeconds = 20 * 60;
-  const stops = [
-    ["#101a35", 0],
-    ["#202c50", wallSeconds(dawn ?? sunrise)],
-    ["#b27065", sunriseSeconds],
-    ["#efd69a", sunriseSeconds + transitionSeconds],
-    ["#efd69a", sunsetSeconds - transitionSeconds],
-    ["#b27065", sunsetSeconds],
-    ["#202c50", wallSeconds(dusk ?? sunset)],
-    ["#101a35", secondsPerDay],
-  ] as const;
+  // Sample the displayed day so sunlight can cross midnight and polar locations
+  // can have daylight, twilight, or darkness without sunrise/sunset events.
+  const midnight = date.toPlainDateTime();
+  const colors: readonly [number, string][] = [
+    [-18, "#101a35"],
+    [-6, "#202c50"],
+    [-0.833, "#b27065"],
+    [5, "#efd69a"],
+  ];
+  const stops = Array.from({ length: 97 }, (_, index) => {
+    const seconds = (index * secondsPerDay) / 96;
+    const time = midnight.add({ seconds }).toZonedDateTime(londonTimezone);
+    const altitude = getPosition(
+      new Date(time.epochMilliseconds),
+      location.latitude,
+      location.longitude,
+    ).altitude;
+    let color = colors[0][1];
+    for (let step = 1; step < colors.length; step++) {
+      const [lowAltitude, lowColor] = colors[step - 1];
+      const [highAltitude, highColor] = colors[step];
+      if (altitude >= highAltitude) {
+        color = highColor;
+        continue;
+      }
+      const fraction = Math.max(0, (altitude - lowAltitude) / (highAltitude - lowAltitude));
+      color =
+        "#" +
+        [1, 3, 5]
+          .map((offset) => {
+            const low = parseInt(lowColor.slice(offset, offset + 2), 16);
+            const high = parseInt(highColor.slice(offset, offset + 2), 16);
+            return Math.round(low + (high - low) * fraction)
+              .toString(16)
+              .padStart(2, "0");
+          })
+          .join("");
+      break;
+    }
+    return { color, altitude, progress: (index / 96) * 100 };
+  });
+  const daylightSeconds =
+    sunrise && sunset
+      ? ((sunset.epochMilliseconds - sunrise.epochMilliseconds) / 1000 + secondsPerDay) %
+        secondsPerDay
+      : (stops.slice(0, -1).filter((stop) => stop.altitude >= -0.833).length * secondsPerDay) / 96;
   return {
-    sunrise: sunrise.toPlainTime().toString({ smallestUnit: "minute" }),
-    sunset: sunset.toPlainTime().toString({ smallestUnit: "minute" }),
-    daylightSeconds: (sunset.epochMilliseconds - sunrise.epochMilliseconds) / 1000,
-    gradient: `linear-gradient(to right, ${stops.map(([color, seconds]) => `${color} ${(seconds / secondsPerDay) * 100}%`).join(", ")})`,
+    sunrise: sunrise?.toPlainTime().toString({ smallestUnit: "minute" }) ?? "unavailable",
+    sunset: sunset?.toPlainTime().toString({ smallestUnit: "minute" }) ?? "unavailable",
+    daylightSeconds,
+    gradient: `linear-gradient(to right, ${stops.map(({ color, progress }) => `${color} ${progress}%`).join(", ")})`,
   };
 }
 

@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { Temporal } from "temporal-polyfill";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import * as cityFunctions from "../../components/location-picker/cities.ts";
 import { App } from "../../app.tsx";
 import { navigateHash, splitHash } from "../../boot/hash-location.ts";
 import { currentYear } from "./year.ts";
@@ -76,6 +77,7 @@ it("toggles number rings independently, persists them through dragging and resto
     show24HourNumbers: true,
     showMinuteNumbers: true,
     sideBySide: false,
+    location: { latitude: 51.5074, longitude: -0.1278 },
   });
   expect(params.get("note")).toBe("keep");
   expect(window.history.length).toBe(historyLength);
@@ -305,6 +307,7 @@ it("supports keyboard editing, link restoration and Back navigation", async () =
 it.each([
   [`s=${currentYear.seconds}`, "Corrupt URL state"],
   ["v=3&s=0", "Unrecognised state version"],
+  ["s=0&lat=91&lon=0", "Corrupt URL state"],
 ])("preserves invalid links and offers recovery", async (query, heading) => {
   window.history.replaceState(null, "", `/#/analogue-clock?${query}`);
   const original = window.location.href;
@@ -540,6 +543,7 @@ it("resets to the current instant at each click while preserving number settings
       show24HourNumbers: true,
       showMinuteNumbers: true,
       sideBySide: false,
+      location: { latitude: 51.5074, longitude: -0.1278 },
     }),
   );
   now.mockReturnValue(
@@ -571,4 +575,57 @@ it("restores the layout from links and history, and preserves it through time ed
     ((await screen.findByRole("checkbox", { name: "Side-by-side" })) as HTMLInputElement).checked,
   ).toBe(true);
   expect(persistedState().sideBySide).toBe(true);
+});
+
+it("opens the shared picker, selects a city and restores the location through links and history", async () => {
+  const cities = cityFunctions.decodeCities([
+    ["London", "GB", "London", 51.5074, -0.1278],
+    ["Sydney", "AU", "New South Wales", -33.8688, 151.2093],
+  ]);
+  vi.spyOn(cityFunctions, "loadCities").mockResolvedValue(cities);
+  await face();
+  await screen.findByText(/^London ·/);
+  const day = screen.getByRole("slider", { name: /Day progress:/ });
+  const originalGradient = day.getAttribute("style");
+  const moon = document.querySelector(".analogue-clock-moon-strip")!.getAttribute("aria-label");
+  const originalUrl = window.location.href;
+  const length = window.history.length;
+  const gear = screen.getByRole("button", { name: "Choose location" });
+  expect(gear.getAttribute("aria-expanded")).toBe("false");
+  fireEvent.click(gear);
+  expect(window.location.href).toBe(originalUrl);
+  expect(screen.queryByRole("heading", { name: "Location picker" })).toBeNull();
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Select Sydney, Australia, New South Wales" }),
+  );
+  await waitFor(() =>
+    expect(persistedState().location).toEqual({ latitude: -33.8688, longitude: 151.2093 }),
+  );
+  expect(screen.getByText(/^Sydney ·/)).toBeTruthy();
+  expect(day.getAttribute("style")).not.toBe(originalGradient);
+  expect(document.querySelector(".analogue-clock-moon-strip")!.getAttribute("aria-label")).not.toBe(
+    moon,
+  );
+  expect(persistedState().seconds).toBe(0);
+  expect(window.history.length).toBe(length);
+  expect(window.location.hash).toContain("note=keep");
+  fireEvent.click(gear);
+  expect(screen.queryByRole("spinbutton", { name: "Latitude (−90 to 90)" })).toBeNull();
+  const shared = window.location.hash;
+  act(() => navigateHash("/hello-world"));
+  await screen.findByRole("textbox", { name: "Your name" });
+  window.history.back();
+  await screen.findByText(/^Sydney ·/);
+  expect(window.location.hash).toBe(shared);
+  fireEvent.click(screen.getByRole("button", { name: "Choose location" }));
+  expect(
+    (screen.getByRole("spinbutton", { name: "Latitude (−90 to 90)" }) as HTMLInputElement).value,
+  ).toBe("-33.8688");
+  window.location.hash = "/analogue-clock?s=0&lat=90&lon=0";
+  await waitFor(() =>
+    expect(
+      (screen.getByRole("spinbutton", { name: "Latitude (−90 to 90)" }) as HTMLInputElement).value,
+    ).toBe("90"),
+  );
+  expect(screen.getByRole("slider", { name: /Day progress:.*Sunrise unavailable/ })).toBeTruthy();
 });

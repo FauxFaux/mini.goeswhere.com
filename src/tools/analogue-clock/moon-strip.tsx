@@ -1,13 +1,16 @@
-import { londonMoon, moonLitPath } from "./moon.ts";
+import type { Location } from "../../components/location-picker/projection.ts";
+import { locationMoon, moonLitPath } from "./moon.ts";
 
 export function MoonStrip({
   date,
   trail,
+  location,
 }: {
   date: Date;
-  trail: (ReturnType<typeof londonMoon> & { instant: number })[];
+  location: Location;
+  trail: (ReturnType<typeof locationMoon> & { instant: number })[];
 }) {
-  const moon = londonMoon(date);
+  const moon = locationMoon(date, location);
   const fullness = `${Math.round(moon.fraction * 100)}% illuminated · ${moon.waxing ? "waxing" : "waning"}`;
   const description = `${moon.status}. Bearing ${moon.azimuth.toFixed(0)}°, altitude ${moon.altitude.toFixed(0)}°. ${fullness}.`;
   return (
@@ -56,7 +59,7 @@ function MoonDisk({
   );
 }
 
-function MoonAt({ moon }: { moon: ReturnType<typeof londonMoon> }) {
+function MoonAt({ moon }: { moon: ReturnType<typeof locationMoon> }) {
   return (
     <MoonDisk
       fraction={moon.fraction}

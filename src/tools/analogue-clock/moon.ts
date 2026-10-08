@@ -1,3 +1,5 @@
+import { londonLocation } from "../../components/location-picker/location.ts";
+import type { Location } from "../../components/location-picker/projection.ts";
 import { getMoonIllumination, getMoonPosition, getMoonTimes } from "suncalc";
 
 /** Facing south: east to west horizontally, horizon to 60° vertically. */
@@ -8,8 +10,8 @@ export function moonProjection(azimuth: number, altitude: number) {
   };
 }
 
-export function londonMoon(date: Date) {
-  const position = getMoonPosition(date, 51.5074, -0.1278);
+export function locationMoon(date: Date, location: Location = londonLocation) {
+  const position = getMoonPosition(date, location.latitude, location.longitude);
   const illumination = getMoonIllumination(date);
   return {
     ...position,
@@ -32,13 +34,13 @@ export function moonLitPath(fraction: number) {
 }
 
 /** Nearby upper transits, used to select one lunar pass rather than two calendar-day fragments. */
-export function moonTransits(date: Date) {
+export function moonTransits(date: Date, location: Location = londonLocation) {
   const transits: number[] = [];
   for (const offset of [-1, 0, 1]) {
     const transit = getMoonTimes(
       new Date(date.getTime() + offset * 86400000),
-      51.5074,
-      -0.1278,
+      location.latitude,
+      location.longitude,
       0,
     ).transit;
     if (transit) transits.push(transit.getTime());
@@ -47,7 +49,7 @@ export function moonTransits(date: Date) {
 }
 
 /** One 24-hour window centered on an upper transit, sampled every half hour. */
-export function moonTrail(transitMilliseconds: number) {
+export function moonTrail(transitMilliseconds: number, location: Location = londonLocation) {
   const samples = [];
   const halfWindow = 12 * 60 * 60 * 1000;
   for (
@@ -55,7 +57,7 @@ export function moonTrail(transitMilliseconds: number) {
     instant < transitMilliseconds + halfWindow;
     instant += 30 * 60 * 1000
   ) {
-    samples.push({ instant, ...londonMoon(new Date(instant)) });
+    samples.push({ instant, ...locationMoon(new Date(instant), location) });
   }
   return samples;
 }

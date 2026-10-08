@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { App } from "../../app.tsx";
 import { navigateHash, splitHash } from "../../boot/hash-location.ts";
-import { locationToPoint } from "./projection.ts";
+import { locationToPoint } from "../../components/location-picker/projection.ts";
 import { locationPickerCodec } from "./state.ts";
 
 beforeEach(() => window.history.replaceState(null, "", "/#/location-picker?note=keep"));

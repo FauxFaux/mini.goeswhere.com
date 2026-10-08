@@ -1,9 +1,17 @@
+import {
+  decodeLocation,
+  londonLocation,
+  readLocation,
+  writeLocation,
+} from "../../components/location-picker/location.ts";
+import type { Location } from "../../components/location-picker/projection.ts";
 import { isRecord, UnsupportedStateVersion, type UrlCodec } from "../../boot/url-state.ts";
 import { currentYear, initialSeconds } from "./year.ts";
 
 export interface AnalogueClockState {
   v: 2;
   seconds: number;
+  location: Location;
   show12HourNumbers: boolean;
   show24HourNumbers: boolean;
   showMinuteNumbers: boolean;
@@ -14,6 +22,7 @@ export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
   defaultState: {
     v: 2,
     seconds: initialSeconds,
+    location: { ...londonLocation },
     show12HourNumbers: true,
     show24HourNumbers: false,
     showMinuteNumbers: false,
@@ -38,6 +47,7 @@ export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
       };
       return analogueClockCodec.decode({
         v: 2,
+        location: readLocation(params),
         seconds: seconds === null ? analogueClockCodec.defaultState.seconds : Number(seconds),
         show12HourNumbers: toggle("h", true),
         show24HourNumbers: toggle("t", false),
@@ -48,6 +58,13 @@ export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
     write(params, state) {
       params.delete("v");
       params.set("s", String(state.seconds));
+      if (
+        state.location.latitude === londonLocation.latitude &&
+        state.location.longitude === londonLocation.longitude
+      ) {
+        params.delete("lat");
+        params.delete("lon");
+      } else writeLocation(params, state.location);
       const toggle = (key: string, value: boolean, fallback: boolean) => {
         if (value === fallback) params.delete(key);
         else params.set(key, value ? "1" : "0");
@@ -73,6 +90,8 @@ export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
     return {
       v: 2,
       seconds,
+      location:
+        value.location === undefined ? { ...londonLocation } : decodeLocation(value.location),
       show12HourNumbers: decodeToggle(value.show12HourNumbers, true),
       show24HourNumbers: decodeToggle(value.show24HourNumbers, false),
       showMinuteNumbers: decodeToggle(value.showMinuteNumbers, false),

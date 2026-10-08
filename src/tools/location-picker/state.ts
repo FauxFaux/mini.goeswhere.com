@@ -1,5 +1,11 @@
 import { isRecord, UnsupportedStateVersion, type UrlCodec } from "../../boot/url-state.ts";
-import { isLocation, type Location } from "./projection.ts";
+import type { Location } from "../../components/location-picker/projection.ts";
+import {
+  decodeLocation,
+  londonLocation,
+  readLocation,
+  writeLocation,
+} from "../../components/location-picker/location.ts";
 
 export interface LocationPickerState {
   v: 1;
@@ -7,21 +13,12 @@ export interface LocationPickerState {
 }
 
 export const locationPickerCodec: UrlCodec<LocationPickerState> = {
-  defaultState: { v: 1, location: { latitude: 51.5074, longitude: -0.1278 } },
+  defaultState: { v: 1, location: { ...londonLocation } },
   decode(value) {
     if (!isRecord(value)) throw new Error("Location picker state must be an object.");
     if (value.v !== 1) throw new UnsupportedStateVersion();
     if (value.location === null) return locationPickerCodec.defaultState;
-    const location = value.location;
-    if (
-      !isRecord(location) ||
-      typeof location.latitude !== "number" ||
-      typeof location.longitude !== "number" ||
-      !isLocation({ latitude: location.latitude, longitude: location.longitude })
-    ) {
-      throw new Error("Latitude must be between −90 and 90, and longitude between −180 and 180.");
-    }
-    return { v: 1, location: { latitude: location.latitude, longitude: location.longitude } };
+    return { v: 1, location: decodeLocation(value.location) };
   },
   query: {
     decode(params) {
@@ -33,26 +30,11 @@ export const locationPickerCodec: UrlCodec<LocationPickerState> = {
       // Older links could explicitly clear the location; restore those to London.
       if (params.get("lat") === "" && params.get("lon") === "")
         return locationPickerCodec.defaultState;
-      const coordinate = (key: string) => {
-        const value = params.get(key);
-        if (
-          value === null ||
-          value.length > 32 ||
-          !/^-?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value)
-        ) {
-          throw new Error(`Invalid ${key} coordinate.`);
-        }
-        return Number(value);
-      };
-      return locationPickerCodec.decode({
-        v: 1,
-        location: { latitude: coordinate("lat"), longitude: coordinate("lon") },
-      });
+      return { v: 1, location: readLocation(params) };
     },
     write(params, state) {
       params.delete("v");
-      params.set("lat", String(state.location.latitude));
-      params.set("lon", String(state.location.longitude));
+      writeLocation(params, state.location);
     },
   },
 };

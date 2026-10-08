@@ -10,9 +10,7 @@ const cities = decodeCities([
 
 it("describes a point near its nearest city without changing the catalogue", () => {
   const original = [...cities];
-  expect(describeLocation({ latitude: 51.5074, longitude: -0.1278 }, cities)).toBe(
-    "near London, United Kingdom",
-  );
+  expect(describeLocation({ latitude: 51.5074, longitude: -0.1278 }, cities)).toBe("London");
   expect(cities).toEqual(original);
 });
 
@@ -23,11 +21,15 @@ it("describes a remote point southeast of Papeete to one significant figure", ()
   );
 });
 
-it("applies the 50km threshold before rounding the distance", () => {
+it("applies the 5km and 50km thresholds before rounding the distance", () => {
   const origin = decodeCities([["Origin", "GB", "", 0, 0]]);
   const latitudeAtKm = (km: number) => (km / 6371.0088) * (180 / Math.PI);
+  expect(describeLocation({ latitude: latitudeAtKm(4.999), longitude: 0 }, origin)).toBe("Origin");
+  expect(describeLocation({ latitude: latitudeAtKm(5.001), longitude: 0 }, origin)).toBe(
+    "Near Origin, United Kingdom",
+  );
   expect(describeLocation({ latitude: latitudeAtKm(49.999), longitude: 0 }, origin)).toBe(
-    "near Origin, United Kingdom",
+    "Near Origin, United Kingdom",
   );
   expect(describeLocation({ latitude: latitudeAtKm(50.001), longitude: 0 }, origin)).toBe(
     "~50km N of Origin, United Kingdom",
@@ -131,6 +133,7 @@ it("decodes the generated catalogue and retains both Londons", async () => {
   const { default: data } = await import("../../assets/cities.json");
   const catalogue = decodeCities(data);
   expect(catalogue).toHaveLength(data.length);
+  expect(describeLocation({ latitude: 51.5074, longitude: -0.1278 }, catalogue)).toBe("London");
   expect(searchCities(catalogue, "London GB")[0]).toMatchObject({
     latitude: 51.507,
     longitude: -0.128,

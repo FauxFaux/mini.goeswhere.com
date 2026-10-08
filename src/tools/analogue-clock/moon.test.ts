@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { londonMoon, moonLitPath, moonProjection, moonTrail, moonTransits } from "./moon.ts";
+import { locationMoon, moonLitPath, moonProjection, moonTrail, moonTransits } from "./moon.ts";
 
 it("maps the southern sky from east through south to west and horizon to 60°", () => {
   expect(moonProjection(90, 0)).toEqual({ x: 0, y: 1 });
@@ -13,8 +13,8 @@ it("maps the southern sky from east through south to west and horizon to 60°", 
 });
 
 it("calculates a nearly full moon and a nearly new moon from absolute instants", () => {
-  const full = londonMoon(new Date("2026-01-03T10:00:00Z"));
-  const fresh = londonMoon(new Date("2026-01-18T20:00:00Z"));
+  const full = locationMoon(new Date("2026-01-03T10:00:00Z"));
+  const fresh = locationMoon(new Date("2026-01-18T20:00:00Z"));
   expect(full.fraction).toBeGreaterThan(0.99);
   expect(fresh.fraction).toBeLessThan(0.01);
   expect(full.azimuth).toBeGreaterThanOrEqual(0);
@@ -47,3 +47,19 @@ it.each(["2026-01-03T00:00:00Z", "2026-01-03T23:00:00Z", "2026-03-29T12:00:00Z"]
     expect(trail[1]!.instant - trail[0]!.instant).toBe(30 * 60 * 1000);
   },
 );
+
+it("uses the selected location for moon position and trails while retaining the instant's phase", () => {
+  const date = new Date("2026-01-03T10:00:00Z");
+  const location = { latitude: -33.8688, longitude: 151.2093 };
+  const london = locationMoon(date);
+  const sydney = locationMoon(date, location);
+  expect(sydney.fraction).toBe(london.fraction);
+  expect(Math.abs(sydney.altitude - london.altitude)).toBeGreaterThan(10);
+  const transits = moonTransits(date, location);
+  expect(transits).not.toEqual(moonTransits(date));
+  const trail = moonTrail(transits[0], location);
+  expect(trail[24]).toEqual({
+    instant: transits[0],
+    ...locationMoon(new Date(transits[0]), location),
+  });
+});

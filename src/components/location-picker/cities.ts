@@ -106,7 +106,8 @@ export function describeLocation(location: Location, cities: readonly City[]): s
   }
 
   const place = `${nearest.name}, ${nearest.country}`;
-  if (distance <= 50) return `near ${place}`;
+  if (distance <= 5) return nearest.name;
+  if (distance <= 50) return `Near ${place}`;
 
   // Initial great-circle bearing from the city towards the point.
   const radians = Math.PI / 180;

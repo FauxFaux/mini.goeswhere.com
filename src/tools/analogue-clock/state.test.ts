@@ -15,6 +15,7 @@ it("round trips integer seconds and every combination of number toggles", () => 
             show24HourNumbers,
             showMinuteNumbers,
             sideBySide: false,
+            location: { latitude: 51.5074, longitude: -0.1278 },
           };
           const params = new URLSearchParams({ note: "keep", v: "2" });
           analogueClockCodec.query!.write(params, state);
@@ -101,4 +102,50 @@ it("round trips the layout setting and omits it when stacked", () => {
     expect(params.get("b")).toBe(sideBySide ? "1" : null);
     expect(analogueClockCodec.query!.decode(params)).toEqual(state);
   }
+});
+
+it("round trips location coordinates while keeping old clock links compatible", () => {
+  const state = {
+    ...analogueClockCodec.defaultState,
+    seconds: 123,
+    location: { latitude: -33.8688, longitude: 151.2093 },
+  };
+  const params = new URLSearchParams("note=keep");
+  analogueClockCodec.query!.write(params, state);
+  expect(params.get("lat")).toBe("-33.8688");
+  expect(params.get("lon")).toBe("151.2093");
+  expect(params.get("note")).toBe("keep");
+  expect(analogueClockCodec.query!.decode(params)).toEqual(state);
+  expect(analogueClockCodec.decode(state)).toEqual(state);
+  analogueClockCodec.query!.write(params, analogueClockCodec.defaultState);
+  expect(params.has("lat")).toBe(false);
+  expect(params.has("lon")).toBe(false);
+  expect(analogueClockCodec.decode({ v: 2, seconds: 123 }).location).toEqual({
+    latitude: 51.5074,
+    longitude: -0.1278,
+  });
+});
+
+it.each([
+  "lat=91&lon=0",
+  "lat=0&lon=-181",
+  "lat=NaN&lon=0",
+  "lat=0",
+  "lon=0",
+  "lat=0&lat=1&lon=0",
+  "lat=0&lon=0&lon=1",
+  "lat=&lon=",
+  "lat=0x10&lon=0",
+])("rejects malformed clock locations: %s", (query) => {
+  expect(() => analogueClockCodec.query!.decode(new URLSearchParams(query))).toThrow();
+});
+
+it.each([
+  null,
+  {},
+  { latitude: 91, longitude: 0 },
+  { latitude: 0, longitude: Infinity },
+  { latitude: "0", longitude: 0 },
+])("rejects malformed structured locations: %j", (location) => {
+  expect(() => analogueClockCodec.decode({ v: 2, seconds: 0, location })).toThrow();
 });

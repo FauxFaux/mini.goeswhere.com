@@ -11,16 +11,20 @@ const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export function TimeStrips({
   uss: [us, setUs],
+  place,
   yearScrubbing,
   onYearScrubbingChange,
 }: {
   uss: State<AnalogueClockState>;
+  place: string;
   yearScrubbing: boolean;
   onYearScrubbingChange: (scrubbing: boolean) => void;
 }) {
   const [weekScrubbing, setWeekScrubbing] = useState(false);
   const showMoonTrail = weekScrubbing || yearScrubbing;
   const seconds = us.seconds;
+  const location = us.location;
+  const { latitude, longitude } = location;
   const scrub = (kind: StripKind, origin: number, progress: number) => {
     setUs((previous) => ({ ...previous, seconds: scrubSeconds(kind, origin, progress) }));
   };
@@ -29,8 +33,11 @@ export function TimeStrips({
   const dateKey = date.toString();
   const transits = useMemo(() => {
     if (!showMoonTrail) return [];
-    return moonTransits(new Date(time.startOfDay().epochMilliseconds + 12 * 60 * 60 * 1000));
-  }, [dateKey, showMoonTrail]);
+    return moonTransits(
+      new Date(time.startOfDay().epochMilliseconds + 12 * 60 * 60 * 1000),
+      location,
+    );
+  }, [dateKey, showMoonTrail, latitude, longitude]);
   const nearestTransit = transits.reduce<number | undefined>(
     (nearest, transit) =>
       nearest === undefined ||
@@ -40,10 +47,10 @@ export function TimeStrips({
     undefined,
   );
   const trail = useMemo(
-    () => (nearestTransit === undefined ? [] : moonTrail(nearestTransit)),
-    [nearestTransit],
+    () => (nearestTransit === undefined ? [] : moonTrail(nearestTransit, location)),
+    [nearestTransit, latitude, longitude],
   );
-  const sun = useMemo(() => sunCycle(date), [dateKey]);
+  const sun = useMemo(() => sunCycle(date, location), [dateKey, latitude, longitude]);
   const seasons = useMemo(() => seasonGradient(currentYear.year), []);
   const dayProgress = wallSeconds(time) / secondsPerDay;
   const clockTime = time.toPlainTime().toString({ smallestUnit: "second" });
@@ -61,7 +68,7 @@ export function TimeStrips({
         onScrub={scrub}
         hideMarker={yearScrubbing}
         kind="day"
-        label={`Day progress: ${clockTime}. Sunrise ${sun.sunrise}, sunset ${sun.sunset}, London.`}
+        label={`Day progress: ${clockTime}. Sunrise ${sun.sunrise}, sunset ${sun.sunset}, ${place}.`}
         progress={dayProgress}
         background={sun.gradient}
       />
@@ -73,7 +80,7 @@ export function TimeStrips({
           </span>
         ))}
       </div>
-      <MoonStrip date={new Date(time.epochMilliseconds)} trail={trail} />
+      <MoonStrip date={new Date(time.epochMilliseconds)} trail={trail} location={location} />
       <ProgressStrip
         seconds={seconds}
         onScrub={scrub}

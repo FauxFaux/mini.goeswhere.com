@@ -4,9 +4,9 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { App } from "../../app.tsx";
 import { splitHash } from "../../boot/hash-location.ts";
-import * as cityFunctions from "./cities.ts";
-import { CityBrowser } from "./city-browser.tsx";
-import { locationToPoint } from "./projection.ts";
+import * as cityFunctions from "../../components/location-picker/cities.ts";
+import { CityBrowser } from "../../components/location-picker/city-browser.tsx";
+import { locationToPoint } from "../../components/location-picker/projection.ts";
 import { locationPickerCodec } from "./state.ts";
 
 const cities = cityFunctions.decodeCities([
