@@ -1,4 +1,5 @@
 import "temporal-polyfill/global";
+import tzLookup from "@photostructure/tz-lookup";
 import { Temporal } from "temporal-polyfill";
 import { getPosition } from "suncalc";
 import { londonLocation } from "../../components/location-picker/location.ts";
@@ -7,6 +8,10 @@ import { getSunTimes } from "sunrise-sunset-js/temporal";
 
 export const londonTimezone = "Europe/London";
 export const secondsPerDay = 86400;
+
+export function timezoneAt(location: Location): string {
+  return tzLookup(location.latitude, location.longitude);
+}
 
 export function yearTimeline(year: number) {
   const start = Temporal.PlainDate.from({ year, month: 1, day: 1 }).toZonedDateTime(londonTimezone);
@@ -21,6 +26,7 @@ export function yearTimeline(year: number) {
 }
 
 const pageLoadTime = Temporal.Now.zonedDateTimeISO(londonTimezone);
+// Keep the elapsed-seconds epoch stable for existing shared links; display in the selected zone.
 export const currentYear = yearTimeline(pageLoadTime.year);
 export const initialSeconds = Math.floor(
   (pageLoadTime.epochMilliseconds - currentYear.start.epochMilliseconds) / 1000,
@@ -39,8 +45,8 @@ export function nowSeconds(): number {
   );
 }
 
-export function localMinutes(seconds: number): number {
-  const time = currentYear.at(seconds);
+export function localMinutes(seconds: number, timezone = londonTimezone): number {
+  const time = currentYear.at(seconds).withTimeZone(timezone);
   return time.hour * 60 + time.minute + time.second / 60;
 }
 
@@ -49,13 +55,14 @@ export function wallSeconds(time: { hour: number; minute: number; second: number
 }
 
 export function sunCycle(date: Temporal.PlainDate, location: Location = londonLocation) {
+  const timezone = timezoneAt(location);
   const times = getSunTimes(location.latitude, location.longitude, date, {
-    timezoneId: londonTimezone,
+    timezoneId: timezone,
   });
   const local = (instant: { epochMilliseconds: number } | null | undefined) =>
     instant
       ? Temporal.Instant.fromEpochMilliseconds(instant.epochMilliseconds).toZonedDateTimeISO(
-          londonTimezone,
+          timezone,
         )
       : undefined;
   const sunrise = local(times.sunrise);
@@ -71,7 +78,7 @@ export function sunCycle(date: Temporal.PlainDate, location: Location = londonLo
   ];
   const stops = Array.from({ length: 97 }, (_, index) => {
     const seconds = (index * secondsPerDay) / 96;
-    const time = midnight.add({ seconds }).toZonedDateTime(londonTimezone);
+    const time = midnight.add({ seconds }).toZonedDateTime(timezone);
     const altitude = getPosition(
       new Date(time.epochMilliseconds),
       location.latitude,

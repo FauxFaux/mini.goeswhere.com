@@ -12,11 +12,13 @@ const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export function TimeStrips({
   uss: [us, setUs],
   place,
+  timezone,
   yearScrubbing,
   onYearScrubbingChange,
 }: {
   uss: State<AnalogueClockState>;
   place: string;
+  timezone: string;
   yearScrubbing: boolean;
   onYearScrubbingChange: (scrubbing: boolean) => void;
 }) {
@@ -26,9 +28,9 @@ export function TimeStrips({
   const location = us.location;
   const { latitude, longitude } = location;
   const scrub = (kind: StripKind, origin: number, progress: number) => {
-    setUs((previous) => ({ ...previous, seconds: scrubSeconds(kind, origin, progress) }));
+    setUs((previous) => ({ ...previous, seconds: scrubSeconds(kind, origin, progress, timezone) }));
   };
-  const time = currentYear.at(seconds);
+  const time = currentYear.at(seconds).withTimeZone(timezone);
   const date = time.toPlainDate();
   const dateKey = date.toString();
   const transits = useMemo(() => {
@@ -37,7 +39,7 @@ export function TimeStrips({
       new Date(time.startOfDay().epochMilliseconds + 12 * 60 * 60 * 1000),
       location,
     );
-  }, [dateKey, showMoonTrail, latitude, longitude]);
+  }, [dateKey, showMoonTrail, latitude, longitude, timezone]);
   const nearestTransit = transits.reduce<number | undefined>(
     (nearest, transit) =>
       nearest === undefined ||

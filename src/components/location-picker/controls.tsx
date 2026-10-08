@@ -1,3 +1,4 @@
+import { useSearch } from "wouter";
 import { useEffect, useState } from "preact/hooks";
 import homolosine from "../../assets/homolosine.avif";
 import type { State } from "../../boot/url-state.ts";
@@ -11,10 +12,12 @@ import {
   type Location,
 } from "./projection.ts";
 import { CityBrowser, useCities } from "./city-browser.tsx";
+import { isInNewZealandCutout, newZealandCutoutPath } from "./new-zealand-cutout.ts";
 import projectionLicense from "./projection-license.txt?url";
 import "./location-picker.css";
 
 export function LocationPickerControls({ uss: [location, setLocation] }: { uss: State<Location> }) {
+  const excludeNewZealand = new URLSearchParams(useSearch()).get("no-nz") === "1";
   const [latitude, setLatitude] = useState(String(location.latitude));
   const [longitude, setLongitude] = useState(String(location.longitude));
   const [catalogue, retryCities] = useCities();
@@ -38,7 +41,11 @@ export function LocationPickerControls({ uss: [location, setLocation] }: { uss: 
   }
 
   function selectLocation(location: Location | null) {
-    if (location === null) return;
+    if (
+      location === null ||
+      (excludeNewZealand && isInNewZealandCutout(...locationToPoint(location)))
+    )
+      return;
     setLocation(roundLocation(location));
   }
 
@@ -54,9 +61,7 @@ export function LocationPickerControls({ uss: [location, setLocation] }: { uss: 
           onSubmit={(event) => {
             event.preventDefault();
             if (!event.currentTarget.reportValidity()) return;
-            setLocation(
-              roundLocation({ latitude: Number(latitude), longitude: Number(longitude) }),
-            );
+            selectLocation({ latitude: Number(latitude), longitude: Number(longitude) });
           }}
         >
           <label>
@@ -110,11 +115,26 @@ export function LocationPickerControls({ uss: [location, setLocation] }: { uss: 
           const delta = deltas[event.key];
           if (!delta) return;
           event.preventDefault();
-          setLocation((previous) => moveLocation(previous, ...delta));
+          setLocation((previous) => {
+            const next = moveLocation(previous, ...delta);
+            return excludeNewZealand && isInNewZealandCutout(...locationToPoint(next))
+              ? previous
+              : next;
+          });
         }}
       >
         <img src={homolosine} width={MAP_WIDTH} height={MAP_HEIGHT} alt="" draggable={false} />
+        {excludeNewZealand && (
+          <svg
+            class="location-picker-cutout"
+            viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+            aria-hidden="true"
+          >
+            <path d={newZealandCutoutPath} fill="#000" />
+          </svg>
+        )}
         <span
+          hidden={excludeNewZealand && isInNewZealandCutout(...point)}
           class="location-picker-marker"
           aria-hidden="true"
           style={{

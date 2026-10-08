@@ -3,11 +3,16 @@ import { currentYear, londonTimezone, secondsPerDay } from "./year.ts";
 export type StripKind = "day" | "week" | "year";
 
 /** Keep a gesture anchored to its starting day/week, even when it reaches an edge. */
-export function scrubSeconds(kind: StripKind, origin: number, progress: number): number {
+export function scrubSeconds(
+  kind: StripKind,
+  origin: number,
+  progress: number,
+  timezone = londonTimezone,
+): number {
   const fraction = Math.max(0, Math.min(1, progress));
   if (kind === "year")
     return Math.min(currentYear.seconds - 1, Math.round(fraction * currentYear.seconds));
-  const time = currentYear.at(origin);
+  const time = currentYear.at(origin).withTimeZone(timezone);
   const start =
     kind === "week"
       ? time.toPlainDate().subtract({ days: time.dayOfWeek - 1 })
@@ -22,7 +27,7 @@ export function scrubSeconds(kind: StripKind, origin: number, progress: number):
       minute: Math.floor((withinDay % 3600) / 60),
       second: withinDay % 60,
     })
-    .toZonedDateTime(londonTimezone);
+    .toZonedDateTime(timezone);
   const seconds = (target.epochMilliseconds - currentYear.start.epochMilliseconds) / 1000;
   return Math.max(0, Math.min(currentYear.seconds - 1, seconds));
 }

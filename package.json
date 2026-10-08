@@ -16,6 +16,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@photostructure/tz-lookup": "^11.7.0",
     "@primer/octicons-react": "^19.38.0",
     "geo-tz": "^8.1.9",
     "preact": "^10.29.8",

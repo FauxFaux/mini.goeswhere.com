@@ -601,7 +601,8 @@ it("opens the shared picker, selects a city and restores the location through li
   await waitFor(() =>
     expect(persistedState().location).toEqual({ latitude: -33.8688, longitude: 151.2093 }),
   );
-  expect(screen.getByText(/^Sydney ·/)).toBeTruthy();
+  expect(screen.getByText(/^Sydney ·/).textContent).toContain("Local time (Australia/Sydney)");
+  expect(day.getAttribute("aria-label")).toContain("Day progress: 11:00:00");
   expect(day.getAttribute("style")).not.toBe(originalGradient);
   expect(document.querySelector(".analogue-clock-moon-strip")!.getAttribute("aria-label")).not.toBe(
     moon,

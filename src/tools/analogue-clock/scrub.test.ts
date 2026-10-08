@@ -49,3 +49,21 @@ it("maps the year strip to integer seconds and clamps outside drags", () => {
   expect(scrubSeconds("year", 0, 0.5)).toBe(currentYear.seconds / 2);
   expect(scrubSeconds("year", 0, 2)).toBe(currentYear.seconds - 1);
 });
+
+it("scrubs in the selected timezone across Sydney daylight-saving changes", () => {
+  const timezone = "Australia/Sydney";
+  for (const [month, hoursToNoon] of [
+    [4, 13],
+    [10, 11],
+  ] as const) {
+    const first = Temporal.PlainDate.from({ year: currentYear.year, month, day: 1 });
+    const date = first.add({ days: (7 - first.dayOfWeek) % 7 });
+    const midnight = date.toZonedDateTime(timezone);
+    const origin = elapsed(midnight);
+    const target = scrubSeconds("day", origin, 0.5, timezone);
+    const noon = currentYear.at(target).withTimeZone(timezone);
+    expect(noon.hour).toBe(12);
+    expect(noon.toPlainDate().equals(date)).toBe(true);
+    expect(target - origin).toBe(hoursToNoon * 3600);
+  }
+});

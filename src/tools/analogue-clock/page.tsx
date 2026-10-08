@@ -18,7 +18,7 @@ import {
   type Hand,
 } from "./clock.ts";
 import { TimeStrips } from "./time-strips.tsx";
-import { currentYear, localMinutes, nowSeconds, wrapSeconds } from "./year.ts";
+import { currentYear, localMinutes, nowSeconds, timezoneAt, wrapSeconds } from "./year.ts";
 import { analogueClockCodec, type AnalogueClockState } from "./state.ts";
 import "./analogue-clock.css";
 
@@ -48,7 +48,11 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
   );
   const [pickingLocation, setPickingLocation] = useState(false);
   const [yearScrubbing, setYearScrubbing] = useState(false);
-  const minutes = localMinutes(us.seconds);
+  const timezone = useMemo(
+    () => timezoneAt(us.location),
+    [us.location.latitude, us.location.longitude],
+  );
+  const minutes = localMinutes(us.seconds, timezone);
   const drag = useRef<Drag | undefined>(undefined);
   const [activeHand, setActiveHand] = useState<Hand>();
 
@@ -275,6 +279,7 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
         <TimeStrips
           uss={[us, setUs]}
           place={place}
+          timezone={timezone}
           yearScrubbing={yearScrubbing}
           onYearScrubbingChange={setYearScrubbing}
         />
@@ -291,8 +296,8 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
         >
           <GearIcon size={16} />
         </button>{" "}
-        · {currentYear.year}. London time (Europe/London). Sunlight and moon position use the
-        selected location.
+        · {currentYear.year}. Local time ({timezone}). Sunlight and moon position use the selected
+        location.
         <br />
         Tap or drag a time strip to change the time. Use arrow keys when a clock or time strip is
         focused.

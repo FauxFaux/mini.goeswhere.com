@@ -6,6 +6,7 @@ import {
   localMinutes,
   seasonGradient,
   sunCycle,
+  timezoneAt,
   yearTimeline,
   wrapSeconds,
 } from "./year.ts";
@@ -104,7 +105,7 @@ it("starts at the current instant on page load, rounded down to integer seconds"
   expect(elapsedNow - initialSeconds).toBeLessThan(10);
 });
 
-it("updates sunlight for a different longitude, including daylight across London midnight", () => {
+it("uses local sunrise, sunset and midnight for a different longitude", () => {
   const date = Temporal.PlainDate.from("2026-06-21");
   const london = sunCycle(date);
   const sydney = sunCycle(date, { latitude: -33.8688, longitude: 151.2093 });
@@ -112,7 +113,9 @@ it("updates sunlight for a different longitude, including daylight across London
   expect(sydney.daylightSeconds).toBeGreaterThan(9 * 3600);
   expect(sydney.daylightSeconds).toBeLessThan(11 * 3600);
   expect(sydney.gradient).not.toBe(london.gradient);
-  expect(sydney.gradient).toMatch(/^linear-gradient\(to right, #efd69a 0%/);
+  expect(sydney.sunrise).toMatch(/^07:/);
+  expect(sydney.sunset).toMatch(/^16:/);
+  expect(sydney.gradient).toMatch(/^linear-gradient\(to right, #101a35 0%/);
 });
 
 it("supports polar day and night without sunrise or sunset", () => {
@@ -124,4 +127,14 @@ it("supports polar day and night without sunrise or sunset", () => {
   expect(winter.daylightSeconds).toBe(0);
   expect(summer.gradient).toContain("#efd69a 0%");
   expect(winter.gradient).toContain("#101a35 0%");
+});
+
+it("derives timezones from coordinates and displays the same instant in local time", () => {
+  expect(timezoneAt({ latitude: 51.5074, longitude: -0.1278 })).toBe("Europe/London");
+  const sydney = timezoneAt({ latitude: -33.8688, longitude: 151.2093 });
+  expect(sydney).toBe("Australia/Sydney");
+  expect(localMinutes(0, sydney)).toBe(11 * 60);
+  const kathmandu = timezoneAt({ latitude: 27.7172, longitude: 85.324 });
+  expect(kathmandu).toBe("Asia/Kathmandu");
+  expect(localMinutes(0, kathmandu)).toBe(5 * 60 + 45);
 });

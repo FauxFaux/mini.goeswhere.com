@@ -133,3 +133,50 @@ it("preserves corrupt links and offers recovery", async () => {
   await screen.findByRole("button", { name: "Pick a location on the world map" });
   expect(savedLocation()).toEqual({ latitude: 51.5074, longitude: -0.1278 });
 });
+
+it("cuts out New Zealand only when enabled and restores the setting from URL changes", async () => {
+  window.history.replaceState(null, "", "/#/location-picker?no-nz=1&note=keep");
+  const { container } = render(<App />);
+  const map = await screen.findByRole("button", { name: "Pick a location on the world map" });
+  vi.spyOn(map, "getBoundingClientRect").mockReturnValue(new DOMRect(20, 40, 1029, 450));
+  const nz = { latitude: -41.2866, longitude: 174.7756 };
+  const point = locationToPoint(nz);
+  expect(container.querySelector(".location-picker-cutout")).not.toBeNull();
+  const original = window.location.href;
+  fireEvent.click(map, { clientX: 20 + point[0] / 2, clientY: 40 + point[1] / 2 });
+  fireEvent.mouseMove(map, { clientX: 20 + point[0] / 2, clientY: 40 + point[1] / 2, buttons: 1 });
+  fireEvent.pointerUp(document);
+  expect(window.location.href).toBe(original);
+  const latitude = screen.getByRole("spinbutton", { name: "Latitude (−90 to 90)" });
+  const longitude = screen.getByRole("spinbutton", { name: "Longitude (−180 to 180)" });
+  fireEvent.input(latitude, { target: { value: String(nz.latitude) } });
+  fireEvent.input(longitude, { target: { value: String(nz.longitude) } });
+  fireEvent.submit(latitude.closest("form")!);
+  fireEvent.pointerUp(document);
+  expect(window.location.href).toBe(original);
+  const sydney = { latitude: -33.8688, longitude: 151.2093 };
+  const australianPoint = locationToPoint(sydney);
+  fireEvent.click(map, {
+    clientX: 20 + australianPoint[0] / 2,
+    clientY: 40 + australianPoint[1] / 2,
+  });
+  fireEvent.pointerUp(document);
+  expect(savedLocation()).toEqual(sydney);
+  expect(window.location.hash).toContain("no-nz=1");
+  act(() => navigateHash("/location-picker?no-nz=0"));
+  await waitFor(() => expect(container.querySelector(".location-picker-cutout")).toBeNull());
+  fireEvent.click(map, { clientX: 20 + point[0] / 2, clientY: 40 + point[1] / 2 });
+  fireEvent.pointerUp(document);
+  expect(savedLocation()).toEqual(nz);
+});
+
+it("blocks keyboard selections in the cutout without rewriting existing shared coordinates", async () => {
+  window.history.replaceState(null, "", "/#/location-picker?no-nz=1&lat=-41&lon=174");
+  const original = window.location.href;
+  const { container } = render(<App />);
+  const map = await screen.findByRole("button", { name: "Pick a location on the world map" });
+  expect(container.querySelector(".location-picker-marker")?.hasAttribute("hidden")).toBe(true);
+  fireEvent.keyDown(map, { key: "ArrowRight" });
+  fireEvent.pointerUp(document);
+  expect(window.location.href).toBe(original);
+});
