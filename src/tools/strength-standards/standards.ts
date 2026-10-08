@@ -16,7 +16,7 @@ export interface ActivityStandards {
 export const standards: readonly ActivityStandards[] = [
   {
     id: "press",
-    title: "Press",
+    title: "Shoulder press",
     technique: "Any knee extension makes the attempt invalid.",
     men: [
       [114, 53, 72, 90, 107, 129],

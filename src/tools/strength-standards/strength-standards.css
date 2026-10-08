@@ -107,6 +107,10 @@
   stroke: var(--border);
 }
 
+.strength-standards-category-button {
+  cursor: pointer;
+}
+
 .strength-standards-cursor {
   pointer-events: none;
 }

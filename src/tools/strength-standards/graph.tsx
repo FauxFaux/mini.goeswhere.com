@@ -130,7 +130,32 @@ export function StandardsGraph({ uss: [state, setState] }: { uss: State<Strength
         })}
         <line x1={left} x2={left} y1={top} y2={bottom} class="strength-standards-grid" />
         {categories.map((category, index) => (
-          <text key={category} x={x(index)} y={bottom + 24} text-anchor="middle">
+          <text
+            key={category}
+            x={x(index)}
+            y={bottom + 24}
+            text-anchor="middle"
+            role="button"
+            tabIndex={0}
+            class="strength-standards-category-button"
+            onPointerMove={(event) => {
+              event.stopPropagation();
+              setHoverPosition(index === 0 ? 0 : index + 1);
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              setHoverPosition(undefined);
+              setPickedPosition(index === 0 ? 0 : index + 1);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                event.stopPropagation();
+                setHoverPosition(undefined);
+                setPickedPosition(index === 0 ? 0 : index + 1);
+              }
+            }}
+          >
             {index === 0 ? category : `Cat ${category}`}
           </text>
         ))}
