@@ -67,6 +67,8 @@ describe("strength standards URL codec", () => {
   it.each([
     "s=x&w=75",
     "u=kg",
+    "p=bad",
+    "p=5x5&p=1rm",
     "w=NaN",
     "w=Infinity",
     "w=hello",
@@ -112,6 +114,8 @@ describe("strength standards URL codec", () => {
     { v: 1, unit: "lbs" },
     { v: 1, unit: 1 },
     { v: 1, unit: null },
+    { v: 1, performance: null },
+    { v: 1, performance: "bad" },
   ])("rejects malformed state %j", (value) => {
     expect(() => strengthStandardsCodec.decode(value)).toThrow();
   });
@@ -148,4 +152,12 @@ describe("strength standards URL codec", () => {
       expect(() => strengthStandardsCodec.decode({ v: 1, weight })).toThrow();
     },
   );
+});
+
+it("round trips the 5x5 selection in query and legacy state formats", () => {
+  const state = { ...strengthStandardsCodec.defaultState, performance: "5x5" } as const;
+  const params = new URLSearchParams();
+  strengthStandardsCodec.query!.write(params, state);
+  expect(strengthStandardsCodec.query!.decode(params)).toEqual(state);
+  expect(strengthStandardsCodec.decode(unpackState(packState(state)))).toEqual(state);
 });

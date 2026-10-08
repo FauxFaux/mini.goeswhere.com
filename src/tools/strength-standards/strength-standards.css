@@ -47,7 +47,8 @@
 }
 
 .strength-standards-weight input[type="number"] {
-  width: 8rem;
+  width: calc(3ch + 2rem);
+  text-align: right;
 }
 
 .strength-standards table {

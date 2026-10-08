@@ -10,6 +10,7 @@ export interface StrengthStandardsState {
   v: 1;
   sex: "men" | "women";
   unit: "kg" | "lb";
+  performance?: "1rm" | "5x5";
   /** Bodyweight in pounds, independent of the display unit. */
   weight?: number;
   /** Selected graph category, including fractional values between 0 and 5. */
@@ -20,7 +21,7 @@ export const strengthStandardsCodec: UrlCodec<StrengthStandardsState> = {
   defaultState: { v: 1, sex: "men", unit: "kg", weight: 75 / POUNDS_TO_KG, graphCategory: 1 },
   query: {
     decode(params) {
-      for (const key of ["s", "u", "w", "c"]) {
+      for (const key of ["s", "u", "w", "c", "p"]) {
         if (params.getAll(key).length > 1) throw new Error(`Duplicate ${key} parameter.`);
       }
       const sex = params.get("s");
@@ -28,7 +29,7 @@ export const strengthStandardsCodec: UrlCodec<StrengthStandardsState> = {
         sex !== null &&
         sex !== "m" &&
         sex !== "f" &&
-        !["u", "w", "c"].some((key) => params.has(key))
+        !["u", "w", "c", "p"].some((key) => params.has(key))
       ) {
         return strengthStandardsCodec.decode(unpackState(sex));
       }
@@ -58,6 +59,7 @@ export const strengthStandardsCodec: UrlCodec<StrengthStandardsState> = {
         unit: unit === "l" ? "lb" : "kg",
         weight: weight === undefined ? undefined : weight / factor,
         graphCategory: number("c", 1),
+        ...(params.has("p") ? { performance: params.get("p") } : {}),
       });
     },
     write(params, state) {
@@ -70,6 +72,8 @@ export const strengthStandardsCodec: UrlCodec<StrengthStandardsState> = {
           : round(state.weight * (state.unit === "kg" ? POUNDS_TO_KG : 1), 1),
       );
       params.set("c", state.graphCategory === undefined ? "" : round(state.graphCategory, 3));
+      if (state.performance === "5x5") params.set("p", "5x5");
+      else params.delete("p");
       if (state.unit === "lb") params.set("u", "l");
       else params.delete("u");
     },
@@ -96,10 +100,18 @@ export const strengthStandardsCodec: UrlCodec<StrengthStandardsState> = {
     ) {
       throw new Error("Graph category must be a finite number between 0 and 5.");
     }
+    if (
+      value.performance !== undefined &&
+      value.performance !== "1rm" &&
+      value.performance !== "5x5"
+    ) {
+      throw new Error("Invalid strength standards performance.");
+    }
     return {
       v: 1,
       sex,
       unit,
+      ...(value.performance === undefined ? {} : { performance: value.performance }),
       ...(value.weight === undefined ? {} : { weight: value.weight }),
       ...(value.graphCategory === undefined ? {} : { graphCategory: value.graphCategory }),
     };

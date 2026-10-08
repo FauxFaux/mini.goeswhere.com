@@ -18,6 +18,7 @@ export function StrengthStandards() {
 }
 
 function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStandardsState> }) {
+  const liftFactor = state.performance === "5x5" ? 1 / 0.785 : 1;
   const population = state.sex === "men" ? "Adult men" : "Adult women";
   const minimum = standards[0][state.sex][0][0];
   const belowMinimum = state.weight !== undefined && state.weight < minimum;
@@ -33,7 +34,10 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
   return (
     <div class="strength-standards">
       <h1>Starting Strength standards</h1>
-      <p>One-repetition maximum performance standards, not population norms.</p>
+      <p>
+        {state.performance === "5x5" ? "Five sets of five reps" : "One-repetition maximum"}{" "}
+        performance standards, not population norms.
+      </p>
       <div class="strength-standards-controls">
         <fieldset>
           <legend>Sex</legend>
@@ -85,7 +89,21 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
                   })
                 }
               />
-              {unit === "kg" ? "Kilograms (kg)" : "Pounds (lb)"}
+              {unit}
+            </label>
+          ))}
+        </fieldset>
+        <fieldset>
+          <legend>Performance</legend>
+          {(["1rm", "5x5"] as const).map((performance) => (
+            <label key={performance}>
+              <input
+                type="radio"
+                name="performance"
+                checked={(state.performance ?? "1rm") === performance}
+                onChange={() => setState((previous) => ({ ...previous, performance }))}
+              />
+              {performance === "1rm" ? <abbr title="One-repetition maximum">1RM</abbr> : "5x5"}
             </label>
           ))}
         </fieldset>
@@ -181,7 +199,7 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
                           {index === rows.length - 1 ? "+" : ""}
                         </th>
                         {lifts.map((lift, category) => (
-                          <td key={category}>{formatWeight(lift, state.unit)}</td>
+                          <td key={category}>{formatWeight(lift * liftFactor, state.unit)}</td>
                         ))}
                       </tr>
                     ))}

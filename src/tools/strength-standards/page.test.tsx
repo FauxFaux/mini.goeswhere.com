@@ -6,7 +6,7 @@ import { App } from "../../app.tsx";
 import { navigateHash, splitHash } from "../../boot/hash-location.ts";
 import { packState } from "../../boot/url-state.ts";
 import { strengthStandardsCodec } from "./state.ts";
-import { POUNDS_TO_KG } from "./standards.ts";
+import { formatWeight, POUNDS_TO_KG } from "./standards.ts";
 
 beforeEach(() => window.history.replaceState(null, "", "/#/strength-standards?note=keep"));
 afterEach(cleanup);
@@ -31,7 +31,7 @@ it("restores and edits readable query inputs with rounded values", async () => {
   expect(window.location.hash).toBe("#/strength-standards?s=m&w=74.5&c=0.041");
   await user.click(screen.getByRole("radio", { name: "Women" }));
   expect(window.location.hash).toBe("#/strength-standards?s=f&w=74.5&c=0.041");
-  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  await user.click(screen.getByRole("radio", { name: "lb" }));
   expect(window.location.hash).toBe("#/strength-standards?s=f&w=164&c=0.041&u=l");
 });
 
@@ -96,7 +96,7 @@ it("plots all five interpolated lifts only when bodyweight is selected and updat
   render(<App />);
   const slider = await screen.findByRole("slider", { name: "Bodyweight slider (kg)" });
   expect(screen.getByRole("img", { name: "Strength standards graph" })).toBeTruthy();
-  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  await user.click(screen.getByRole("radio", { name: "lb" }));
   fireEvent.input(slider, { target: { value: "173" } });
   const graph = screen.getByRole("img", { name: "Strength standards graph" });
   expect(graph.querySelectorAll("polyline")).toHaveLength(5);
@@ -128,7 +128,7 @@ it("plots all five interpolated lifts only when bodyweight is selected and updat
   await user.click(screen.getByRole("radio", { name: "Women" }));
   expect(within(graph).getByText("Press, Cat. III: 80 lb")).toBeTruthy();
   expect(graph.querySelector("polyline")!.getAttribute("points")).not.toBe(points);
-  await user.click(screen.getByRole("radio", { name: "Kilograms (kg)" }));
+  await user.click(screen.getByRole("radio", { name: "kg" }));
   expect(within(graph).getByText("Press, Cat. III: 36.1 kg")).toBeTruthy();
   await user.clear(screen.getByRole("spinbutton", { name: "Bodyweight (kg)" }));
   expect(screen.queryByRole("img", { name: "Strength standards graph" })).toBeNull();
@@ -140,9 +140,7 @@ it("defaults to 75 kg men and category 1, showing the full raw tables below the 
   render(<App />);
   const men = await screen.findByRole("radio", { name: "Men" });
   expect((men as HTMLInputElement).checked).toBe(true);
-  expect((screen.getByRole("radio", { name: "Kilograms (kg)" }) as HTMLInputElement).checked).toBe(
-    true,
-  );
+  expect((screen.getByRole("radio", { name: "kg" }) as HTMLInputElement).checked).toBe(true);
   const press = screen.getByRole("table", { name: "Press — Adult men (kg)" });
   expect(
     (screen.getByRole("spinbutton", { name: "Bodyweight (kg)" }) as HTMLInputElement).value,
@@ -159,7 +157,7 @@ it("defaults to 75 kg men and category 1, showing the full raw tables below the 
   expect(within(press).getByRole("rowheader", { name: "145.1+" })).toBeTruthy();
   expect(window.location.hash).toBe("#/strength-standards?note=keep");
   await user.click(screen.getByRole("radio", { name: "Women" }));
-  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  await user.click(screen.getByRole("radio", { name: "lb" }));
   const womenPress = screen.getByRole("table", { name: "Press — Adult women (lb)" });
   expect(within(womenPress).getByRole("row", { name: "165 48 65 77 102 134" })).toBeTruthy();
   expect(within(womenPress).getByRole("rowheader", { name: "199+" })).toBeTruthy();
@@ -217,7 +215,7 @@ it("updates interpolated graph values while keeping every raw bodyweight row", a
   const graph = screen.getByRole("img", { name: "Strength standards graph" });
   expect(within(graph).getByText("Press, Cat. III: 60.6 kg")).toBeTruthy();
   expect(kgPress.textContent).toBe(initialRows);
-  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  await user.click(screen.getByRole("radio", { name: "lb" }));
   expect((weight as HTMLInputElement).value).toBe("173");
   expect(within(graph).getByText("Press, Cat. III: 133.5 lb")).toBeTruthy();
   const press = screen.getByRole("table", { name: "Press — Adult men (lb)" });
@@ -249,7 +247,7 @@ it("rounds bodyweight on unit changes and saves the rounded weight for calculati
   render(<App />);
   const input = await screen.findByRole("spinbutton", { name: "Bodyweight (kg)" });
   fireEvent.input(input, { target: { value: "80.5" } });
-  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  await user.click(screen.getByRole("radio", { name: "lb" }));
   expect((input as HTMLInputElement).value).toBe("177");
   let params = new URLSearchParams(splitHash(window.location.hash).search);
   expect(strengthStandardsCodec.query!.decode(params)).toEqual({
@@ -259,7 +257,7 @@ it("rounds bodyweight on unit changes and saves the rounded weight for calculati
     weight: 177,
     graphCategory: 1,
   });
-  await user.click(screen.getByRole("radio", { name: "Kilograms (kg)" }));
+  await user.click(screen.getByRole("radio", { name: "kg" }));
   expect((input as HTMLInputElement).value).toBe("80");
   params = new URLSearchParams(splitHash(window.location.hash).search);
   expect(strengthStandardsCodec.query!.decode(params)).toEqual({
@@ -274,7 +272,7 @@ it("rounds bodyweight on unit changes and saves the rounded weight for calculati
   const restored = await screen.findByRole("spinbutton", { name: "Bodyweight (kg)" });
   expect((restored as HTMLInputElement).value).toBe("80");
   await user.clear(restored);
-  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  await user.click(screen.getByRole("radio", { name: "lb" }));
   expect((restored as HTMLInputElement).value).toBe("");
   expect(
     within(screen.getByRole("table", { name: "Press — Adult men (lb)" })).getAllByRole("row"),
@@ -337,7 +335,7 @@ it("uses the bounded slider to select and persist a bodyweight, adjusting bounds
   expect(slider.getAttribute("min")).toBe("44");
   expect(slider.getAttribute("max")).toBe("91");
   expect((input as HTMLInputElement).value).toBe("91");
-  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  await user.click(screen.getByRole("radio", { name: "lb" }));
   expect(slider.getAttribute("min")).toBe("97");
   expect(slider.getAttribute("max")).toBe("199");
   expect((input as HTMLInputElement).value).toBe("199");
@@ -345,4 +343,47 @@ it("uses the bounded slider to select and persist a bodyweight, adjusting bounds
   await user.click(screen.getByRole("radio", { name: "Men" }));
   expect((input as HTMLInputElement).value).toBe("114");
   expect((slider as HTMLInputElement).value).toBe("114");
+});
+
+it("scales lifts for 5x5, preserves bodyweight, and restores the selection from the URL", async () => {
+  const user = userEvent.setup();
+  window.history.replaceState(null, "", "/#/strength-standards?s=m&u=l&w=173&c=3&note=keep");
+  render(<App />);
+  const oneRep = await screen.findByRole("radio", { name: "1RM" });
+  expect((oneRep as HTMLInputElement).checked).toBe(true);
+  await user.click(screen.getByRole("radio", { name: "5x5" }));
+  expect(
+    screen.getByText("Five sets of five reps performance standards, not population norms."),
+  ).toBeTruthy();
+  const graph = screen.getByRole("img", { name: "Strength standards graph" });
+  expect(
+    within(graph).getByText(`Press, Cat. III: ${formatWeight(133.5 / 0.785, "lb")} lb`),
+  ).toBeTruthy();
+  expect(
+    screen.getByText(`${formatWeight(133.5 / 0.785, "lb")} lb`, {
+      selector: ".strength-standards-legend-value",
+    }),
+  ).toBeTruthy();
+  const press = screen.getByRole("table", { name: "Press — Adult men (lb)" });
+  expect(within(press).getByRole("rowheader", { name: "165" })).toBeTruthy();
+  expect(within(press).getAllByRole("row")[1]!.textContent).toBe(
+    "114" + [53, 72, 90, 107, 129].map((lift) => formatWeight(lift / 0.785, "lb")).join(""),
+  );
+  expect(
+    (screen.getByRole("spinbutton", { name: "Bodyweight (lb)" }) as HTMLInputElement).value,
+  ).toBe("173");
+  expect(new URLSearchParams(splitHash(window.location.hash).search).get("p")).toBe("5x5");
+  expect(new URLSearchParams(splitHash(window.location.hash).search).get("note")).toBe("keep");
+  cleanup();
+  render(<App />);
+  expect(((await screen.findByRole("radio", { name: "5x5" })) as HTMLInputElement).checked).toBe(
+    true,
+  );
+  await user.click(screen.getByRole("radio", { name: "1RM" }));
+  expect(new URLSearchParams(splitHash(window.location.hash).search).has("p")).toBe(false);
+  expect(
+    within(screen.getByRole("img", { name: "Strength standards graph" })).getByText(
+      "Press, Cat. III: 133.5 lb",
+    ),
+  ).toBeTruthy();
 });

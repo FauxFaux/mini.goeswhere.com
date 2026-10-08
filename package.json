@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "deploy": "npm run build && rsync -av dist/ sek:/srv/mini.goeswhere.com/",
     "format": "oxfmt .",
     "lint": "oxfmt --check . && tsc -b",
     "test": "vitest run",

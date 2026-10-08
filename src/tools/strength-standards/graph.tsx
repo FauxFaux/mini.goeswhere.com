@@ -29,10 +29,19 @@ export function StandardsGraph({ uss: [state, setState] }: { uss: State<Strength
   };
   const weight = state.weight;
   if (weight === undefined) return null;
+  const liftFactor = state.performance === "5x5" ? 1 / 0.785 : 1;
   const factor = state.unit === "kg" ? POUNDS_TO_KG : 1;
   const series = standards.flatMap((activity, index) => {
     const row = interpolateStandards(activity[state.sex], weight);
-    return row ? [{ activity, colour: colours[index], lifts: [0, ...row.slice(1)] }] : [];
+    return row
+      ? [
+          {
+            activity,
+            colour: colours[index],
+            lifts: [0, ...row.slice(1).map((lift) => lift * liftFactor)],
+          },
+        ]
+      : [];
   });
   if (series.length === 0) return null;
   const maximum = Math.max(...series.flatMap((line) => line.lifts.map((lift) => lift * factor)));
@@ -88,11 +97,12 @@ export function StandardsGraph({ uss: [state, setState] }: { uss: State<Strength
         <title id="strength-standards-graph-title">Strength standards graph</title>
         <desc id="strength-standards-graph-description">
           Five lifts for adult {state.sex}, with categories 0 to V on the horizontal axis and
-          one-repetition maximum weight in {state.unit} on the vertical axis. All lifts start at
-          zero in category 0, with an unlabelled space before category I. Straight lines connect
-          category values. Exact standards are listed in the tables below. Move the pointer to read
-          values; click to keep a position. Use arrow keys, Home, or End to select a position with
-          the keyboard, and Escape to clear it.
+          {state.performance === "5x5" ? "five sets of five reps" : "one-repetition maximum"} weight
+          in {state.unit} on the vertical axis. All lifts start at zero in category 0, with an
+          unlabelled space before category I. Straight lines connect category values. Exact
+          standards are listed in the tables below. Move the pointer to read values; click to keep a
+          position. Use arrow keys, Home, or End to select a position with the keyboard, and Escape
+          to clear it.
         </desc>
         <text
           transform={`translate(14 ${(top + bottom) / 2}) rotate(-90)`}
