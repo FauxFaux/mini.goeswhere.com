@@ -75,6 +75,7 @@ it("toggles number rings independently, persists them through dragging and resto
     show12HourNumbers: false,
     show24HourNumbers: true,
     showMinuteNumbers: true,
+    sideBySide: false,
   });
   expect(params.get("note")).toBe("keep");
   expect(window.history.length).toBe(historyLength);
@@ -491,6 +492,7 @@ it("resets to the current instant at each click while preserving number settings
       show12HourNumbers: false,
       show24HourNumbers: true,
       showMinuteNumbers: true,
+      sideBySide: false,
     }),
   );
   now.mockReturnValue(
@@ -500,4 +502,26 @@ it("resets to the current instant at each click while preserving number settings
   await waitFor(() => expect(persistedState().seconds).toBe(123516));
   expect(window.history.length).toBe(historyLength);
   expect(new URLSearchParams(splitHash(window.location.hash).search).get("note")).toBe("keep");
+});
+
+it("restores the layout from links and history, and preserves it through time edits", async () => {
+  window.history.replaceState(null, "", "/#/analogue-clock?s=0&b=1");
+  await face();
+  const layout = screen.getByRole("checkbox", { name: "Side-by-side" }) as HTMLInputElement;
+  expect(layout.checked).toBe(true);
+  fireEvent.keyDown(screen.getByRole("slider", { name: "Minute hand" }), { key: "ArrowUp" });
+  await waitFor(() => expect(persistedState().seconds).toBe(60));
+  expect(persistedState().sideBySide).toBe(true);
+  fireEvent.click(layout);
+  await waitFor(() =>
+    expect(new URLSearchParams(splitHash(window.location.hash).search).has("b")).toBe(false),
+  );
+  fireEvent.click(layout);
+  act(() => navigateHash("/hello-world"));
+  await screen.findByRole("textbox", { name: "Your name" });
+  window.history.back();
+  expect(
+    ((await screen.findByRole("checkbox", { name: "Side-by-side" })) as HTMLInputElement).checked,
+  ).toBe(true);
+  expect(persistedState().sideBySide).toBe(true);
 });

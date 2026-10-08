@@ -7,6 +7,7 @@ export interface AnalogueClockState {
   show12HourNumbers: boolean;
   show24HourNumbers: boolean;
   showMinuteNumbers: boolean;
+  sideBySide: boolean;
 }
 
 export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
@@ -16,10 +17,11 @@ export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
     show12HourNumbers: true,
     show24HourNumbers: false,
     showMinuteNumbers: false,
+    sideBySide: false,
   },
   query: {
     decode(params) {
-      const fields = ["s", "v", "h", "t", "m"];
+      const fields = ["s", "v", "h", "t", "m", "b"];
       for (const key of fields) {
         if (params.getAll(key).length > 1) throw new Error(`Duplicate ${key} parameter.`);
       }
@@ -40,6 +42,7 @@ export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
         show12HourNumbers: toggle("h", true),
         show24HourNumbers: toggle("t", false),
         showMinuteNumbers: toggle("m", false),
+        sideBySide: toggle("b", false),
       });
     },
     write(params, state) {
@@ -52,6 +55,7 @@ export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
       toggle("h", state.show12HourNumbers, true);
       toggle("t", state.show24HourNumbers, false);
       toggle("m", state.showMinuteNumbers, false);
+      toggle("b", state.sideBySide, false);
     },
   },
   decode(value) {
@@ -72,12 +76,13 @@ export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
       show12HourNumbers: decodeToggle(value.show12HourNumbers, true),
       show24HourNumbers: decodeToggle(value.show24HourNumbers, false),
       showMinuteNumbers: decodeToggle(value.showMinuteNumbers, false),
+      sideBySide: decodeToggle(value.sideBySide, false),
     };
   },
 };
 
 function decodeToggle(value: unknown, fallback: boolean): boolean {
   if (value === undefined) return fallback;
-  if (typeof value !== "boolean") throw new Error("Clock number toggles must be booleans.");
+  if (typeof value !== "boolean") throw new Error("Clock settings must be booleans.");
   return value;
 }

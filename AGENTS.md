@@ -39,7 +39,7 @@ Choose a transport appropriate to the tool: readable query parameters via `UrlCo
 work well for simple inputs; the default transport uses `s` as unpadded base64url of UTF-8 JSON
 for structured state. Query codecs own their parameter names: the analogue clock uses `s` for
 integer seconds through the current year, with `h`, `t`, and `m` for 12-hour, 24-hour, and
-minute labels. There is no compression or shared application-wide state. Each tool owns
+minute labels, plus `b` for the side-by-side layout. There is no compression or shared application-wide state. Each tool owns
 its schema and version; the route identifies the tool. Persist inputs only, not results, focus,
 hover, or other transient UI state. Base64 is an encoding, not encryption; URLs must not hold secrets.
 

@@ -14,6 +14,7 @@ it("round trips integer seconds and every combination of number toggles", () => 
             show12HourNumbers,
             show24HourNumbers,
             showMinuteNumbers,
+            sideBySide: false,
           };
           const params = new URLSearchParams({ note: "keep", v: "2" });
           analogueClockCodec.query!.write(params, state);
@@ -34,12 +35,12 @@ it("reads defaults without changing the URL", () => {
   expect(params.toString()).toBe("note=keep");
 });
 
-it.each(["show12HourNumbers", "show24HourNumbers", "showMinuteNumbers"])(
+it.each(["show12HourNumbers", "show24HourNumbers", "showMinuteNumbers", "sideBySide"])(
   "validates %s strictly",
   (field) => {
     for (const value of [null, 1, "false", [], {}]) {
       expect(() => analogueClockCodec.decode({ v: 2, seconds: 0, [field]: value })).toThrow(
-        "Clock number toggles must be booleans.",
+        "Clock settings must be booleans.",
       );
     }
   },
@@ -73,6 +74,9 @@ it.each([
   "h=false",
   "t=2",
   "m=",
+  "b=2",
+  "b=",
+  "b=0&b=1",
   "h=0&h=1",
   "t=1&t=1",
   "m=0&m=0",
@@ -87,4 +91,14 @@ it("rejects unsupported versions", () => {
   expect(() => analogueClockCodec.query!.decode(new URLSearchParams("v=3&s=90"))).toThrow(
     UnsupportedStateVersion,
   );
+});
+
+it("round trips the layout setting and omits it when stacked", () => {
+  for (const sideBySide of [false, true]) {
+    const state = { ...analogueClockCodec.defaultState, sideBySide };
+    const params = new URLSearchParams("b=1&note=keep");
+    analogueClockCodec.query!.write(params, state);
+    expect(params.get("b")).toBe(sideBySide ? "1" : null);
+    expect(analogueClockCodec.query!.decode(params)).toEqual(state);
+  }
 });

@@ -36,7 +36,6 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
   const minutes = localMinutes(us.seconds);
   const drag = useRef<Drag | undefined>(undefined);
   const [activeHand, setActiveHand] = useState<Hand>();
-  const [sideBySide, setSideBySide] = useState(false);
 
   function position(event: PointerEvent, face: SVGSVGElement) {
     const bounds = face.getBoundingClientRect();
@@ -151,8 +150,11 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
         <label>
           <input
             type="checkbox"
-            checked={sideBySide}
-            onChange={(event) => setSideBySide(event.currentTarget.checked)}
+            checked={us.sideBySide}
+            onChange={(event) => {
+              const sideBySide = event.currentTarget.checked;
+              setUs((previous) => ({ ...previous, sideBySide }));
+            }}
           />
           Side-by-side
         </label>
@@ -164,7 +166,7 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
         </button>
       </fieldset>
       <div
-        class={`analogue-clock-layout${sideBySide ? " analogue-clock-layout-side-by-side" : ""}`}
+        class={`analogue-clock-layout${us.sideBySide ? " analogue-clock-layout-side-by-side" : ""}`}
       >
         <svg
           class={`analogue-clock-face${activeHand ? " analogue-clock-dragging" : ""}${us.show24HourNumbers ? " analogue-clock-with-24h" : ""}`}
