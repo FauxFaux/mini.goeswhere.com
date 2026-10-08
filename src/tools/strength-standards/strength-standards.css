@@ -1,0 +1,55 @@
+.strength-standards-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.strength-standards-controls fieldset {
+  margin: 0;
+  border: 1px solid var(--border);
+}
+
+.strength-standards-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: 1rem;
+  cursor: pointer;
+}
+
+.strength-standards section {
+  margin-block: 2rem;
+}
+
+.strength-standards-scroll {
+  overflow-x: auto;
+}
+
+.strength-standards table {
+  width: 100%;
+  max-width: 48rem;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.strength-standards caption {
+  text-align: left;
+  color: var(--muted);
+  padding-bottom: 0.5rem;
+}
+
+.strength-standards th,
+.strength-standards td {
+  padding: 0.4rem 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.strength-standards tbody th {
+  font-weight: normal;
+}
+
+.strength-standards tbody tr:nth-child(even) {
+  background: #22252a;
+}

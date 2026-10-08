@@ -11,6 +11,16 @@ export const tools = [
     ),
   },
   {
+    path: "/strength-standards",
+    title: "Strength standards",
+    description: "Starting Strength tables for five lifts, in kilograms or pounds.",
+    component: lazy(() =>
+      import("./strength-standards/page.tsx").then((module) => ({
+        default: module.StrengthStandards,
+      })),
+    ),
+  },
+  {
     path: "/hello-world",
     title: "Hello world",
     description: "A small, personalised greeting.",
