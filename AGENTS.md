@@ -15,9 +15,9 @@ logos, decorative assets, theme switching, or UI framework.
   tests, and optional CSS together in that directory. Avoid importing one tool from another.
 - `src/boot/` contains routing, URL transport, and crash recovery shared by all tools. It must
   not import tool-specific state or algorithms.
-- `build/` contains build compatibility helpers. `calculator-compat.ts` renames the library's
-  private `eval` identifier and declares its unary parser operand for Vite 8 strict mode; use the same plugin
-  during production builds and dependency prebundling. Remove it when upstream fixes this.
+- `qalculate-wasm/` contains the pinned Docker build and Embind API for libqalculate.
+  `npm run build:qalculate-wasm` exports its runtime, WASM, licenses, and corresponding source
+  archive into `src/assets/`. Keep the generated loader out of formatting.
 
 Use `src/tools/calculator/` as the worked example and `src/tools/hello-world/` as the smallest
 example. Add shared components or utilities only when multiple tools need them.
@@ -92,8 +92,7 @@ Write strict TypeScript and functional Preact components. Import hooks from `pre
 use `preact/compat` only at compatibility boundaries such as lazy/Suspense and React dependencies.
 Use `class` in Preact JSX, type-only imports, explicit `.ts`/`.tsx` local import extensions,
 camelCase for values, PascalCase for types/components, and kebab-case filenames. Keep state
-updates immutable and calculations pure. Use `advanced-calculator` to evaluate calculator
-expressions; do not execute user text with JavaScript `eval` or `Function`.
+updates immutable and calculations pure. Use libqalculate in the calculator’s lazy worker to evaluate expressions; do not execute user text with JavaScript `eval` or `Function`.
 
 Let Oxfmt format the code. Preserve unrelated changes. Use focused Conventional Commit subjects
 if asked to commit, and describe behavior and validation in PRs.

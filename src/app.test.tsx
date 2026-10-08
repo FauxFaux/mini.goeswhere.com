@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Link, Router } from "wouter";
 import { App } from "./app.tsx";
 import { CrashHandler } from "./boot/crash-handler.tsx";
@@ -9,6 +9,20 @@ import { navigateHash, splitHash, useMiniLocation, useMiniSearch } from "./boot/
 import { UrlHandler } from "./boot/url-handler.tsx";
 import { packState, unpackState } from "./boot/url-state.ts";
 import { calculatorCodec, type CalculatorState } from "./tools/calculator/state.ts";
+
+// Exercise the actual WASM domain in DOM tests; worker transport has its own tests.
+vi.mock("./tools/calculator/engine.ts", async () => {
+  const { loadTestCalculator } = await import("./tools/calculator/test-runtime.ts");
+  const calculator = await loadTestCalculator();
+  return {
+    CalculatorEngine: class {
+      async calculate(expression: string) {
+        return calculator.calculate(expression, 2000);
+      }
+      dispose() {}
+    },
+  };
+});
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/#/");
@@ -28,9 +42,12 @@ describe("mini app routing and state", () => {
     const input = await screen.findByRole("textbox", { name: "Expression 1" });
     await user.clear(input);
     await user.type(input, "2 + 3 * 4");
-    expect(
-      within(screen.getByRole("region", { name: "Calculation 1" })).getByRole("status").textContent,
-    ).toBe("14");
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole("region", { name: "Calculation 1" })).getByRole("status")
+          .textContent,
+      ).toBe("14"),
+    );
     expect(document.activeElement).toBe(input);
     expect(window.location.hash).toMatch(/^#\/calculator\?s=/);
     expect(window.location.search).toBe("");
@@ -47,7 +64,7 @@ describe("mini app routing and state", () => {
     expect(window.location.href).toBe(original);
     window.location.hash = `/calculator?s=${packState({ ...first, tiles: [{ id: "shared", expression: "9 ^ 2" }] })}`;
     await waitFor(() => expect((input as HTMLInputElement).value).toBe("9 ^ 2"));
-    expect(screen.getByRole("status").textContent).toBe("81");
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("81"));
   });
 
   it("adds and removes independent tiles while keeping results and URL state consistent", async () => {
@@ -63,11 +80,11 @@ describe("mini app routing and state", () => {
     expect(screen.getByRole("textbox", { name: "Expression 4" })).toBe(last);
     expect(savedState().tiles.at(-1)?.expression).toBe("sqrt(81)");
     await user.clear(last);
-    await user.type(last, "2 +");
-    expect(last.getAttribute("aria-invalid")).toBe("true");
+    await user.type(last, "sin()");
+    await waitFor(() => expect(last.getAttribute("aria-invalid")).toBe("true"));
     expect(
       within(screen.getByRole("region", { name: "Calculation 4" })).getByRole("status").textContent,
-    ).toBe("Invalid expression");
+    ).toContain("sin");
   });
 
   it("restores each tool’s edited state through Back and Forward navigation", async () => {

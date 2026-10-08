@@ -37,7 +37,8 @@ body {
 }
 
 header,
-main {
+main,
+footer {
   width: min(100%, 72rem);
   margin-inline: auto;
   padding: 1rem;
@@ -45,6 +46,15 @@ main {
 
 header {
   border-bottom: 1px solid var(--border);
+}
+
+footer {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+footer a {
+  display: inline-flex;
 }
 
 h1 {

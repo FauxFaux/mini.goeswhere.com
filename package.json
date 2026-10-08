@@ -6,15 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:qalculate-wasm": "docker build --target wasm --output type=local,dest=src/assets qalculate-wasm",
     "deploy": "npm run build && rsync -av dist/ sek:/srv/mini.goeswhere.com/",
     "format": "oxfmt .",
     "lint": "oxfmt --check . && tsc -b",
     "test": "vitest run",
+    "test:qalculate-bundle": "node --experimental-vm-modules qalculate-wasm/smoke-bundle.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
     "@primer/octicons-react": "^19.38.0",
-    "advanced-calculator": "^1.4.2",
     "preact": "^10.29.8",
     "wouter": "^3.13.0"
   },

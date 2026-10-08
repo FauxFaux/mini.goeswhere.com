@@ -1,3 +1,4 @@
+import { MarkGithubIcon as IconGithub } from "@primer/octicons-react";
 import { useEffect } from "preact/hooks";
 import { Link, Route, Router, Switch, useLocation } from "wouter";
 import { CrashHandler } from "./boot/crash-handler.tsx";
@@ -43,6 +44,15 @@ function AppRoutes() {
           </Switch>
         </CrashHandler>
       </main>
+      <footer>
+        <a
+          href="https://github.com/FauxFaux/mini.goeswhere.com"
+          aria-label="Source on GitHub"
+          title="Source on GitHub"
+        >
+          <IconGithub size={24} aria-hidden="true" />
+        </a>
+      </footer>
     </>
   );
 }

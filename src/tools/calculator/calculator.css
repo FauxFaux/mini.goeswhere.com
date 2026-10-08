@@ -34,3 +34,11 @@
   margin-top: 1rem;
   overflow-wrap: anywhere;
 }
+
+.calculator-result {
+  transition: opacity 150ms ease;
+}
+
+.calculator-result[aria-busy="true"] {
+  opacity: 0.5;
+}

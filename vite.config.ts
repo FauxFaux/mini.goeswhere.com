@@ -1,6 +1,5 @@
 import preact from "@preact/preset-vite";
 import { defineConfig } from "vite";
-import { calculatorCompat } from "./build/calculator-compat.ts";
 
 export default defineConfig({
   resolve: {
@@ -9,8 +8,6 @@ export default defineConfig({
       { find: /^use-sync-external-store\/shim(?:\/index\.js)?$/, replacement: "preact/compat" },
     ],
   },
-  plugins: [calculatorCompat(), preact()],
-  optimizeDeps: {
-    rolldownOptions: { plugins: [calculatorCompat()] },
-  },
+  plugins: [preact()],
+  worker: { format: "es" },
 });
