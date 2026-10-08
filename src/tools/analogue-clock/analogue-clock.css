@@ -39,6 +39,7 @@
 .analogue-clock-number-options {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.25rem 1rem;
   width: fit-content;
   max-width: 100%;
@@ -113,4 +114,103 @@
 .analogue-clock-dragging,
 .analogue-clock-dragging .analogue-clock-hand {
   cursor: grabbing;
+}
+
+.analogue-clock-time-strips {
+  margin-top: 2rem;
+  font-variant-numeric: tabular-nums;
+}
+.analogue-clock-progress-strip {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.analogue-clock-progress-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  transform: translateX(-50%);
+  background: #fff;
+  box-shadow: 0 0 0 1px #17191c;
+}
+.analogue-clock-progress-marker::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-inline: 8px solid transparent;
+  border-top: 10px solid #fff;
+}
+.analogue-clock-strip-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.analogue-clock-week-strip {
+  background-size: 100%;
+}
+.analogue-clock-week-strip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(100% / 7 - 1px),
+    #a8aeb8 calc(100% / 7 - 1px),
+    #a8aeb8 calc(100% / 7)
+  );
+}
+.analogue-clock-week-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.analogue-clock-sun-times {
+  margin-block: 0.5rem 1.5rem;
+}
+
+.analogue-clock-progress-strip {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.analogue-clock-strip-dragging {
+  cursor: grabbing;
+}
+.analogue-clock-progress-marker,
+.analogue-clock-week-strip::before {
+  pointer-events: none;
+}
+
+.analogue-clock-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.analogue-clock-layout-side-by-side {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  align-items: center;
+}
+.analogue-clock-layout-side-by-side .analogue-clock-time-strips {
+  min-width: 0;
+  margin-top: 0;
+}
+
+#analogue-clock-strip-help {
+  text-align: center;
+  margin-top: 2rem;
 }

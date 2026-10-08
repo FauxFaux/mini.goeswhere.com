@@ -12,6 +12,8 @@ import {
   turnHand,
   type Hand,
 } from "./clock.ts";
+import { TimeStrips } from "./time-strips.tsx";
+import { localMinutes, nowSeconds, wrapSeconds } from "./year.ts";
 import { analogueClockCodec, type AnalogueClockState } from "./state.ts";
 import "./analogue-clock.css";
 
@@ -27,11 +29,14 @@ interface Drag {
   pointerId: number;
   hand: Hand;
   angle: number | undefined;
+  remainder: number;
 }
 
 function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
+  const minutes = localMinutes(us.seconds);
   const drag = useRef<Drag | undefined>(undefined);
   const [activeHand, setActiveHand] = useState<Hand>();
+  const [sideBySide, setSideBySide] = useState(false);
 
   function position(event: PointerEvent, face: SVGSVGElement) {
     const bounds = face.getBoundingClientRect();
@@ -48,14 +53,14 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
     if (drag.current || event.button !== 0) return;
     const point = position(event, event.currentTarget);
     if (!point) return;
-    const hand = pickHand(point, us.minutes, point.tolerance);
+    const hand = pickHand(point, minutes, point.tolerance);
     if (!hand) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     event.currentTarget
       .querySelector<SVGElement>(`[data-hand="${hand}"]`)
       ?.focus({ preventScroll: true });
-    drag.current = { pointerId: event.pointerId, hand, angle: pointerAngle(point) };
+    drag.current = { pointerId: event.pointerId, hand, angle: pointerAngle(point), remainder: 0 };
     setActiveHand(hand);
   };
 
@@ -73,9 +78,12 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
     const angle = pointerAngle(point);
     if (current.angle !== undefined) {
       const delta = angleDelta(current.angle, angle);
+      const seconds = delta * (current.hand === "hour" ? 120 : 10) + current.remainder;
+      const wholeSeconds = Math.round(seconds);
+      current.remainder = seconds - wholeSeconds;
       setUs((previous) => ({
         ...previous,
-        minutes: turnHand(previous.minutes, current.hand, delta),
+        seconds: wrapSeconds(previous.seconds + wholeSeconds),
       }));
     }
     current.angle = angle;
@@ -113,96 +121,14 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
     event.preventDefault();
     setUs((previous) => ({
       ...previous,
-      minutes: turnHand(previous.minutes, hand, delta * (hand === "hour" ? 30 : 6)),
+      seconds: turnHand(previous.seconds, hand, delta * (hand === "hour" ? 30 : 6)),
     }));
   }
 
   return (
     <section class="analogue-clock">
-      <h1>Analogue clock</h1>
-      <p id="analogue-clock-help" class="muted">
-        Drag either hand around the clock. Use arrow keys when a hand is focused.
-      </p>
-      <svg
-        class={`analogue-clock-face${activeHand ? " analogue-clock-dragging" : ""}${us.show24HourNumbers ? " analogue-clock-with-24h" : ""}`}
-        viewBox="-250 -250 500 500"
-        role="group"
-        aria-label="Interactive analogue clock"
-        aria-describedby="analogue-clock-help"
-        onPointerDown={start}
-        onPointerMove={move}
-        onPointerUp={(event) => {
-          move(event);
-          finish(event);
-        }}
-        onPointerCancel={finish}
-        onLostPointerCapture={finish}
-        onContextMenu={(event) => event.preventDefault()}
-      >
-        <circle class="analogue-clock-rim" r="239" />
-        <g aria-hidden="true" class="analogue-clock-ticks">
-          {Array.from({ length: 60 }, (_, index) => {
-            const major = index % 5 === 0;
-            if (major && us.showMinuteNumbers) return null;
-            const start = pointOnClock(index * 6, major ? (us.show24HourNumbers ? 215 : 207) : 220);
-            const end = pointOnClock(index * 6, 229);
-            return (
-              <line
-                key={index}
-                x1={start.x}
-                y1={start.y}
-                x2={end.x}
-                y2={end.y}
-                class={major ? "analogue-clock-major-tick" : "analogue-clock-minor-tick"}
-              />
-            );
-          })}
-        </g>
-        {us.show12HourNumbers && (
-          <NumberRing kind="12h" radius={us.show24HourNumbers ? 193 : 177} />
-        )}
-        {us.show24HourNumbers && <NumberRing kind="24h" radius={160} />}
-        {us.showMinuteNumbers && <NumberRing kind="minutes" radius={219} />}
-        {(["hour", "minute"] as const).map((hand) => (
-          <g
-            key={hand}
-            data-hand={hand}
-            class={`analogue-clock-hand analogue-clock-${hand}${activeHand === hand ? " analogue-clock-active" : ""}`}
-            transform={`rotate(${handAngle(us.minutes, hand)})`}
-            role="slider"
-            tabIndex={0}
-            aria-label={hand === "hour" ? "Hour hand" : "Minute hand"}
-            aria-describedby="analogue-clock-help"
-            aria-valuemin={0}
-            aria-valuemax={hand === "hour" ? 12 : 60}
-            aria-valuenow={hand === "hour" ? us.minutes / 60 : us.minutes % 60}
-            aria-valuetext={
-              hand === "hour"
-                ? `${Math.floor(us.minutes / 60) || 12} hours, ${Math.floor(us.minutes % 60)} minutes`
-                : `${Math.floor(us.minutes % 60)} minutes`
-            }
-            onKeyDown={(event) => keyDown(event, hand)}
-          >
-            <line
-              class="analogue-clock-hand-target"
-              x1="0"
-              y1="-24"
-              x2="0"
-              y2={-handLengths[hand]}
-            />
-            <line class="analogue-clock-hand-line" x1="0" y1="12" x2="0" y2={-handLengths[hand]} />
-            <circle
-              class="analogue-clock-hand-tip"
-              cx="0"
-              cy={-handLengths[hand]}
-              r={hand === "hour" ? 12 : 9}
-            />
-          </g>
-        ))}
-        <circle class="analogue-clock-pivot" r="13" aria-hidden="true" />
-      </svg>
       <fieldset class="analogue-clock-number-options">
-        <legend>Clock numbers</legend>
+        <legend>Settings</legend>
         {(
           [
             ["show12HourNumbers", "12-hour numbers"],
@@ -222,7 +148,116 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
             {label}
           </label>
         ))}
+        <label>
+          <input
+            type="checkbox"
+            checked={sideBySide}
+            onChange={(event) => setSideBySide(event.currentTarget.checked)}
+          />
+          Side-by-side
+        </label>
+        <button
+          type="button"
+          onClick={() => setUs((previous) => ({ ...previous, seconds: nowSeconds() }))}
+        >
+          Reset to now
+        </button>
       </fieldset>
+      <div
+        class={`analogue-clock-layout${sideBySide ? " analogue-clock-layout-side-by-side" : ""}`}
+      >
+        <svg
+          class={`analogue-clock-face${activeHand ? " analogue-clock-dragging" : ""}${us.show24HourNumbers ? " analogue-clock-with-24h" : ""}`}
+          viewBox="-250 -250 500 500"
+          role="group"
+          aria-label="Interactive analogue clock"
+          aria-describedby="analogue-clock-help"
+          onPointerDown={start}
+          onPointerMove={move}
+          onPointerUp={(event) => {
+            move(event);
+            finish(event);
+          }}
+          onPointerCancel={finish}
+          onLostPointerCapture={finish}
+          onContextMenu={(event) => event.preventDefault()}
+        >
+          <circle class="analogue-clock-rim" r="239" />
+          <g aria-hidden="true" class="analogue-clock-ticks">
+            {Array.from({ length: 60 }, (_, index) => {
+              const major = index % 5 === 0;
+              if (major && us.showMinuteNumbers) return null;
+              const start = pointOnClock(
+                index * 6,
+                major ? (us.show24HourNumbers ? 215 : 207) : 220,
+              );
+              const end = pointOnClock(index * 6, 229);
+              return (
+                <line
+                  key={index}
+                  x1={start.x}
+                  y1={start.y}
+                  x2={end.x}
+                  y2={end.y}
+                  class={major ? "analogue-clock-major-tick" : "analogue-clock-minor-tick"}
+                />
+              );
+            })}
+          </g>
+          {us.show12HourNumbers && (
+            <NumberRing kind="12h" radius={us.show24HourNumbers ? 193 : 177} />
+          )}
+          {us.show24HourNumbers && <NumberRing kind="24h" radius={160} />}
+          {us.showMinuteNumbers && <NumberRing kind="minutes" radius={219} />}
+          {(["hour", "minute"] as const).map((hand) => (
+            <g
+              key={hand}
+              data-hand={hand}
+              class={`analogue-clock-hand analogue-clock-${hand}${activeHand === hand ? " analogue-clock-active" : ""}`}
+              transform={`rotate(${handAngle(minutes, hand)})`}
+              role="slider"
+              tabIndex={0}
+              aria-label={hand === "hour" ? "Hour hand" : "Minute hand"}
+              aria-describedby="analogue-clock-help"
+              aria-valuemin={0}
+              aria-valuemax={hand === "hour" ? 12 : 60}
+              aria-valuenow={hand === "hour" ? (minutes % 720) / 60 : minutes % 60}
+              aria-valuetext={
+                hand === "hour"
+                  ? `${Math.floor((minutes % 720) / 60) || 12} hours, ${Math.floor(minutes % 60)} minutes`
+                  : `${Math.floor(minutes % 60)} minutes`
+              }
+              onKeyDown={(event) => keyDown(event, hand)}
+            >
+              <line
+                class="analogue-clock-hand-target"
+                x1="0"
+                y1="-24"
+                x2="0"
+                y2={-handLengths[hand]}
+              />
+              <line
+                class="analogue-clock-hand-line"
+                x1="0"
+                y1="12"
+                x2="0"
+                y2={-handLengths[hand]}
+              />
+              <circle
+                class="analogue-clock-hand-tip"
+                cx="0"
+                cy={-handLengths[hand]}
+                r={hand === "hour" ? 12 : 9}
+              />
+            </g>
+          ))}
+          <circle class="analogue-clock-pivot" r="13" aria-hidden="true" />
+        </svg>
+        <TimeStrips uss={[us, setUs]} />
+      </div>
+      <p id="analogue-clock-strip-help" class="muted">
+        Tap or drag a strip to change the time. Use arrow keys when a clock or strip is focused.
+      </p>
     </section>
   );
 }

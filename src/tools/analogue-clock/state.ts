@@ -1,13 +1,9 @@
-import {
-  isRecord,
-  unpackState,
-  UnsupportedStateVersion,
-  type UrlCodec,
-} from "../../boot/url-state.ts";
+import { isRecord, UnsupportedStateVersion, type UrlCodec } from "../../boot/url-state.ts";
+import { currentYear, initialSeconds } from "./year.ts";
 
 export interface AnalogueClockState {
-  v: 1;
-  minutes: number;
+  v: 2;
+  seconds: number;
   show12HourNumbers: boolean;
   show24HourNumbers: boolean;
   showMinuteNumbers: boolean;
@@ -15,26 +11,22 @@ export interface AnalogueClockState {
 
 export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
   defaultState: {
-    v: 1,
-    minutes: 610,
+    v: 2,
+    seconds: initialSeconds,
     show12HourNumbers: true,
     show24HourNumbers: false,
     showMinuteNumbers: false,
   },
   query: {
     decode(params) {
-      const fields = ["v", "minutes", "hours12", "hours24", "minuteNumbers"];
-      for (const key of ["s", ...fields]) {
+      const fields = ["s", "v", "h", "t", "m"];
+      for (const key of fields) {
         if (params.getAll(key).length > 1) throw new Error(`Duplicate ${key} parameter.`);
       }
-      if (params.has("s")) {
-        if (fields.some((key) => params.has(key))) throw new Error("Mixed clock URL formats.");
-        return analogueClockCodec.decode(unpackState(params.get("s")!));
-      }
-      if (params.has("v") && params.get("v") !== "1") throw new UnsupportedStateVersion();
-      const time = params.get("minutes");
-      if (time !== null && (time.length > 32 || !/^\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(time))) {
-        throw new Error("Invalid clock minutes parameter.");
+      if (params.has("v") && params.get("v") !== "2") throw new UnsupportedStateVersion();
+      const seconds = params.get("s");
+      if (seconds !== null && (seconds.length > 8 || !/^\d+$/.test(seconds))) {
+        throw new Error("Invalid clock seconds parameter.");
       }
       const toggle = (key: string, fallback: boolean) => {
         const value = params.get(key);
@@ -43,40 +35,40 @@ export const analogueClockCodec: UrlCodec<AnalogueClockState> = {
         return value === "1";
       };
       return analogueClockCodec.decode({
-        v: 1,
-        minutes: time === null ? analogueClockCodec.defaultState.minutes : Number(time),
-        show12HourNumbers: toggle("hours12", true),
-        show24HourNumbers: toggle("hours24", false),
-        showMinuteNumbers: toggle("minuteNumbers", false),
+        v: 2,
+        seconds: seconds === null ? analogueClockCodec.defaultState.seconds : Number(seconds),
+        show12HourNumbers: toggle("h", true),
+        show24HourNumbers: toggle("t", false),
+        showMinuteNumbers: toggle("m", false),
       });
     },
     write(params, state) {
-      params.delete("s");
       params.delete("v");
-      params.set("minutes", String(state.minutes));
+      params.set("s", String(state.seconds));
       const toggle = (key: string, value: boolean, fallback: boolean) => {
         if (value === fallback) params.delete(key);
         else params.set(key, value ? "1" : "0");
       };
-      toggle("hours12", state.show12HourNumbers, true);
-      toggle("hours24", state.show24HourNumbers, false);
-      toggle("minuteNumbers", state.showMinuteNumbers, false);
+      toggle("h", state.show12HourNumbers, true);
+      toggle("t", state.show24HourNumbers, false);
+      toggle("m", state.showMinuteNumbers, false);
     },
   },
   decode(value) {
     if (!isRecord(value)) throw new Error("Clock state must be an object.");
-    if (value.v !== 1) throw new UnsupportedStateVersion();
+    if (value.v !== 2) throw new UnsupportedStateVersion();
+    const seconds = value.seconds;
     if (
-      typeof value.minutes !== "number" ||
-      !Number.isFinite(value.minutes) ||
-      value.minutes < 0 ||
-      value.minutes >= 720
+      typeof seconds !== "number" ||
+      !Number.isInteger(seconds) ||
+      seconds < 0 ||
+      seconds >= currentYear.seconds
     ) {
-      throw new Error("Clock time must be between 0 (inclusive) and 720 (exclusive) minutes.");
+      throw new Error(`Clock seconds must be an integer between 0 and ${currentYear.seconds - 1}.`);
     }
     return {
-      v: 1,
-      minutes: value.minutes,
+      v: 2,
+      seconds,
       show12HourNumbers: decodeToggle(value.show12HourNumbers, true),
       show24HourNumbers: decodeToggle(value.show24HourNumbers, false),
       showMinuteNumbers: decodeToggle(value.showMinuteNumbers, false),

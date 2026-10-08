@@ -1,42 +1,44 @@
 import { expect, it } from "vitest";
-import { packState, unpackState, UnsupportedStateVersion } from "../../boot/url-state.ts";
+import { UnsupportedStateVersion } from "../../boot/url-state.ts";
 import { analogueClockCodec } from "./state.ts";
+import { currentYear } from "./year.ts";
 
-it("round trips smooth hand positions", () => {
-  for (const minutes of [0, 610, 719.999, 32.125]) {
-    const state = { ...analogueClockCodec.defaultState, minutes };
-    expect(analogueClockCodec.decode(unpackState(packState(state)))).toEqual(state);
-  }
-});
-
-it("defaults old shared links to 12-hour numbers only", () => {
-  expect(analogueClockCodec.decode({ v: 1, minutes: 90 })).toEqual({
-    ...analogueClockCodec.defaultState,
-    minutes: 90,
-  });
-});
-
-it("round trips every combination of number toggles", () => {
-  for (const show12HourNumbers of [false, true]) {
-    for (const show24HourNumbers of [false, true]) {
-      for (const showMinuteNumbers of [false, true]) {
-        const state = {
-          ...analogueClockCodec.defaultState,
-          show12HourNumbers,
-          show24HourNumbers,
-          showMinuteNumbers,
-        };
-        expect(analogueClockCodec.decode(unpackState(packState(state)))).toEqual(state);
+it("round trips integer seconds and every combination of number toggles", () => {
+  for (const seconds of [0, 1, 36600, 86400, currentYear.seconds - 1]) {
+    for (const show12HourNumbers of [false, true]) {
+      for (const show24HourNumbers of [false, true]) {
+        for (const showMinuteNumbers of [false, true]) {
+          const state = {
+            v: 2 as const,
+            seconds,
+            show12HourNumbers,
+            show24HourNumbers,
+            showMinuteNumbers,
+          };
+          const params = new URLSearchParams({ note: "keep", v: "2" });
+          analogueClockCodec.query!.write(params, state);
+          expect(params.get("note")).toBe("keep");
+          expect(params.get("s")).toBe(String(seconds));
+          expect(params.has("v")).toBe(false);
+          expect(analogueClockCodec.query!.decode(params)).toEqual(state);
+          expect(analogueClockCodec.decode(state)).toEqual(state);
+        }
       }
     }
   }
+});
+
+it("reads defaults without changing the URL", () => {
+  const params = new URLSearchParams("note=keep");
+  expect(analogueClockCodec.query!.decode(params)).toEqual(analogueClockCodec.defaultState);
+  expect(params.toString()).toBe("note=keep");
 });
 
 it.each(["show12HourNumbers", "show24HourNumbers", "showMinuteNumbers"])(
   "validates %s strictly",
   (field) => {
     for (const value of [null, 1, "false", [], {}]) {
-      expect(() => analogueClockCodec.decode({ v: 1, minutes: 0, [field]: value })).toThrow(
+      expect(() => analogueClockCodec.decode({ v: 2, seconds: 0, [field]: value })).toThrow(
         "Clock number toggles must be booleans.",
       );
     }
@@ -48,77 +50,41 @@ it.each([
   [],
   "clock",
   {},
-  { v: 1 },
-  ...[-1, 720, Infinity, NaN, "90", null].map((minutes) => ({ v: 1, minutes })),
+  { v: 2 },
+  ...[-1, 0.5, currentYear.seconds, Infinity, NaN, "90", null].map((seconds) => ({
+    v: 2,
+    seconds,
+  })),
 ])("rejects malformed clock state: %j", (value) => {
   expect(() => analogueClockCodec.decode(value)).toThrow();
 });
 
-it("reports unknown versions", () => {
-  expect(() => analogueClockCodec.decode({ v: 2, minutes: 60 })).toThrow(UnsupportedStateVersion);
-});
-
-it("round trips readable queries, preserving unrelated parameters and removing legacy state", () => {
-  for (const minutes of [0, 610, 719.999, 1e-9]) {
-    for (const show12HourNumbers of [false, true]) {
-      for (const show24HourNumbers of [false, true]) {
-        for (const showMinuteNumbers of [false, true]) {
-          const state = {
-            v: 1 as const,
-            minutes,
-            show12HourNumbers,
-            show24HourNumbers,
-            showMinuteNumbers,
-          };
-          const params = new URLSearchParams({ note: "keep", s: packState(state), v: "1" });
-          analogueClockCodec.query!.write(params, state);
-          expect(params.get("note")).toBe("keep");
-          expect(params.has("s")).toBe(false);
-          expect(analogueClockCodec.query!.decode(params)).toEqual(state);
-        }
-      }
-    }
-  }
-});
-
-it("reads defaults and existing base64 links without changing them", () => {
-  expect(analogueClockCodec.query!.decode(new URLSearchParams())).toEqual(
-    analogueClockCodec.defaultState,
-  );
-  const oldState = { v: 1, minutes: 90 };
-  const params = new URLSearchParams({ s: packState(oldState) });
-  const original = params.toString();
-  expect(analogueClockCodec.query!.decode(params)).toEqual({
-    ...analogueClockCodec.defaultState,
-    minutes: 90,
-  });
-  expect(params.toString()).toBe(original);
-});
-
 it.each([
-  "minutes=",
-  "minutes=-1",
-  "minutes=720",
-  "minutes=Infinity",
-  "minutes=NaN",
-  "minutes=0x10",
-  "minutes=" + "1".repeat(33),
-  "minutes=1&minutes=2",
-  "hours12=false",
-  "hours24=2",
-  "minuteNumbers=",
-  "hours12=0&hours12=1",
-  "hours24=1&hours24=1",
-  "minuteNumbers=0&minuteNumbers=0",
-  "v=1&v=1",
-  "s=bad&s=bad",
-  "s=bad&minutes=0",
-])("rejects malformed readable queries: %s", (query) => {
+  "s=",
+  "s=-1",
+  "s=0.5",
+  "s=1e3",
+  `s=${currentYear.seconds}`,
+  "s=Infinity",
+  "s=NaN",
+  "s=0x10",
+  "s=" + "1".repeat(9),
+  "s=1&s=2",
+  "h=false",
+  "t=2",
+  "m=",
+  "h=0&h=1",
+  "t=1&t=1",
+  "m=0&m=0",
+  "v=2&v=2",
+  "s=eyJ2IjoxfQ",
+])("rejects malformed queries: %s", (query) => {
   expect(() => analogueClockCodec.query!.decode(new URLSearchParams(query))).toThrow();
 });
 
-it("rejects unsupported query versions", () => {
-  expect(() => analogueClockCodec.query!.decode(new URLSearchParams("v=2&minutes=90"))).toThrow(
+it("rejects unsupported versions", () => {
+  expect(() => analogueClockCodec.decode({ v: 3, seconds: 60 })).toThrow(UnsupportedStateVersion);
+  expect(() => analogueClockCodec.query!.decode(new URLSearchParams("v=3&s=90"))).toThrow(
     UnsupportedStateVersion,
   );
 });

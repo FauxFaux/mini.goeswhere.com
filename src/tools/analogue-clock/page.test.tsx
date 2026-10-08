@@ -1,20 +1,15 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/preact";
+import { Temporal } from "temporal-polyfill";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { App } from "../../app.tsx";
 import { navigateHash, splitHash } from "../../boot/hash-location.ts";
-import { packState } from "../../boot/url-state.ts";
+import { currentYear } from "./year.ts";
 import { pointOnClock } from "./clock.ts";
 import { analogueClockCodec } from "./state.ts";
 
-beforeEach(() =>
-  window.history.replaceState(
-    null,
-    "",
-    `/#/analogue-clock?note=keep&s=${packState({ v: 1, minutes: 0 })}`,
-  ),
-);
+beforeEach(() => window.history.replaceState(null, "", "/#/analogue-clock?note=keep&s=0"));
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -75,8 +70,8 @@ it("toggles number rings independently, persists them through dragging and resto
   pointer("pointerUp", 60, 230);
   const params = new URLSearchParams(splitHash(window.location.hash).search);
   expect(analogueClockCodec.query!.decode(params)).toEqual({
-    v: 1,
-    minutes: 5,
+    v: 2,
+    seconds: 300,
     show12HourNumbers: false,
     show24HourNumbers: true,
     showMinuteNumbers: true,
@@ -109,20 +104,20 @@ it("flushes an unpersisted edit before leaving the tool and restores it on Back"
   await face();
   fireEvent.keyDown(screen.getByRole("slider", { name: "Minute hand" }), { key: "ArrowUp" });
   expect(minutes()).toBe(1);
-  expect(persistedState().minutes).toBe(0);
+  expect(persistedState().seconds / 60).toBe(0);
   act(() => navigateHash("/hello-world"));
   await screen.findByRole("textbox", { name: "Your name" });
   window.history.back();
   await screen.findByRole("slider", { name: "Minute hand" });
   expect(minutes()).toBe(1);
-  expect(persistedState().minutes).toBe(1);
+  expect(persistedState().seconds / 60).toBe(1);
 });
 
 it("incoming same-tool links cancel pending edits rather than being overwritten", async () => {
   await face();
   fireEvent.keyDown(screen.getByRole("slider", { name: "Minute hand" }), { key: "ArrowUp" });
   expect(minutes()).toBe(1);
-  act(() => navigateHash("/analogue-clock?minutes=90&hours24=1", { replace: true }));
+  act(() => navigateHash("/analogue-clock?s=5400&t=1", { replace: true }));
   await waitFor(() => expect(minutes()).toBe(90));
   const incoming = window.location.href;
   const replace = vi.spyOn(window.history, "replaceState");
@@ -197,12 +192,12 @@ it("keeps rapid dragging local and writes a readable URL once the gesture ends",
   expect(replace).not.toHaveBeenCalled();
   pointer("pointerUp", 360);
   expect(replace).toHaveBeenCalledTimes(1);
-  expect(window.location.hash).toBe("#/analogue-clock?note=keep&minutes=60");
-  expect(persistedState().minutes).toBeCloseTo(60);
+  expect(window.location.hash).toBe("#/analogue-clock?note=keep&s=3600");
+  expect(persistedState().seconds / 60).toBeCloseTo(60);
 });
 
 it("drags the hour hand, including backwards across twelve", async () => {
-  window.history.replaceState(null, "", `/#/analogue-clock?s=${packState({ v: 1, minutes: 60 })}`);
+  window.history.replaceState(null, "", "/#/analogue-clock?s=3600");
   const { pointer } = await face();
   pointer("pointerDown", 30, 120);
   pointer("pointerMove", 0, 120);
@@ -215,7 +210,7 @@ it("drags the hour hand, including backwards across twelve", async () => {
 });
 
 it("starts a minute drag anywhere in overlapping backup sectors without jumping", async () => {
-  window.history.replaceState(null, "", `/#/analogue-clock?s=${packState({ v: 1, minutes: 60 })}`);
+  window.history.replaceState(null, "", "/#/analogue-clock?s=3600");
   const { pointer, set } = await face(300);
   const original = window.location.href;
   pointer("pointerDown", 20, 230);
@@ -227,7 +222,7 @@ it("starts a minute drag anywhere in overlapping backup sectors without jumping"
 });
 
 it("starts an hour drag near the rim in its backup sector", async () => {
-  window.history.replaceState(null, "", `/#/analogue-clock?s=${packState({ v: 1, minutes: 180 })}`);
+  window.history.replaceState(null, "", "/#/analogue-clock?s=10800");
   const { pointer, set } = await face();
   pointer("pointerDown", 110, 230);
   expect(set).toHaveBeenCalledWith(1);
@@ -288,7 +283,7 @@ it("supports keyboard editing, link restoration and Back navigation", async () =
   expect(minutes()).toBe(4);
   fireEvent.keyDown(screen.getByRole("slider", { name: "Hour hand" }), { key: "ArrowUp" });
   expect(minutes()).toBe(64);
-  await waitFor(() => expect(persistedState().minutes).toBe(64));
+  await waitFor(() => expect(persistedState().seconds / 60).toBe(64));
   const shared = window.location.hash;
   act(() => navigateHash("/hello-world"));
   await screen.findByRole("textbox", { name: "Your name" });
@@ -298,7 +293,7 @@ it("supports keyboard editing, link restoration and Back navigation", async () =
   expect(screen.getByRole("slider", { name: "Hour hand" }).getAttribute("aria-valuetext")).toBe(
     "1 hours, 4 minutes",
   );
-  window.location.hash = `/analogue-clock?s=${packState({ v: 1, minutes: 90 })}`;
+  window.location.hash = "/analogue-clock?s=5400";
   await waitFor(() =>
     expect(screen.getByRole("slider", { name: "Hour hand" }).getAttribute("aria-valuenow")).toBe(
       "1.5",
@@ -307,15 +302,202 @@ it("supports keyboard editing, link restoration and Back navigation", async () =
 });
 
 it.each([
-  [{ v: 1, minutes: 720 }, "Corrupt URL state"],
-  [{ v: 2, minutes: 0 }, "Unrecognised state version"],
-])("preserves invalid links and offers recovery", async (state, heading) => {
-  window.history.replaceState(null, "", `/#/analogue-clock?s=${packState(state)}`);
+  [`s=${currentYear.seconds}`, "Corrupt URL state"],
+  ["v=3&s=0", "Unrecognised state version"],
+])("preserves invalid links and offers recovery", async (query, heading) => {
+  window.history.replaceState(null, "", `/#/analogue-clock?${query}`);
   const original = window.location.href;
   render(<App />);
-  await screen.findByRole("heading", { name: String(heading) });
+  await screen.findByRole("heading", { name: heading });
   expect(window.location.href).toBe(original);
   fireEvent.click(screen.getByRole("link", { name: "Start fresh" }));
   await screen.findByRole("slider", { name: "Hour hand" });
   expect(window.location.hash).toBe("#/analogue-clock");
+});
+
+it("advances all three strips after two hour-hand rotations and restores the year position", async () => {
+  window.history.replaceState(null, "", "/#/analogue-clock?s=3600");
+  const { pointer } = await face();
+  pointer("pointerDown", 30, 120);
+  for (let angle = 120; angle <= 750; angle += 90) pointer("pointerMove", angle, 120);
+  pointer("pointerUp", 750, 120);
+  expect(persistedState().seconds).toBe(90000);
+  expect(minutes()).toBe(60);
+  expect(screen.getByRole("slider", { name: /Day progress: 01:00:00/ })).toBeTruthy();
+  expect(screen.getByRole("slider", { name: /Week progress:.*2 January/ })).toBeTruthy();
+  expect(screen.getByRole("slider", { name: /Year progress:.*2 January/ })).toBeTruthy();
+  const shared = window.location.hash;
+  act(() => navigateHash("/hello-world"));
+  await screen.findByRole("textbox", { name: "Your name" });
+  window.history.back();
+  await screen.findByRole("slider", { name: /Year progress:.*2 January/ });
+  expect(window.location.hash).toBe(shared);
+  expect(persistedState().seconds).toBe(90000);
+});
+
+it("wraps the year in both directions, keeping strips and local clock in sync", async () => {
+  window.history.replaceState(null, "", `/#/analogue-clock?s=${currentYear.seconds - 60}`);
+  await face();
+  const minute = screen.getByRole("slider", { name: "Minute hand" });
+  fireEvent.keyDown(minute, { key: "ArrowUp" });
+  expect(screen.getByRole("slider", { name: /Day progress: 00:00:00/ })).toBeTruthy();
+  expect(screen.getByRole("slider", { name: /Year progress:.*1 January/ })).toBeTruthy();
+  expect(
+    document.querySelector<HTMLElement>(
+      ".analogue-clock-year-strip .analogue-clock-progress-marker",
+    )!.style.left,
+  ).toBe("0%");
+  fireEvent.keyDown(minute, { key: "ArrowDown" });
+  expect(screen.getByRole("slider", { name: /Day progress: 23:59:00/ })).toBeTruthy();
+  expect(screen.getByRole("slider", { name: /Year progress:.*31 December/ })).toBeTruthy();
+  await waitFor(() => expect(persistedState().seconds).toBe(currentYear.seconds - 60));
+});
+
+it("accumulates sub-second pointer movements rather than losing slow drags", async () => {
+  const { pointer } = await face();
+  pointer("pointerDown", 0);
+  for (let step = 1; step <= 100; step++) pointer("pointerMove", step * 0.01);
+  pointer("pointerUp", 1);
+  expect(persistedState().seconds).toBe(10);
+});
+
+it("resets week progress on Monday while preserving the year position", async () => {
+  const sunday = currentYear.start
+    .add({ days: 7 - currentYear.start.dayOfWeek })
+    .with({ hour: 23, minute: 59 });
+  const seconds = (sunday.epochMilliseconds - currentYear.start.epochMilliseconds) / 1000;
+  window.history.replaceState(null, "", `/#/analogue-clock?s=${seconds}`);
+  await face();
+  const marker = document.querySelector<HTMLElement>(
+    ".analogue-clock-week-strip .analogue-clock-progress-marker",
+  )!;
+  expect(parseFloat(marker.style.left)).toBeGreaterThan(99);
+  fireEvent.keyDown(screen.getByRole("slider", { name: "Minute hand" }), { key: "ArrowUp" });
+  expect(marker.style.left).toBe("0%");
+  expect(screen.getByRole("slider", { name: /Week progress: Monday/ })).toBeTruthy();
+  await waitFor(() => expect(persistedState().seconds).toBe(seconds + 60));
+});
+
+async function strip(kind: "day" | "week" | "year") {
+  await face();
+  const target = screen.getByRole("slider", {
+    name: new RegExp(`^${kind[0].toUpperCase()}${kind.slice(1)} progress:`),
+  });
+  vi.spyOn(target, "getBoundingClientRect").mockReturnValue(new DOMRect(10, 20, 700, 100));
+  const captures = new Set<number>();
+  const set = vi.fn((id: number) => captures.add(id));
+  const release = vi.fn((id: number) => captures.delete(id));
+  Object.defineProperties(target, {
+    setPointerCapture: { value: set, configurable: true },
+    hasPointerCapture: { value: (id: number) => captures.has(id), configurable: true },
+    releasePointerCapture: { value: release, configurable: true },
+  });
+  const pointer = (
+    type: "pointerDown" | "pointerMove" | "pointerUp" | "pointerCancel" | "lostPointerCapture",
+    fraction: number,
+    pointerId = 1,
+  ) =>
+    fireEvent[type](target, {
+      pointerId,
+      pointerType: "touch",
+      button: 0,
+      clientX: 10 + fraction * 700,
+      clientY: 70,
+    });
+  return { target, pointer, set, release };
+}
+
+it("taps and scrubs the day, ignores extra fingers, and flushes one URL write on release", async () => {
+  const { target, pointer, set, release } = await strip("day");
+  const replace = vi.spyOn(window.history, "replaceState");
+  const length = window.history.length;
+  pointer("pointerDown", 0.5);
+  expect(minutes()).toBe(0);
+  expect(set).toHaveBeenCalledWith(1);
+  pointer("pointerDown", 0.1, 2);
+  pointer("pointerMove", 0.1, 2);
+  expect(minutes()).toBe(0);
+  pointer("pointerMove", 0.75);
+  expect(minutes()).toBe(360);
+  expect(replace).not.toHaveBeenCalled();
+  pointer("pointerUp", 0.75);
+  expect(persistedState().seconds).toBe(18 * 3600);
+  expect(replace).toHaveBeenCalledTimes(1);
+  expect(release).toHaveBeenCalledWith(1);
+  pointer("pointerUp", 0.1, 2);
+  expect(target.classList.contains("analogue-clock-strip-dragging")).toBe(false);
+  pointer("pointerMove", 0);
+  expect(minutes()).toBe(360);
+  expect(window.history.length).toBe(length);
+});
+
+it("keeps a week scrub anchored when dragging beyond both edges", async () => {
+  window.history.replaceState(null, "", "/#/analogue-clock?s=1728000");
+  const { pointer } = await strip("week");
+  pointer("pointerDown", 0.5);
+  const thursday = screen.getByRole("slider", { name: /Week progress: Thursday/ });
+  expect(thursday).toBeTruthy();
+  pointer("pointerMove", 1.2);
+  expect(screen.getByRole("slider", { name: /Week progress: Sunday.*23:59:59/ })).toBeTruthy();
+  pointer("pointerMove", -0.2);
+  expect(screen.getByRole("slider", { name: /Week progress: Monday.*00:00:00/ })).toBeTruthy();
+  pointer("pointerUp", -0.2);
+  expect(currentYear.at(persistedState().seconds).dayOfWeek).toBe(1);
+});
+
+it.each(["pointerCancel", "lostPointerCapture"] as const)(
+  "ends year scrubbing on %s and supports another gesture",
+  async (end) => {
+    const { pointer, target } = await strip("year");
+    pointer("pointerDown", 0.5);
+    pointer(end, 0.5);
+    expect(target.classList.contains("analogue-clock-strip-dragging")).toBe(false);
+    pointer("pointerMove", 0.75);
+    expect(Number(target.getAttribute("aria-valuenow"))).toBe(50);
+    pointer("pointerDown", 0.75);
+    pointer("pointerUp", 1.1);
+    expect(persistedState().seconds).toBe(currentYear.seconds - 1);
+  },
+);
+
+it("supports keyboard strip scrubbing", async () => {
+  const { target } = await strip("day");
+  fireEvent.keyDown(target, { key: "ArrowRight" });
+  expect(minutes()).toBe(1);
+  fireEvent.keyDown(target, { key: "End" });
+  expect(screen.getByRole("slider", { name: /Day progress: 23:59:59/ })).toBeTruthy();
+  fireEvent.keyDown(target, { key: "Home" });
+  expect(minutes()).toBe(0);
+  const year = screen.getByRole("slider", { name: /Year progress:/ });
+  fireEvent.keyDown(year, { key: "ArrowRight" });
+  await waitFor(() => expect(persistedState().seconds).toBe(86400));
+});
+
+it("resets to the current instant at each click while preserving number settings and history", async () => {
+  window.history.replaceState(null, "", "/#/analogue-clock?note=keep&s=0&h=0&t=1&m=1");
+  const now = vi
+    .spyOn(Temporal.Now, "instant")
+    .mockReturnValue(
+      Temporal.Instant.fromEpochMilliseconds(currentYear.start.epochMilliseconds + 123456000),
+    );
+  await face();
+  const historyLength = window.history.length;
+  const reset = screen.getByRole("button", { name: "Reset to now" });
+  fireEvent.click(reset);
+  await waitFor(() =>
+    expect(persistedState()).toEqual({
+      v: 2,
+      seconds: 123456,
+      show12HourNumbers: false,
+      show24HourNumbers: true,
+      showMinuteNumbers: true,
+    }),
+  );
+  now.mockReturnValue(
+    Temporal.Instant.fromEpochMilliseconds(currentYear.start.epochMilliseconds + 123516000),
+  );
+  fireEvent.click(reset);
+  await waitFor(() => expect(persistedState().seconds).toBe(123516));
+  expect(window.history.length).toBe(historyLength);
+  expect(new URLSearchParams(splitHash(window.location.hash).search).get("note")).toBe("keep");
 });

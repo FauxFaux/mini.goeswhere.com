@@ -1,22 +1,25 @@
 import { describe, expect, it } from "vitest";
 import { angleDelta, handAngle, pickHand, pointOnClock, pointerAngle, turnHand } from "./clock.ts";
+import { currentYear } from "./year.ts";
 
 describe("clock motion", () => {
   it("moves both hands as a clock, including fractional hours", () => {
     expect(handAngle(90, "hour")).toBe(45);
     expect(handAngle(90, "minute")).toBe(180);
-    expect(turnHand(90, "minute", 360)).toBe(150);
-    expect(turnHand(90, "hour", 30)).toBe(150);
-    expect(turnHand(90, "hour", 15)).toBe(120);
+    expect(turnHand(5400, "minute", 360)).toBe(9000);
+    expect(turnHand(5400, "hour", 30)).toBe(9000);
+    expect(turnHand(5400, "hour", 15)).toBe(7200);
   });
 
-  it("crosses twelve and wraps the time in both directions", () => {
+  it("crosses twelve without resetting the day and wraps the year in both directions", () => {
     expect(angleDelta(354, 6)).toBe(12);
     expect(angleDelta(6, 354)).toBe(-12);
     expect(angleDelta(179, -179)).toBe(2);
     expect(angleDelta(-179, 179)).toBe(-2);
-    expect(turnHand(719, "minute", 12)).toBe(1);
-    expect(turnHand(1, "minute", -12)).toBe(719);
+    expect(turnHand(719 * 60, "minute", 12)).toBe(721 * 60);
+    expect(turnHand(1439 * 60, "minute", 12)).toBe(1441 * 60);
+    expect(turnHand(currentYear.seconds - 60, "minute", 12)).toBe(60);
+    expect(turnHand(60, "minute", -12)).toBe(currentYear.seconds - 60);
   });
 
   it("uses clockwise angles from twelve", () => {
@@ -52,4 +55,18 @@ describe("clock motion", () => {
     expect(pickHand(pointOnClock(40, 230), 0, 28)).toBe("minute");
     expect(pickHand(pointOnClock(-30, 230), 710, 28)).toBe("minute");
   });
+});
+
+it("keeps hand angles and drag targets identical across the year", () => {
+  for (let day = 0; day < 366; day++) {
+    for (const offset of [0, 720]) {
+      const minutes = day * 1440 + offset + 60;
+      expect(handAngle(minutes, "hour")).toBe(30);
+      expect(handAngle(minutes, "minute")).toBe(0);
+      expect(pickHand(pointOnClock(30, 120), minutes, 28)).toBe("hour");
+      expect(pickHand(pointOnClock(20, 230), minutes, 28)).toBe("minute");
+    }
+  }
+  expect(turnHand(0, "hour", 720)).toBe(86400);
+  expect(turnHand(currentYear.seconds - 3600, "hour", 30)).toBe(0);
 });

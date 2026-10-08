@@ -1,3 +1,5 @@
+import { wrapSeconds } from "./year.ts";
+
 export type Hand = "hour" | "minute";
 export interface Point {
   x: number;
@@ -6,12 +8,8 @@ export interface Point {
 
 export const handLengths: Record<Hand, number> = { hour: 132, minute: 194 };
 
-export function wrapMinutes(minutes: number): number {
-  return ((minutes % 720) + 720) % 720;
-}
-
 export function handAngle(minutes: number, hand: Hand): number {
-  return hand === "hour" ? minutes / 2 : (minutes % 60) * 6;
+  return hand === "hour" ? (minutes % 720) / 2 : (minutes % 60) * 6;
 }
 
 /** Clockwise degrees from twelve, using coordinates relative to the pivot. */
@@ -24,8 +22,8 @@ export function angleDelta(previous: number, next: number): number {
   return ((next - previous + 540) % 360) - 180;
 }
 
-export function turnHand(minutes: number, hand: Hand, degrees: number): number {
-  return wrapMinutes(minutes + degrees * (hand === "hour" ? 2 : 1 / 6));
+export function turnHand(seconds: number, hand: Hand, degrees: number): number {
+  return wrapSeconds(seconds + degrees * (hand === "hour" ? 120 : 10));
 }
 
 export function pointOnClock(degrees: number, radius: number): Point {
