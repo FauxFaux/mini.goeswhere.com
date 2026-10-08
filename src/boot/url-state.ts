@@ -1,6 +1,11 @@
 export interface UrlCodec<T> {
   defaultState: T;
   decode: (value: unknown) => T;
+  /** Optional tool-owned query transport; other tools use the base64 `s` payload. */
+  query?: {
+    decode: (params: URLSearchParams) => T;
+    write: (params: URLSearchParams, state: T) => void;
+  };
 }
 
 export type State<T> = [T, (update: T | ((previous: T) => T)) => void];
@@ -42,6 +47,18 @@ export function readState<T>(payload: string | null, codec: UrlCodec<T>): StateR
   if (payload === null) return { kind: "ok", state: codec.defaultState };
   try {
     return { kind: "ok", state: codec.decode(unpackState(payload)) };
+  } catch (error) {
+    return {
+      kind: error instanceof UnsupportedStateVersion ? "version-error" : "unpack-error",
+      message: error instanceof Error ? error.message : "The saved state could not be read.",
+    };
+  }
+}
+
+export function readQueryState<T>(params: URLSearchParams, codec: UrlCodec<T>): StateResult<T> {
+  if (!codec.query) return readState(params.get("s"), codec);
+  try {
+    return { kind: "ok", state: codec.query.decode(params) };
   } catch (error) {
     return {
       kind: error instanceof UnsupportedStateVersion ? "version-error" : "unpack-error",

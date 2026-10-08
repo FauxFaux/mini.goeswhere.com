@@ -4,11 +4,36 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { App } from "../../app.tsx";
 import { navigateHash, splitHash } from "../../boot/hash-location.ts";
-import { packState, unpackState } from "../../boot/url-state.ts";
+import { packState } from "../../boot/url-state.ts";
+import { strengthStandardsCodec } from "./state.ts";
 import { POUNDS_TO_KG } from "./standards.ts";
 
 beforeEach(() => window.history.replaceState(null, "", "/#/strength-standards?note=keep"));
 afterEach(cleanup);
+
+it("restores and edits readable query inputs with rounded values", async () => {
+  const user = userEvent.setup();
+  window.history.replaceState(null, "", "/#/strength-standards?s=m&w=74.5&c=0.082");
+  const original = window.location.href;
+  render(<App />);
+  const input = await screen.findByRole("spinbutton", { name: "Bodyweight (kg)" });
+  expect((input as HTMLInputElement).value).toBe("74.5");
+  expect(screen.getByText("0.08", { selector: ".strength-standards-category-value" })).toBeTruthy();
+  expect(window.location.href).toBe(original);
+  fireEvent.input(input, { target: { value: "74.456" } });
+  expect(window.location.hash).toBe("#/strength-standards?s=m&w=74.5&c=0.082");
+  const graph = screen.getByRole("img", { name: "Strength standards graph" });
+  const bounds = vi
+    .spyOn(graph, "getBoundingClientRect")
+    .mockReturnValue(new DOMRect(0, 0, 640, 320));
+  fireEvent.click(graph, { clientX: 71.57 });
+  bounds.mockRestore();
+  expect(window.location.hash).toBe("#/strength-standards?s=m&w=74.5&c=0.041");
+  await user.click(screen.getByRole("radio", { name: "Women" }));
+  expect(window.location.hash).toBe("#/strength-standards?s=f&w=74.5&c=0.041");
+  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  expect(window.location.hash).toBe("#/strength-standards?s=f&w=164&c=0.041&u=l");
+});
 
 it("persists clicked graph categories, restores shared links and history, and keeps hover temporary", async () => {
   const shared = { v: 1, sex: "men", unit: "lb", weight: 173 };
@@ -27,7 +52,7 @@ it("persists clicked graph categories, restores shared links and history, and ke
   fireEvent.pointerLeave(graph);
   bounds.mockRestore();
   let params = new URLSearchParams(splitHash(window.location.hash).search);
-  expect(unpackState(params.get("s")!)).toEqual({ ...shared, graphCategory: 1.5 });
+  expect(strengthStandardsCodec.query!.decode(params)).toEqual({ ...shared, graphCategory: 1.5 });
   expect(params.get("note")).toBe("keep");
   expect(window.history.length).toBe(historyLength);
   cleanup();
@@ -41,12 +66,12 @@ it("persists clicked graph categories, restores shared links and history, and ke
   await screen.findByText("0", { selector: ".strength-standards-category-value" });
   fireEvent.keyDown(screen.getByRole("img", { name: "Strength standards graph" }), { key: "End" });
   params = new URLSearchParams(splitHash(window.location.hash).search);
-  expect(unpackState(params.get("s")!)).toEqual({ ...shared, graphCategory: 5 });
+  expect(strengthStandardsCodec.query!.decode(params)).toEqual({ ...shared, graphCategory: 5 });
   fireEvent.keyDown(screen.getByRole("img", { name: "Strength standards graph" }), {
     key: "Escape",
   });
   params = new URLSearchParams(splitHash(window.location.hash).search);
-  expect(unpackState(params.get("s")!)).toEqual(shared);
+  expect(strengthStandardsCodec.query!.decode(params)).toEqual(shared);
 });
 
 it("keeps the highest lift near the graph top continuously across former scale boundaries", async () => {
@@ -89,13 +114,11 @@ it("plots all five interpolated lifts only when bodyweight is selected and updat
   }
   expect(within(graph).getByText("Press, Cat. 0: 0 lb")).toBeTruthy();
   expect(within(graph).getByText("Press, Cat. III: 133.5 lb")).toBeTruthy();
-  expect(within(graph).getByText("Lift weight (lb)")).toBeTruthy();
   const points = graph.querySelector("polyline")!.getAttribute("points");
   await user.click(screen.getByRole("radio", { name: "Women" }));
   expect(within(graph).getByText("Press, Cat. III: 80 lb")).toBeTruthy();
   expect(graph.querySelector("polyline")!.getAttribute("points")).not.toBe(points);
   await user.click(screen.getByRole("radio", { name: "Kilograms (kg)" }));
-  expect(within(graph).getByText("Lift weight (kg)")).toBeTruthy();
   expect(within(graph).getByText("Press, Cat. III: 36.1 kg")).toBeTruthy();
   await user.clear(screen.getByRole("spinbutton", { name: "Bodyweight (kg)" }));
   expect(screen.queryByRole("img", { name: "Strength standards graph" })).toBeNull();
@@ -131,7 +154,7 @@ it("defaults to 75 kg men and category 1, showing the full raw tables below the 
   expect(within(womenPress).getByRole("row", { name: "165 48 65 77 102 134" })).toBeTruthy();
   expect(within(womenPress).getByRole("rowheader", { name: "199+" })).toBeTruthy();
   const params = new URLSearchParams(splitHash(window.location.hash).search);
-  expect(unpackState(params.get("s")!)).toEqual({
+  expect(strengthStandardsCodec.query!.decode(params)).toEqual({
     v: 1,
     sex: "women",
     unit: "lb",
@@ -159,21 +182,20 @@ it("restores shared choices, external hash changes, and history navigation", asy
   await screen.findByRole("textbox", { name: "Your name" });
 });
 
-it("preserves corrupt links and offers recovery", async () => {
-  const user = userEvent.setup();
-  window.history.replaceState(
-    null,
-    "",
-    `/#/strength-standards?s=${packState({ v: 1, unit: "bad" })}`,
-  );
-  const original = window.location.href;
-  render(<App />);
-  await screen.findByRole("heading", { name: "Corrupt URL state" });
-  expect(window.location.href).toBe(original);
-  await user.click(screen.getByRole("link", { name: "Start fresh" }));
-  await waitFor(() => expect(screen.getAllByRole("table")).toHaveLength(5));
-  expect(window.location.hash).toBe("#/strength-standards");
-});
+it.each([`s=${packState({ v: 1, unit: "bad" })}`, "s=m&w=75&c=Infinity"])(
+  "preserves corrupt links and offers recovery: %s",
+  async (query) => {
+    const user = userEvent.setup();
+    window.history.replaceState(null, "", `/#/strength-standards?${query}`);
+    const original = window.location.href;
+    render(<App />);
+    await screen.findByRole("heading", { name: "Corrupt URL state" });
+    expect(window.location.href).toBe(original);
+    await user.click(screen.getByRole("link", { name: "Start fresh" }));
+    await waitFor(() => expect(screen.getAllByRole("table")).toHaveLength(5));
+    expect(window.location.hash).toBe("#/strength-standards");
+  },
+);
 
 it("updates interpolated graph values while keeping every raw bodyweight row", async () => {
   const user = userEvent.setup();
@@ -192,7 +214,9 @@ it("updates interpolated graph values while keeping every raw bodyweight row", a
   expect(within(press).getAllByRole("row")).toHaveLength(13);
   expect(within(press).getByRole("columnheader", { name: "Bodyweight" })).toBeTruthy();
   expect(
-    unpackState(new URLSearchParams(splitHash(window.location.hash).search).get("s")!),
+    strengthStandardsCodec.query!.decode(
+      new URLSearchParams(splitHash(window.location.hash).search),
+    ),
   ).toEqual({
     v: 1,
     sex: "men",
@@ -218,7 +242,7 @@ it("rounds bodyweight on unit changes and saves the rounded weight for calculati
   await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
   expect((input as HTMLInputElement).value).toBe("177");
   let params = new URLSearchParams(splitHash(window.location.hash).search);
-  expect(unpackState(params.get("s")!)).toEqual({
+  expect(strengthStandardsCodec.query!.decode(params)).toEqual({
     v: 1,
     sex: "men",
     unit: "lb",
@@ -228,7 +252,7 @@ it("rounds bodyweight on unit changes and saves the rounded weight for calculati
   await user.click(screen.getByRole("radio", { name: "Kilograms (kg)" }));
   expect((input as HTMLInputElement).value).toBe("80");
   params = new URLSearchParams(splitHash(window.location.hash).search);
-  expect(unpackState(params.get("s")!)).toEqual({
+  expect(strengthStandardsCodec.query!.decode(params)).toEqual({
     v: 1,
     sex: "men",
     unit: "kg",
@@ -288,7 +312,9 @@ it("uses the bounded slider to select and persist a bodyweight, adjusting bounds
     within(screen.getByRole("table", { name: "Press — Adult men (kg)" })).getAllByRole("row"),
   ).toHaveLength(13);
   expect(
-    unpackState(new URLSearchParams(splitHash(window.location.hash).search).get("s")!),
+    strengthStandardsCodec.query!.decode(
+      new URLSearchParams(splitHash(window.location.hash).search),
+    ),
   ).toEqual({
     v: 1,
     sex: "men",

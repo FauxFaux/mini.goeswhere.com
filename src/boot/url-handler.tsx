@@ -3,7 +3,7 @@ import { useMemo } from "preact/hooks";
 import { Link, useLocation, useSearch } from "wouter";
 import { CrashHandler } from "./crash-handler.tsx";
 import { navigateHash, splitHash } from "./hash-location.ts";
-import { packState, readState, type State, type UrlCodec } from "./url-state.ts";
+import { packState, readQueryState, type State, type UrlCodec } from "./url-state.ts";
 
 export function UrlHandler<T>({
   codec,
@@ -14,8 +14,7 @@ export function UrlHandler<T>({
 }) {
   const [path] = useLocation();
   const search = useSearch();
-  const payload = new URLSearchParams(search).get("s");
-  const result = useMemo(() => readState(payload, codec), [payload, codec]);
+  const result = useMemo(() => readQueryState(new URLSearchParams(search), codec), [search, codec]);
 
   const setState: State<T>[1] = (update) => {
     // Read at edit time so consecutive functional updates compose, and an old
@@ -23,11 +22,12 @@ export function UrlHandler<T>({
     const current = splitHash(window.location.hash);
     if (current.path !== path) return;
     const params = new URLSearchParams(current.search);
-    const latest = readState(params.get("s"), codec);
+    const latest = readQueryState(params, codec);
     if (latest.kind !== "ok") return;
     const next =
       typeof update === "function" ? (update as (previous: T) => T)(latest.state) : update;
-    params.set("s", packState(next));
+    if (codec.query) codec.query.write(params, next);
+    else params.set("s", packState(next));
     navigateHash(`${path}?${params}`, { replace: true });
   };
 

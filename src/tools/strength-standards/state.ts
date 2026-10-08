@@ -1,4 +1,9 @@
-import { isRecord, UnsupportedStateVersion, type UrlCodec } from "../../boot/url-state.ts";
+import {
+  isRecord,
+  unpackState,
+  UnsupportedStateVersion,
+  type UrlCodec,
+} from "../../boot/url-state.ts";
 import { POUNDS_TO_KG } from "./standards.ts";
 
 export interface StrengthStandardsState {
@@ -13,6 +18,62 @@ export interface StrengthStandardsState {
 
 export const strengthStandardsCodec: UrlCodec<StrengthStandardsState> = {
   defaultState: { v: 1, sex: "men", unit: "kg", weight: 75 / POUNDS_TO_KG, graphCategory: 1 },
+  query: {
+    decode(params) {
+      for (const key of ["s", "u", "w", "c"]) {
+        if (params.getAll(key).length > 1) throw new Error(`Duplicate ${key} parameter.`);
+      }
+      const sex = params.get("s");
+      if (
+        sex !== null &&
+        sex !== "m" &&
+        sex !== "f" &&
+        !["u", "w", "c"].some((key) => params.has(key))
+      ) {
+        return strengthStandardsCodec.decode(unpackState(sex));
+      }
+      if (sex !== null && sex !== "m" && sex !== "f")
+        throw new Error("Invalid strength standards sex.");
+      const unit = params.get("u");
+      if (unit !== null && unit !== "k" && unit !== "l")
+        throw new Error("Invalid strength standards unit.");
+      const factor = unit === "l" ? 1 : POUNDS_TO_KG;
+      const number = (key: string, fallback: number) => {
+        const value = params.get(key);
+        if (value === null) return fallback;
+        if (value === "") return undefined;
+        if (
+          value.length > 32 ||
+          !/^-?\d+(?:\.\d+)?$/.test(value) ||
+          !Number.isFinite(Number(value))
+        ) {
+          throw new Error(`Invalid ${key} parameter.`);
+        }
+        return Number(value);
+      };
+      const weight = number("w", (75 / POUNDS_TO_KG) * factor);
+      return strengthStandardsCodec.decode({
+        v: 1,
+        sex: sex === "f" ? "women" : "men",
+        unit: unit === "l" ? "lb" : "kg",
+        weight: weight === undefined ? undefined : weight / factor,
+        graphCategory: number("c", 1),
+      });
+    },
+    write(params, state) {
+      const round = (value: number, dp: number) => String(Number(value.toFixed(dp)));
+      params.set("s", state.sex === "men" ? "m" : "f");
+      params.set(
+        "w",
+        state.weight === undefined
+          ? ""
+          : round(state.weight * (state.unit === "kg" ? POUNDS_TO_KG : 1), 1),
+      );
+      params.set("c", state.graphCategory === undefined ? "" : round(state.graphCategory, 3));
+      if (state.unit === "lb") params.set("u", "l");
+      else params.delete("u");
+    },
+  },
   decode(value) {
     if (!isRecord(value)) throw new Error("Strength standards state must be an object.");
     if (value.v !== 1) throw new UnsupportedStateVersion();

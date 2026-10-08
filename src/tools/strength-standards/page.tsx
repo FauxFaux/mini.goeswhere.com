@@ -90,44 +90,48 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
           ))}
         </fieldset>
       </div>
-      <p class="strength-standards-weight">
-        <label for="strength-standards-weight">Bodyweight ({state.unit})</label>
-        <input
-          class="strength-standards-slider"
-          type="range"
-          min={bounds.min}
-          max={bounds.max}
-          step="1"
-          value={Math.round(
-            Math.min(
-              bounds.max,
-              Math.max(bounds.min, displayedWeight ?? (bounds.min + bounds.max) / 2),
-            ),
-          )}
-          aria-label={`Bodyweight slider (${state.unit})`}
-          aria-describedby="strength-standards-weight-help"
-          onInput={(event) => setWeight(event.currentTarget.valueAsNumber)}
-        />
-        <input
-          id="strength-standards-weight"
-          type="number"
-          step="any"
-          min={bounds.min}
-          max={bounds.max}
-          value={displayedWeight ?? ""}
-          aria-describedby="strength-standards-weight-help"
-          onInput={(event) => setWeight(event.currentTarget.valueAsNumber)}
-          onBlur={() =>
-            setState((previous) =>
-              previous.weight === undefined
-                ? previous
-                : {
-                    ...previous,
-                    weight: clampBodyweight(previous.weight, previous.sex, previous.unit),
-                  },
-            )
-          }
-        />
+      <p class="strength-standards-controls">
+        <fieldset class="strength-standards-weight">
+          <legend>Bodyweight</legend>
+          <input
+            class="strength-standards-slider"
+            type="range"
+            min={bounds.min}
+            max={bounds.max}
+            step="1"
+            value={Math.round(
+              Math.min(
+                bounds.max,
+                Math.max(bounds.min, displayedWeight ?? (bounds.min + bounds.max) / 2),
+              ),
+            )}
+            aria-label={`Bodyweight slider (${state.unit})`}
+            aria-describedby="strength-standards-weight-help"
+            onInput={(event) => setWeight(event.currentTarget.valueAsNumber)}
+          />
+          <input
+            id="strength-standards-weight"
+            aria-label={`Bodyweight (${state.unit})`}
+            type="number"
+            step="any"
+            min={bounds.min}
+            max={bounds.max}
+            value={displayedWeight ?? ""}
+            aria-describedby="strength-standards-weight-help"
+            onInput={(event) => setWeight(event.currentTarget.valueAsNumber)}
+            onBlur={() =>
+              setState((previous) =>
+                previous.weight === undefined
+                  ? previous
+                  : {
+                      ...previous,
+                      weight: clampBodyweight(previous.weight, previous.sex, previous.unit),
+                    },
+              )
+            }
+          />
+          {state.unit}
+        </fieldset>
       </p>
       <p id="strength-standards-weight-help" class="muted">
         Move the slider or enter a bodyweight ({bounds.min}–{bounds.max} {state.unit}). Entered

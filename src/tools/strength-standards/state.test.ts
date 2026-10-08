@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   packState,
   readState,
+  readQueryState,
   unpackState,
   UnsupportedStateVersion,
 } from "../../boot/url-state.ts";
@@ -9,6 +10,82 @@ import { strengthStandardsCodec } from "./state.ts";
 import { POUNDS_TO_KG } from "./standards.ts";
 
 describe("strength standards URL codec", () => {
+  it("reads the compact query format in the displayed units", () => {
+    expect(
+      readQueryState(new URLSearchParams("s=m&w=74.5&c=0.082"), strengthStandardsCodec),
+    ).toEqual({
+      kind: "ok",
+      state: { v: 1, sex: "men", unit: "kg", weight: 74.5 / POUNDS_TO_KG, graphCategory: 0.082 },
+    });
+    expect(
+      readQueryState(new URLSearchParams("s=f&u=l&w=165&c=2"), strengthStandardsCodec),
+    ).toEqual({
+      kind: "ok",
+      state: { v: 1, sex: "women", unit: "lb", weight: 165, graphCategory: 2 },
+    });
+    expect(readQueryState(new URLSearchParams(), strengthStandardsCodec)).toEqual({
+      kind: "ok",
+      state: strengthStandardsCodec.defaultState,
+    });
+  });
+
+  it("writes rounded readable inputs, preserves unrelated parameters and clears missing inputs", () => {
+    const params = new URLSearchParams("note=keep&u=l");
+    strengthStandardsCodec.query!.write(params, {
+      v: 1,
+      sex: "men",
+      unit: "kg",
+      weight: 74.456 / POUNDS_TO_KG,
+      graphCategory: 0.08167,
+    });
+    expect(params.toString()).toBe("note=keep&s=m&w=74.5&c=0.082");
+    strengthStandardsCodec.query!.write(params, {
+      v: 1,
+      sex: "women",
+      unit: "lb",
+      weight: 165,
+      graphCategory: 1,
+    });
+    expect(params.toString()).toBe("note=keep&s=f&w=165&c=1&u=l");
+    strengthStandardsCodec.query!.write(params, { v: 1, sex: "men", unit: "kg" });
+    expect(readQueryState(params, strengthStandardsCodec)).toEqual({
+      kind: "ok",
+      state: { v: 1, sex: "men", unit: "kg" },
+    });
+  });
+
+  it("reads legacy base64 links without rewriting them", () => {
+    const state = { v: 1, sex: "women", unit: "lb", weight: 165, graphCategory: 2.5 } as const;
+    const params = new URLSearchParams({ s: packState(state), note: "keep" });
+    const original = params.toString();
+    expect(readQueryState(params, strengthStandardsCodec)).toEqual({ kind: "ok", state });
+    expect(params.toString()).toBe(original);
+    strengthStandardsCodec.query!.write(params, state);
+    expect(params.get("s")).toBe("f");
+  });
+
+  it.each([
+    "s=x&w=75",
+    "u=kg",
+    "w=NaN",
+    "w=Infinity",
+    "w=hello",
+    "w= ",
+    "w=0x10",
+    "w=" + "1".repeat(33),
+    "c=-0.1",
+    "c=5.01",
+    "c=NaN",
+    "s=m&s=f",
+    "w=75&w=80",
+    "c=1&c=2",
+    "u=k&u=l",
+  ])("rejects malformed query %s", (query) => {
+    expect(readQueryState(new URLSearchParams(query), strengthStandardsCodec).kind).toBe(
+      "unpack-error",
+    );
+  });
+
   it("defaults to 75 kg men with category 1 selected, preserving older links", () => {
     expect(readState(null, strengthStandardsCodec)).toEqual({
       kind: "ok",
