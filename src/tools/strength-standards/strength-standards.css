@@ -28,11 +28,12 @@
 }
 
 .strength-standards-weight {
+  flex: 1 1 20rem;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
-  margin-block: 1.5rem;
 }
 
 .strength-standards-scroll {
@@ -41,7 +42,6 @@
 
 .strength-standards-slider {
   flex: 1 1 12rem;
-  max-width: 24rem;
   padding: 0;
   accent-color: var(--accent);
 }

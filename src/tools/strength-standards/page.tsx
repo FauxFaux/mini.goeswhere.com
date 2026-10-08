@@ -89,8 +89,6 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
             </label>
           ))}
         </fieldset>
-      </div>
-      <p class="strength-standards-controls">
         <fieldset class="strength-standards-weight">
           <legend>Bodyweight</legend>
           <input
@@ -132,7 +130,7 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
           />
           {state.unit}
         </fieldset>
-      </p>
+      </div>
       <p id="strength-standards-weight-help" class="muted">
         Move the slider or enter a bodyweight ({bounds.min}–{bounds.max} {state.unit}). Entered
         weights are kept within these bounds when you leave the box. Values between rows are
