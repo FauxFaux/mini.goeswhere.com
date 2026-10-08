@@ -94,8 +94,12 @@ export function StandardsGraph({ uss: [state, setState] }: { uss: State<Strength
           values; click to keep a position. Use arrow keys, Home, or End to select a position with
           the keyboard, and Escape to clear it.
         </desc>
-        <text x={left} y="18" class="strength-standards-axis-label">
-          Lift weight at {formatWeight(weight, state.unit)} kg
+        <text
+          transform={`translate(14 ${(top + bottom) / 2}) rotate(-90)`}
+          text-anchor="middle"
+          class="strength-standards-axis-label"
+        >
+          Lift weight ({state.unit})
         </text>
         {ticks.map((tick, index) => {
           const position = y(tick / factor);
@@ -108,7 +112,7 @@ export function StandardsGraph({ uss: [state, setState] }: { uss: State<Strength
                 y2={position}
                 class="strength-standards-grid"
               />
-              <text x={left - 10} y={position + 4} text-anchor="end">
+              <text x={left - 6} y={position + 4} text-anchor="end">
                 {Number(tick.toFixed(1))}
               </text>
             </g>
@@ -117,21 +121,25 @@ export function StandardsGraph({ uss: [state, setState] }: { uss: State<Strength
         <line x1={left} x2={left} y1={top} y2={bottom} class="strength-standards-grid" />
         {categories.map((category, index) => (
           <text key={category} x={x(index)} y={bottom + 24} text-anchor="middle">
-            {category}
+            {index === 0 ? category : `Cat ${category}`}
           </text>
         ))}
-        <text
-          x={(left + right) / 2}
-          y="312"
-          text-anchor="middle"
-          class="strength-standards-axis-label"
-        >
-          Category
-        </text>
         {series.map(({ activity, colour, lifts }) => (
           <g key={activity.id}>
+            <line
+              x1={x(0)}
+              y1={y(lifts[0]!)}
+              x2={x(1)}
+              y2={y(lifts[1]!)}
+              stroke={colour}
+              stroke-width="2"
+              stroke-dasharray="4 4"
+            />
             <polyline
-              points={lifts.map((lift, index) => `${x(index)},${y(lift)}`).join(" ")}
+              points={lifts
+                .slice(1)
+                .map((lift, index) => `${x(index + 1)},${y(lift)}`)
+                .join(" ")}
               fill="none"
               stroke={colour}
               stroke-width="2"

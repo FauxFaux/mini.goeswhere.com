@@ -92,12 +92,14 @@
 
 .strength-standards-graph text {
   fill: var(--muted);
+  /* SVG user units scale with the rem-sized page; keep labels proportional to the viewBox. */
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
 .strength-standards-graph .strength-standards-axis-label {
   fill: currentColor;
+  font-size: 9px;
 }
 
 .strength-standards-grid {

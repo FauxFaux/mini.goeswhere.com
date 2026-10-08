@@ -101,16 +101,26 @@ it("plots all five interpolated lifts only when bodyweight is selected and updat
   const graph = screen.getByRole("img", { name: "Strength standards graph" });
   expect(graph.querySelectorAll("polyline")).toHaveLength(5);
   expect(graph.querySelectorAll("circle")).toHaveLength(35);
+  expect(graph.querySelectorAll('line[stroke-dasharray="4 4"][stroke-width="2"]')).toHaveLength(5);
   for (const line of graph.querySelectorAll("polyline")) {
     const points = line
       .getAttribute("points")!
       .split(" ")
       .map((point) => point.split(",").map(Number));
-    expect(points[0]).toEqual([64, 264]);
-    const firstGap = points[1]![0]! - points[0]![0]!;
-    const categoryGap = points[2]![0]! - points[1]![0]!;
+    const interpolated = line.previousElementSibling!;
+    expect(interpolated.getAttribute("stroke-dasharray")).toBe("4 4");
+    expect(interpolated.getAttribute("stroke")).toBe(line.getAttribute("stroke"));
+    expect(Number(interpolated.getAttribute("x1"))).toBe(64);
+    expect(Number(interpolated.getAttribute("y1"))).toBe(264);
+    expect([
+      Number(interpolated.getAttribute("x2")),
+      Number(interpolated.getAttribute("y2")),
+    ]).toEqual(points[0]);
+    expect(line.hasAttribute("stroke-dasharray")).toBe(false);
+    const firstGap = points[0]![0]! - 64;
+    const categoryGap = points[1]![0]! - points[0]![0]!;
     expect(firstGap).toBeCloseTo(2 * categoryGap);
-    expect(points[5]![0]).toBe(616);
+    expect(points[4]![0]).toBe(616);
   }
   expect(within(graph).getByText("Press, Cat. 0: 0 lb")).toBeTruthy();
   expect(within(graph).getByText("Press, Cat. III: 133.5 lb")).toBeTruthy();

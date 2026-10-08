@@ -131,12 +131,6 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
           {state.unit}
         </fieldset>
       </div>
-      <p id="strength-standards-weight-help" class="muted">
-        Move the slider or enter a bodyweight ({bounds.min}–{bounds.max} {state.unit}). Entered
-        weights are kept within these bounds when you leave the box. Values between rows are
-        linearly interpolated estimates, rounded to one decimal place. At or above the final
-        bodyweight, its “+” row applies.
-      </p>
       {belowMinimum && (
         <p role="status">
           No standards are listed below {formatWeight(minimum, state.unit)} {state.unit} for{" "}
