@@ -8,9 +8,9 @@ logos, decorative assets, theme switching, or UI framework.
 ## Structure
 
 - `src/main.tsx` mounts the application and imports global styles from `src/index.css`.
-- `src/app.tsx` owns the shared navigation, wouter router, lazy-loading fallback, and 404 page.
+- `src/app.tsx` owns the shared navigation, wouter router, and 404 page.
 - `src/pages/` contains site pages such as the tool directory.
-- `src/tools/registry.ts` is the single catalogue for routes, titles, descriptions, and lazy imports.
+- `src/tools/registry.ts` is the single catalogue for routes, titles, descriptions, and direct imports.
 - `src/tools/<slug>/page.tsx` is a tool's entry point. Keep its UI, domain functions, state codec,
   tests, and optional CSS together in that directory. Avoid importing one tool from another.
 - `src/boot/` contains routing, URL transport, and crash recovery shared by all tools. It must
@@ -24,7 +24,7 @@ example. Add shared components or utilities only when multiple tools need them.
 
 ## Adding a tool
 
-1. Create `src/tools/<slug>/page.tsx` with a named component and add a lazy entry to the registry.
+1. Create `src/tools/<slug>/page.tsx` with a named component and import it directly in the registry.
    The directory listing and route then appear together. Use stable, lowercase kebab-case slugs.
 2. If the tool has shareable inputs, define its own named state type (for example
    `CalculatorState`) and `UrlCodec<T>` in `state.ts`. Wrap its UI in `UrlHandler` and pass the
@@ -34,10 +34,12 @@ example. Add shared components or utilities only when multiple tools need them.
 
 ## URL state and compatibility
 
-The format is `#/calculator?s=<base64url>`: `s` is unpadded base64url of UTF-8 JSON. There is
-no compression or shared application-wide state. Each tool owns its schema and `v` version;
-the route identifies the tool. Persist inputs only, not results, focus, hover, or other transient
-UI state. Base64 is an encoding, not encryption; URLs must not hold secrets.
+State lives in the fragment query, for example `#/analogue-clock?minutes=610&hours24=1`.
+Choose a transport appropriate to the tool: readable query parameters via `UrlCodec.query`
+work well for simple inputs; the optional `s` transport is unpadded base64url of UTF-8 JSON
+for structured state. There is no compression or shared application-wide state. Each tool owns
+its schema and version; the route identifies the tool. Persist inputs only, not results, focus,
+hover, or other transient UI state. Base64 is an encoding, not encryption; URLs must not hold secrets.
 
 `hash-location.ts` adapts wouter's `useHashLocation` subscription: queries remain inside the
 fragment, and routing sees only the pathname. Use wouter `Link`, `useLocation`, and `useSearch`
@@ -45,10 +47,14 @@ inside the configured router. Do not use wouter's stock hash navigator for state
 installed version moves query parameters to the document's search string.
 
 `UrlHandler` reads initial links and subsequent hash/history changes. The URL is the persisted
-source of truth. Edits synchronously replace the current history entry; tool navigation pushes
-an entry, so Back returns to the previous tool with its last edited state. Reads never rewrite
-the URL. Functional setters read the current URL so consecutive updates compose; no debounced
-write can race navigation. Preserve unrelated fragment query parameters when writing state.
+source of truth. Edits replace the current history entry; tool navigation pushes an entry, so
+Back returns to the previous tool with its last edited state. Reads never rewrite the URL.
+For frequent edits such as dragging, pass `debounceMs` to `UrlHandler`: the UI updates immediately
+while URL writes wait for a pause or the end of a pointer gesture. Functional setters compose
+against pending edits, then the current URL. Pending edits flush before app navigation and on
+page hiding; external hash/history changes discard them. Delayed writes must verify their
+originating URL and never overwrite incoming links or another tool. Preserve unrelated fragment
+query parameters when writing state.
 
 Treat shared links as a public format. Prefer compatible optional fields with defaults applied
 by the tool's decoder. When a breaking change is necessary, bump that tool's `v` and migrate
@@ -60,7 +66,7 @@ do not silently discard them. Keep UI input limits and decoding limits consisten
 ## Crash recovery
 
 `UrlHandler` wraps each tool UI in `CrashHandler` and passes its current state. The app also has
-a boundary for failures in the shell or lazy imports. Recovery clears only the current tool's
+a boundary for failures in the shell. Recovery clears only the current tool's
 fragment state and reloads. Report the URL, state, component stack, and at most ten error causes.
 Diagnostics must tolerate non-Error throws, falsy throws, circular values, bigints, and broken
 getters without crashing the fallback. URL parsing happens defensively before the tool mounts.
@@ -89,10 +95,10 @@ builds for routine validation.
 ## Coding conventions
 
 Write strict TypeScript and functional Preact components. Import hooks from `preact/hooks`;
-use `preact/compat` only at compatibility boundaries such as lazy/Suspense and React dependencies.
+use `preact/compat` only at compatibility boundaries such as React dependencies.
 Use `class` in Preact JSX, type-only imports, explicit `.ts`/`.tsx` local import extensions,
 camelCase for values, PascalCase for types/components, and kebab-case filenames. Keep state
-updates immutable and calculations pure. Use libqalculate in the calculator’s lazy worker to evaluate expressions; do not execute user text with JavaScript `eval` or `Function`.
+updates immutable and calculations pure. Use libqalculate in the calculator’s worker to evaluate expressions; do not execute user text with JavaScript `eval` or `Function`.
 
 Let Oxfmt format the code. Preserve unrelated changes. Use focused Conventional Commit subjects
 if asked to commit, and describe behavior and validation in PRs.

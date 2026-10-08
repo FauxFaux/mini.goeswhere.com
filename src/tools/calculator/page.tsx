@@ -58,7 +58,10 @@ function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
   return (
     <>
       <h1>Calculator</h1>
-      <p class={"muted"}>Return to add new. Up/down to change expression. State in URL. Trigonometry uses radians. Exchange rates are old.</p>
+      <p class={"muted"}>
+        Return to add new. Up/down to change expression. State in URL. Trigonometry uses radians.
+        Exchange rates are old.
+      </p>
       <p class="muted">
         Try{" "}
         <CalculatorExample

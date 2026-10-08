@@ -1,35 +1,50 @@
 import type { ComponentChildren } from "preact";
-import { useMemo } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import { Link, useLocation, useSearch } from "wouter";
 import { CrashHandler } from "./crash-handler.tsx";
-import { navigateHash, splitHash } from "./hash-location.ts";
-import { packState, readQueryState, type State, type UrlCodec } from "./url-state.ts";
+import { beforeHashNavigation } from "./hash-location.ts";
+import { readQueryState, type State, type UrlCodec } from "./url-state.ts";
+import { createUrlWriteBuffer } from "./url-write-buffer.ts";
 
 export function UrlHandler<T>({
   codec,
+  debounceMs = 0,
   children,
 }: {
   codec: UrlCodec<T>;
+  debounceMs?: number;
   children: (state: State<T>) => ComponentChildren;
 }) {
   const [path] = useLocation();
   const search = useSearch();
   const result = useMemo(() => readQueryState(new URLSearchParams(search), codec), [search, codec]);
-
-  const setState: State<T>[1] = (update) => {
-    // Read at edit time so consecutive functional updates compose, and an old
-    // callback cannot overwrite a newer navigation. There are no queued writes.
-    const current = splitHash(window.location.hash);
-    if (current.path !== path) return;
-    const params = new URLSearchParams(current.search);
-    const latest = readQueryState(params, codec);
-    if (latest.kind !== "ok") return;
-    const next =
-      typeof update === "function" ? (update as (previous: T) => T)(latest.state) : update;
-    if (codec.query) codec.query.write(params, next);
-    else params.set("s", packState(next));
-    navigateHash(`${path}?${params}`, { replace: true });
-  };
+  const [, rerender] = useState(0);
+  const buffer = useMemo(
+    () => createUrlWriteBuffer(codec, path, debounceMs, () => rerender((value) => value + 1)),
+    [codec, path, debounceMs],
+  );
+  useEffect(() => {
+    const unsubscribe = beforeHashNavigation(buffer.flush);
+    window.addEventListener("hashchange", buffer.onNavigation);
+    window.addEventListener("popstate", buffer.onNavigation);
+    window.addEventListener("pagehide", buffer.flush);
+    document.addEventListener("pointerup", buffer.flush);
+    document.addEventListener("pointercancel", buffer.flush);
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") buffer.flush();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      unsubscribe();
+      window.removeEventListener("hashchange", buffer.onNavigation);
+      window.removeEventListener("popstate", buffer.onNavigation);
+      window.removeEventListener("pagehide", buffer.flush);
+      document.removeEventListener("pointerup", buffer.flush);
+      document.removeEventListener("pointercancel", buffer.flush);
+      document.removeEventListener("visibilitychange", onVisibility);
+      buffer.dispose();
+    };
+  }, [buffer]);
 
   if (result.kind !== "ok") {
     return (
@@ -49,9 +64,10 @@ export function UrlHandler<T>({
     );
   }
 
+  const state = buffer.state() ?? result.state;
   return (
-    <CrashHandler us={result.state} resetPath={path} resetKey={`${path}?${search}`}>
-      {children([result.state, setState])}
+    <CrashHandler us={state} resetPath={path} resetKey={`${path}?${search}`}>
+      {children([state, buffer.setState])}
     </CrashHandler>
   );
 }
