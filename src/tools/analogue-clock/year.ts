@@ -115,18 +115,42 @@ export function sunCycle(date: Temporal.PlainDate, location: Location = londonLo
 }
 
 // Meteorological seasons, blended across the year rather than precise astronomical boundaries.
-export function seasonGradient(year: number) {
+export function seasonGradient(year: number, latitude: number) {
   const timeline = yearTimeline(year);
+  const tropicalColor = "#b8ad85";
+  // Flat colour at the equator; full seasonal variation from 24° latitude.
+  const blend = Math.min(1, Math.abs(latitude) / 24);
+  const winter = "#344767";
+  const spring = "#54865b";
+  const summer = "#dbc274";
+  const autumn = "#b46d45";
+  const southern = latitude < 0;
   const stops = [
-    [1, "#344767"],
-    [3, "#54865b"],
-    [6, "#dbc274"],
-    [9, "#b46d45"],
-    [12, "#344767"],
+    [1, southern ? summer : winter],
+    [3, southern ? autumn : spring],
+    [6, southern ? winter : summer],
+    [9, southern ? spring : autumn],
+    [12, southern ? summer : winter],
   ] as const;
   const colors = stops.map(([month, color]) => {
     const date = Temporal.PlainDate.from({ year, month, day: 1 }).toZonedDateTime(londonTimezone);
-    return `${color} ${((date.epochMilliseconds - timeline.start.epochMilliseconds) / 1000 / timeline.seconds) * 100}%`;
+    const blendedColor =
+      "#" +
+      [1, 3, 5]
+        .map((offset) => {
+          const base = parseInt(tropicalColor.slice(offset, offset + 2), 16);
+          const seasonal = parseInt(color.slice(offset, offset + 2), 16);
+          return Math.round(base + (seasonal - base) * blend)
+            .toString(16)
+            .padStart(2, "0");
+        })
+        .join("");
+    return {
+      color: blendedColor,
+      progress:
+        ((date.epochMilliseconds - timeline.start.epochMilliseconds) / 1000 / timeline.seconds) *
+        100,
+    };
   });
-  return `linear-gradient(to right, ${colors.join(", ")}, #344767 100%)`;
+  return `linear-gradient(to right, ${colors.map(({ color, progress }) => `${color} ${progress}%`).join(", ")}, ${colors[0].color} 100%)`;
 }

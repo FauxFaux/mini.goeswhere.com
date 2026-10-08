@@ -4,10 +4,59 @@ import {
   currentYear,
   initialSeconds,
   localMinutes,
+  seasonGradient,
   sunCycle,
   yearTimeline,
   wrapSeconds,
 } from "./year.ts";
+
+const seasonColors = (latitude: number, year = 2026) =>
+  seasonGradient(year, latitude).match(/#[0-9a-f]{6}/g);
+
+it("keeps the seasonal strip a flat muted yellow only at the equator", () => {
+  expect(seasonColors(0)).toEqual(Array(6).fill("#b8ad85"));
+  for (const latitude of [-1, 1]) {
+    expect(new Set(seasonColors(latitude)).size).toBeGreaterThan(1);
+  }
+});
+
+it("inverts the seasonal palette in the southern hemisphere and closes the year", () => {
+  expect(seasonColors(24)).toEqual([
+    "#344767",
+    "#54865b",
+    "#dbc274",
+    "#b46d45",
+    "#344767",
+    "#344767",
+  ]);
+  expect(seasonColors(-24)).toEqual([
+    "#dbc274",
+    "#b46d45",
+    "#344767",
+    "#54865b",
+    "#dbc274",
+    "#dbc274",
+  ]);
+  expect(seasonColors(-90, 2028)).toEqual(seasonColors(-90));
+  expect(seasonColors(90)).toEqual(seasonColors(24));
+  expect(seasonColors(-90)).toEqual(seasonColors(-24));
+});
+
+it("interpolates each colour channel linearly between the equator and 24°", () => {
+  for (const hemisphere of [-1, 1]) {
+    const temperate = seasonColors(24 * hemisphere)!;
+    const midpoint = seasonColors(12 * hemisphere)!;
+    for (const [index, color] of midpoint.entries()) {
+      for (const offset of [1, 3, 5]) {
+        const base = parseInt("#b8ad85".slice(offset, offset + 2), 16);
+        const endpoint = parseInt(temperate[index].slice(offset, offset + 2), 16);
+        expect(parseInt(color.slice(offset, offset + 2), 16)).toBe(
+          Math.round((base + endpoint) / 2),
+        );
+      }
+    }
+  }
+});
 
 it("covers ordinary and leap years and wraps at midnight on New Year's Day", () => {
   expect(yearTimeline(2026).seconds).toBe(365 * 86400);

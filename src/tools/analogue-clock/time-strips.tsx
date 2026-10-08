@@ -51,7 +51,11 @@ export function TimeStrips({
     [nearestTransit, latitude, longitude],
   );
   const sun = useMemo(() => sunCycle(date, location), [dateKey, latitude, longitude]);
-  const seasons = useMemo(() => seasonGradient(currentYear.year), []);
+  const seasons = useMemo(() => seasonGradient(currentYear.year, latitude), [latitude]);
+  const seasonLabels =
+    latitude < 0
+      ? ["Summer", "Autumn", "Winter", "Spring", "Summer"]
+      : ["Winter", "Spring", "Summer", "Autumn", "Winter"];
   const dayProgress = wallSeconds(time) / secondsPerDay;
   const clockTime = time.toPlainTime().toString({ smallestUnit: "second" });
   const dateLabel = date.toLocaleString("en-GB", {
@@ -105,7 +109,7 @@ export function TimeStrips({
         background={seasons}
       />
       <div class="analogue-clock-strip-labels" aria-hidden="true">
-        {["Winter", "Spring", "Summer", "Autumn", "Winter"].map((season, index) => (
+        {seasonLabels.map((season, index) => (
           <span key={index}>{season}</span>
         ))}
       </div>
