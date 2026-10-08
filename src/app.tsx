@@ -1,4 +1,3 @@
-import { Suspense } from "preact/compat";
 import { useEffect } from "preact/hooks";
 import { Link, Route, Router, Switch, useLocation } from "wouter";
 import { CrashHandler } from "./boot/crash-handler.tsx";
@@ -30,20 +29,18 @@ function AppRoutes() {
       </header>
       <main>
         <CrashHandler resetPath={path} resetKey={path}>
-          <Suspense fallback={<p role="status">Loading tool…</p>}>
-            <Switch>
-              <Route path="/" component={Home} />
-              {tools.map((item) => (
-                <Route key={item.path} path={item.path} component={item.component} />
-              ))}
-              <Route>
-                <h1>Tool not found</h1>
-                <p>
-                  <Link href="/">Browse available tools</Link>.
-                </p>
-              </Route>
-            </Switch>
-          </Suspense>
+          <Switch>
+            <Route path="/" component={Home} />
+            {tools.map((item) => (
+              <Route key={item.path} path={item.path} component={item.component} />
+            ))}
+            <Route>
+              <h1>Tool not found</h1>
+              <p>
+                <Link href="/">Browse available tools</Link>.
+              </p>
+            </Route>
+          </Switch>
         </CrashHandler>
       </main>
     </>
