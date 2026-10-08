@@ -90,6 +90,40 @@ export function distanceKm(a: Location, b: Location): number {
   return 6371.0088 * 2 * Math.asin(Math.sqrt(Math.max(0, Math.min(1, haversine))));
 }
 
+/** Describe a point relative to its nearest catalogue city, rounding kilometres to 1 sf. */
+export function describeLocation(location: Location, cities: readonly City[]): string {
+  if (!isLocation(location)) throw new Error("Invalid location.");
+  if (cities.length === 0) throw new Error("Cannot describe a location without cities.");
+
+  let nearest = cities[0];
+  let distance = distanceKm(nearest, location);
+  for (const city of cities.slice(1)) {
+    const candidateDistance = distanceKm(city, location);
+    if (candidateDistance < distance) {
+      nearest = city;
+      distance = candidateDistance;
+    }
+  }
+
+  const place = `${nearest.name}, ${nearest.country}`;
+  if (distance <= 50) return `near ${place}`;
+
+  // Initial great-circle bearing from the city towards the point.
+  const radians = Math.PI / 180;
+  const fromLatitude = nearest.latitude * radians;
+  const toLatitude = location.latitude * radians;
+  const longitude = (location.longitude - nearest.longitude) * radians;
+  const bearing = Math.atan2(
+    Math.sin(longitude) * Math.cos(toLatitude),
+    Math.cos(fromLatitude) * Math.sin(toLatitude) -
+      Math.sin(fromLatitude) * Math.cos(toLatitude) * Math.cos(longitude),
+  );
+  const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  const direction = directions[(Math.round(bearing / (Math.PI / 4)) + 8) % 8];
+  const roundedDistance = Number(distance.toPrecision(1));
+  return `~${roundedDistance}km ${direction} of ${place}`;
+}
+
 export function rankCities(cities: City[], location: Location): { city: City; distance: number }[] {
   const ranked = cities.map((city) => ({
     city,

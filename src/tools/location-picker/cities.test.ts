@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { decodeCities, distanceKm, rankCities, searchCities } from "./cities.ts";
+import { decodeCities, describeLocation, distanceKm, rankCities, searchCities } from "./cities.ts";
 
 const cities = decodeCities([
   ["São Paulo", "BR", "São Paulo", -23.55, -46.634],
@@ -7,6 +7,69 @@ const cities = decodeCities([
   ["London", "CA", "Ontario", 42.984, -81.25],
   ["Sydney", "AU", "New South Wales", -33.868, 151.21],
 ]);
+
+it("describes a point near its nearest city without changing the catalogue", () => {
+  const original = [...cities];
+  expect(describeLocation({ latitude: 51.5074, longitude: -0.1278 }, cities)).toBe(
+    "near London, United Kingdom",
+  );
+  expect(cities).toEqual(original);
+});
+
+it("describes a remote point southeast of Papeete to one significant figure", () => {
+  const papeete = decodeCities([["Papeete", "PF", "", -17.5334, -149.5667]]);
+  expect(describeLocation({ latitude: -21.3, longitude: -145.5 }, papeete)).toBe(
+    "~600km SE of Papeete, French Polynesia",
+  );
+});
+
+it("applies the 50km threshold before rounding the distance", () => {
+  const origin = decodeCities([["Origin", "GB", "", 0, 0]]);
+  const latitudeAtKm = (km: number) => (km / 6371.0088) * (180 / Math.PI);
+  expect(describeLocation({ latitude: latitudeAtKm(49.999), longitude: 0 }, origin)).toBe(
+    "near Origin, United Kingdom",
+  );
+  expect(describeLocation({ latitude: latitudeAtKm(50.001), longitude: 0 }, origin)).toBe(
+    "~50km N of Origin, United Kingdom",
+  );
+  expect(describeLocation({ latitude: latitudeAtKm(999), longitude: 0 }, origin)).toBe(
+    "~1000km N of Origin, United Kingdom",
+  );
+});
+
+it.each([
+  [1, 0, "N"],
+  [1, 1, "NE"],
+  [0, 1, "E"],
+  [-1, 1, "SE"],
+  [-1, 0, "S"],
+  [-1, -1, "SW"],
+  [0, -1, "W"],
+  [1, -1, "NW"],
+])("uses the bearing from city to point (%s, %s)", (latitude, longitude, direction) => {
+  const origin = decodeCities([["Origin", "GB", "", 0, 0]]);
+  expect(describeLocation({ latitude, longitude }, origin)).toBe(
+    `~${latitude && longitude ? 200 : 100}km ${direction} of Origin, United Kingdom`,
+  );
+});
+
+it("takes the short route across the antimeridian", () => {
+  const origin = decodeCities([["Origin", "GB", "", 0, 179]]);
+  expect(describeLocation({ latitude: 0, longitude: -179 }, origin)).toBe(
+    "~200km E of Origin, United Kingdom",
+  );
+});
+
+it("rejects invalid coordinates and an empty catalogue", () => {
+  expect(() => describeLocation({ latitude: 0, longitude: 0 }, [])).toThrow();
+  for (const location of [
+    { latitude: NaN, longitude: 0 },
+    { latitude: 91, longitude: 0 },
+    { latitude: 0, longitude: 181 },
+  ]) {
+    expect(() => describeLocation(location, cities)).toThrow("Invalid location.");
+  }
+});
 
 it("searches accents, case, regions, country names and codes with multiple terms", () => {
   expect(searchCities(cities, " SAO paulo ").map((city) => city.name)).toEqual(["São Paulo"]);

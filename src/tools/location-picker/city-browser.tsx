@@ -92,6 +92,14 @@ export function CityBrowser({
             tabIndex={0}
           >
             <table aria-label="Cities">
+              <colgroup>
+                <col />
+                <col class="location-picker-city-distance" />
+                <col />
+                <col />
+                <col class="location-picker-city-coordinate" />
+                <col class="location-picker-city-coordinate" />
+              </colgroup>
               <thead>
                 <tr>
                   <th scope="col">City</th>
@@ -100,8 +108,8 @@ export function CityBrowser({
                   </th>
                   <th scope="col">Country</th>
                   <th scope="col">Region</th>
-                  <th scope="col">Latitude</th>
-                  <th scope="col">Longitude</th>
+                  <th scope="col">Lat</th>
+                  <th scope="col">Lon</th>
                 </tr>
               </thead>
               <tbody>

@@ -73,6 +73,7 @@
 .location-picker-city-table {
   max-height: 28rem;
   overflow: auto;
+  scrollbar-gutter: stable;
 }
 
 .location-picker-city-table thead th {
@@ -83,7 +84,17 @@
 
 .location-picker-city-table table {
   width: 100%;
+  min-width: 48rem;
+  table-layout: fixed;
   border-collapse: collapse;
+}
+
+.location-picker-city-distance {
+  width: 12ch;
+}
+
+.location-picker-city-coordinate {
+  width: 10ch;
 }
 
 .location-picker-city-table th,
@@ -91,6 +102,7 @@
   text-align: left;
   padding: 0.4rem;
   border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
 }
 
 .location-picker-city-table tbody tr {
@@ -103,10 +115,20 @@
 }
 
 .location-picker-city-table button {
+  max-width: 100%;
+  overflow-wrap: anywhere;
   text-align: left;
   color: var(--accent);
 }
 
+.location-picker-city-table thead th:nth-child(2),
+.location-picker-city-table thead th:nth-last-child(-n + 2),
+.location-picker-city-table td:nth-child(2),
+.location-picker-city-table td:nth-last-child(-n + 2) {
+  text-align: right;
+}
+
+.location-picker-city-table td:nth-child(2),
 .location-picker-city-table td:nth-last-child(-n + 2) {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
