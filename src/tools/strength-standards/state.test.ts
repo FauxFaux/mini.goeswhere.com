@@ -6,14 +6,17 @@ import {
   UnsupportedStateVersion,
 } from "../../boot/url-state.ts";
 import { strengthStandardsCodec } from "./state.ts";
+import { POUNDS_TO_KG } from "./standards.ts";
 
 describe("strength standards URL codec", () => {
-  it("defaults to men and kilograms, including absent optional fields", () => {
+  it("defaults to 75 kg men with category 1 selected, preserving older links", () => {
     expect(readState(null, strengthStandardsCodec)).toEqual({
       kind: "ok",
-      state: { v: 1, sex: "men", unit: "kg" },
+      state: { v: 1, sex: "men", unit: "kg", weight: 75 / POUNDS_TO_KG, graphCategory: 1 },
     });
-    expect(strengthStandardsCodec.decode({ v: 1 })).toEqual(strengthStandardsCodec.defaultState);
+    expect(strengthStandardsCodec.decode({ v: 1 })).toEqual({ v: 1, sex: "men", unit: "kg" });
+    const defaults = strengthStandardsCodec.defaultState;
+    expect(strengthStandardsCodec.decode(unpackState(packState(defaults)))).toEqual(defaults);
   });
 
   it.each(["men", "women"] as const)("round trips both units for %s", (sex) => {
@@ -49,6 +52,18 @@ describe("strength standards URL codec", () => {
       unit: "lb",
     });
   });
+
+  it.each([0, 0.5, 1.5, 5])("round trips selected graph category %s", (graphCategory) => {
+    const state = { v: 1, sex: "men", unit: "lb", weight: 173, graphCategory };
+    expect(strengthStandardsCodec.decode(unpackState(packState(state)))).toEqual(state);
+  });
+
+  it.each([null, "1", {}, NaN, Infinity, -Infinity, -0.1, 5.1])(
+    "rejects invalid graph category %j",
+    (graphCategory) => {
+      expect(() => strengthStandardsCodec.decode({ v: 1, graphCategory })).toThrow();
+    },
+  );
 
   it.each([null, "165", {}, NaN, Infinity, -Infinity])(
     "rejects invalid bodyweight %j",

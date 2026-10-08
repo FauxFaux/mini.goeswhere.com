@@ -6,7 +6,6 @@ import {
   bodyweightBounds,
   clampBodyweight,
   formatWeight,
-  interpolateStandards,
   POUNDS_TO_KG,
   standards,
 } from "./standards.ts";
@@ -132,9 +131,9 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
       </p>
       <p id="strength-standards-weight-help" class="muted">
         Move the slider or enter a bodyweight ({bounds.min}–{bounds.max} {state.unit}). Entered
-        weights are kept within these bounds when you leave the box. Clear the box to show all rows.
-        Values between rows are linearly interpolated estimates, rounded to one decimal place. At or
-        above the final bodyweight, its “+” row applies.
+        weights are kept within these bounds when you leave the box. Values between rows are
+        linearly interpolated estimates, rounded to one decimal place. At or above the final
+        bodyweight, its “+” row applies.
       </p>
       {belowMinimum && (
         <p role="status">
@@ -142,69 +141,69 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
           {population.toLowerCase()}.
         </p>
       )}
-      <p class="muted">
-        All bodyweights and lifts are in {state.unit}. Kilograms are converted from the original
-        pounds and rounded to one decimal place. A “+” marks an open-ended bodyweight row. Your
-        choices are saved in the URL.
-      </p>
-      <StandardsGraph state={state} />
-      {standards.map((activity) => {
-        const rows = activity[state.sex];
-        const selected =
-          state.weight === undefined ? undefined : interpolateStandards(rows, state.weight);
-        if (selected === null) return null;
-        const displayedRows = selected ? [selected] : rows;
-        return (
-          <section key={activity.id}>
-            <h2>{activity.title}</h2>
-            <div
-              class="strength-standards-scroll"
-              role="region"
-              aria-label={`${activity.title} table`}
-              tabIndex={0}
-            >
-              <table>
-                <caption>
-                  {activity.title} — {population} ({state.unit})
-                </caption>
-                <thead>
-                  <tr>
-                    {state.weight === undefined && <th scope="col">Bodyweight</th>}
-                    {["I", "II", "III", "IV", "V"].map((category) => (
-                      <th scope="col" key={category}>
-                        Cat. {category}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {displayedRows.map(([bodyweight, ...lifts], index) => (
-                    <tr key={bodyweight}>
-                      {state.weight === undefined && (
+      <StandardsGraph uss={[state, setState]} />
+      <section
+        class="strength-standards-raw-tables"
+        aria-labelledby="strength-standards-raw-heading"
+      >
+        <h2 id="strength-standards-raw-heading">Raw tables</h2>
+        <p class="muted">
+          All bodyweights and lifts are in {state.unit}. Kilograms are converted from the original
+          pounds and rounded to one decimal place. A “+” marks an open-ended bodyweight row. Your
+          choices are saved in the URL.
+        </p>
+        {standards.map((activity) => {
+          const rows = activity[state.sex];
+          return (
+            <section key={activity.id}>
+              <h3>{activity.title}</h3>
+              <div
+                class="strength-standards-scroll"
+                role="region"
+                aria-label={`${activity.title} table`}
+                tabIndex={0}
+              >
+                <table>
+                  <caption>
+                    {activity.title} — {population} ({state.unit})
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Bodyweight</th>
+                      {["I", "II", "III", "IV", "V"].map((category) => (
+                        <th scope="col" key={category}>
+                          Cat. {category}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map(([bodyweight, ...lifts], index) => (
+                      <tr key={bodyweight}>
                         <th scope="row">
                           {formatWeight(bodyweight, state.unit)}
                           {index === rows.length - 1 ? "+" : ""}
                         </th>
-                      )}
-                      {lifts.map((lift, category) => (
-                        <td key={category}>{formatWeight(lift, state.unit)}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p class="muted">{activity.technique}</p>
-          </section>
-        );
-      })}
-      <p class="muted">
-        Tables: <a href="https://startingstrength.com/">Starting Strength</a> and{" "}
-        <a href="https://aasgaardco.com/">The Aasgaard Company</a>, © 2012.{" "}
-        <a href="https://startingstrength.com/files/standards.pdf">Original standards (PDF)</a>.
-        Exercises use the technique in <cite>Starting Strength: Basic Barbell Training</cite>, 3rd
-        edition.
-      </p>
+                        {lifts.map((lift, category) => (
+                          <td key={category}>{formatWeight(lift, state.unit)}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p class="muted">{activity.technique}</p>
+            </section>
+          );
+        })}
+        <p class="muted">
+          Tables: <a href="https://startingstrength.com/">Starting Strength</a> and{" "}
+          <a href="https://aasgaardco.com/">The Aasgaard Company</a>, © 2012.{" "}
+          <a href="https://startingstrength.com/files/standards.pdf">Original standards (PDF)</a>.
+          Exercises use the technique in <cite>Starting Strength: Basic Barbell Training</cite>, 3rd
+          edition.
+        </p>
+      </section>
     </div>
   );
 }

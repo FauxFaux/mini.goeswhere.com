@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, expect, it } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { App } from "../../app.tsx";
 import { navigateHash, splitHash } from "../../boot/hash-location.ts";
 import { packState, unpackState } from "../../boot/url-state.ts";
@@ -9,6 +9,45 @@ import { POUNDS_TO_KG } from "./standards.ts";
 
 beforeEach(() => window.history.replaceState(null, "", "/#/strength-standards?note=keep"));
 afterEach(cleanup);
+
+it("persists clicked graph categories, restores shared links and history, and keeps hover temporary", async () => {
+  const shared = { v: 1, sex: "men", unit: "lb", weight: 173 };
+  window.history.replaceState(null, "", `/#/strength-standards?note=keep&s=${packState(shared)}`);
+  render(<App />);
+  const graph = await screen.findByRole("img", { name: "Strength standards graph" });
+  const original = window.location.href;
+  const historyLength = window.history.length;
+  const bounds = vi
+    .spyOn(graph, "getBoundingClientRect")
+    .mockReturnValue(new DOMRect(0, 0, 640, 320));
+  fireEvent.pointerMove(graph, { clientX: 294 });
+  expect(screen.getByText("1.5", { selector: ".strength-standards-category-value" })).toBeTruthy();
+  expect(window.location.href).toBe(original);
+  fireEvent.click(graph, { clientX: 294 });
+  fireEvent.pointerLeave(graph);
+  bounds.mockRestore();
+  let params = new URLSearchParams(splitHash(window.location.hash).search);
+  expect(unpackState(params.get("s")!)).toEqual({ ...shared, graphCategory: 1.5 });
+  expect(params.get("note")).toBe("keep");
+  expect(window.history.length).toBe(historyLength);
+  cleanup();
+  render(<App />);
+  await screen.findByText("1.5", { selector: ".strength-standards-category-value" });
+  act(() => navigateHash("/hello-world"));
+  await screen.findByRole("textbox", { name: "Your name" });
+  window.history.back();
+  await screen.findByText("1.5", { selector: ".strength-standards-category-value" });
+  window.location.hash = `/strength-standards?s=${packState({ ...shared, graphCategory: 0 })}`;
+  await screen.findByText("0", { selector: ".strength-standards-category-value" });
+  fireEvent.keyDown(screen.getByRole("img", { name: "Strength standards graph" }), { key: "End" });
+  params = new URLSearchParams(splitHash(window.location.hash).search);
+  expect(unpackState(params.get("s")!)).toEqual({ ...shared, graphCategory: 5 });
+  fireEvent.keyDown(screen.getByRole("img", { name: "Strength standards graph" }), {
+    key: "Escape",
+  });
+  params = new URLSearchParams(splitHash(window.location.hash).search);
+  expect(unpackState(params.get("s")!)).toEqual(shared);
+});
 
 it("keeps the highest lift near the graph top continuously across former scale boundaries", async () => {
   render(<App />);
@@ -31,12 +70,24 @@ it("plots all five interpolated lifts only when bodyweight is selected and updat
   const user = userEvent.setup();
   render(<App />);
   const slider = await screen.findByRole("slider", { name: "Bodyweight slider (kg)" });
-  expect(screen.queryByRole("img", { name: "Strength standards graph" })).toBeNull();
+  expect(screen.getByRole("img", { name: "Strength standards graph" })).toBeTruthy();
   await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
   fireEvent.input(slider, { target: { value: "173" } });
   const graph = screen.getByRole("img", { name: "Strength standards graph" });
   expect(graph.querySelectorAll("polyline")).toHaveLength(5);
-  expect(graph.querySelectorAll("circle")).toHaveLength(25);
+  expect(graph.querySelectorAll("circle")).toHaveLength(35);
+  for (const line of graph.querySelectorAll("polyline")) {
+    const points = line
+      .getAttribute("points")!
+      .split(" ")
+      .map((point) => point.split(",").map(Number));
+    expect(points[0]).toEqual([64, 264]);
+    const firstGap = points[1]![0]! - points[0]![0]!;
+    const categoryGap = points[2]![0]! - points[1]![0]!;
+    expect(firstGap).toBeCloseTo(2 * categoryGap);
+    expect(points[5]![0]).toBe(616);
+  }
+  expect(within(graph).getByText("Press, Cat. 0: 0 lb")).toBeTruthy();
   expect(within(graph).getByText("Press, Cat. III: 133.5 lb")).toBeTruthy();
   expect(within(graph).getByText("Lift weight (lb)")).toBeTruthy();
   const points = graph.querySelector("polyline")!.getAttribute("points");
@@ -50,7 +101,7 @@ it("plots all five interpolated lifts only when bodyweight is selected and updat
   expect(screen.queryByRole("img", { name: "Strength standards graph" })).toBeNull();
 });
 
-it("defaults to men/kg and persists both toggles without adding history entries", async () => {
+it("defaults to 75 kg men and category 1, showing the full raw tables below the graph", async () => {
   const user = userEvent.setup();
   const historyLength = window.history.length;
   render(<App />);
@@ -60,6 +111,17 @@ it("defaults to men/kg and persists both toggles without adding history entries"
     true,
   );
   const press = screen.getByRole("table", { name: "Press — Adult men (kg)" });
+  expect(
+    (screen.getByRole("spinbutton", { name: "Bodyweight (kg)" }) as HTMLInputElement).value,
+  ).toBe("75");
+  expect(screen.getByText("1", { selector: ".strength-standards-category-value" })).toBeTruthy();
+  const graph = screen.getByRole("img", { name: "Strength standards graph" });
+  const rawTables = screen.getByRole("region", { name: "Raw tables" });
+  expect(graph.compareDocumentPosition(rawTables) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  for (const table of within(rawTables).getAllByRole("table")) {
+    expect(within(table).getAllByRole("row")).toHaveLength(13);
+    expect(within(table).getByRole("columnheader", { name: "Bodyweight" })).toBeTruthy();
+  }
   expect(within(press).getByRole("row", { name: "74.8 34.0 46.3 58.5 69.4 84.4" })).toBeTruthy();
   expect(within(press).getByRole("rowheader", { name: "145.1+" })).toBeTruthy();
   expect(window.location.hash).toBe("#/strength-standards?note=keep");
@@ -69,7 +131,13 @@ it("defaults to men/kg and persists both toggles without adding history entries"
   expect(within(womenPress).getByRole("row", { name: "165 48 65 77 102 134" })).toBeTruthy();
   expect(within(womenPress).getByRole("rowheader", { name: "199+" })).toBeTruthy();
   const params = new URLSearchParams(splitHash(window.location.hash).search);
-  expect(unpackState(params.get("s")!)).toEqual({ v: 1, sex: "women", unit: "lb" });
+  expect(unpackState(params.get("s")!)).toEqual({
+    v: 1,
+    sex: "women",
+    unit: "lb",
+    weight: 165,
+    graphCategory: 1,
+  });
   expect(params.get("note")).toBe("keep");
   expect(window.history.length).toBe(historyLength);
 });
@@ -107,19 +175,22 @@ it("preserves corrupt links and offers recovery", async () => {
   expect(window.location.hash).toBe("#/strength-standards");
 });
 
-it("shows interpolated categories and clears back to full tables", async () => {
+it("updates interpolated graph values while keeping every raw bodyweight row", async () => {
   const user = userEvent.setup();
   render(<App />);
   const weight = await screen.findByRole("spinbutton", { name: "Bodyweight (kg)" });
-  fireEvent.input(weight, { target: { value: String(173 * POUNDS_TO_KG) } });
   const kgPress = screen.getByRole("table", { name: "Press — Adult men (kg)" });
-  expect(within(kgPress).getAllByRole("row")).toHaveLength(2);
-  expect(within(kgPress).getByRole("row", { name: "35.4 48.1 60.6 71.9 91.6" })).toBeTruthy();
-  expect(within(kgPress).queryByRole("columnheader", { name: "Bodyweight" })).toBeNull();
+  const initialRows = kgPress.textContent;
+  fireEvent.input(weight, { target: { value: String(173 * POUNDS_TO_KG) } });
+  const graph = screen.getByRole("img", { name: "Strength standards graph" });
+  expect(within(graph).getByText("Press, Cat. III: 60.6 kg")).toBeTruthy();
+  expect(kgPress.textContent).toBe(initialRows);
   await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
   expect((weight as HTMLInputElement).value).toBe("173");
+  expect(within(graph).getByText("Press, Cat. III: 133.5 lb")).toBeTruthy();
   const press = screen.getByRole("table", { name: "Press — Adult men (lb)" });
-  expect(within(press).getByRole("row", { name: "78 106 133.5 158.5 202" })).toBeTruthy();
+  expect(within(press).getAllByRole("row")).toHaveLength(13);
+  expect(within(press).getByRole("columnheader", { name: "Bodyweight" })).toBeTruthy();
   expect(
     unpackState(new URLSearchParams(splitHash(window.location.hash).search).get("s")!),
   ).toEqual({
@@ -127,17 +198,16 @@ it("shows interpolated categories and clears back to full tables", async () => {
     sex: "men",
     unit: "lb",
     weight: 173,
+    graphCategory: 1,
   });
   await user.click(screen.getByRole("radio", { name: "Women" }));
-  expect(
-    within(screen.getByRole("table", { name: "Press — Adult women (lb)" })).getByRole("row", {
-      name: "49.5 67.5 80 106 137",
-    }),
-  ).toBeTruthy();
+  expect(within(graph).getByText("Press, Cat. III: 80 lb")).toBeTruthy();
+  const womenPress = screen.getByRole("table", { name: "Press — Adult women (lb)" });
+  const womenRows = womenPress.textContent;
   await user.clear(weight);
-  expect(
-    within(screen.getByRole("table", { name: "Press — Adult women (lb)" })).getAllByRole("row"),
-  ).toHaveLength(11);
+  expect(screen.queryByRole("img", { name: "Strength standards graph" })).toBeNull();
+  expect(womenPress.textContent).toBe(womenRows);
+  expect(within(womenPress).getAllByRole("row")).toHaveLength(11);
 });
 
 it("rounds bodyweight on unit changes and saves the rounded weight for calculations and restoration", async () => {
@@ -148,7 +218,13 @@ it("rounds bodyweight on unit changes and saves the rounded weight for calculati
   await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
   expect((input as HTMLInputElement).value).toBe("177");
   let params = new URLSearchParams(splitHash(window.location.hash).search);
-  expect(unpackState(params.get("s")!)).toEqual({ v: 1, sex: "men", unit: "lb", weight: 177 });
+  expect(unpackState(params.get("s")!)).toEqual({
+    v: 1,
+    sex: "men",
+    unit: "lb",
+    weight: 177,
+    graphCategory: 1,
+  });
   await user.click(screen.getByRole("radio", { name: "Kilograms (kg)" }));
   expect((input as HTMLInputElement).value).toBe("80");
   params = new URLSearchParams(splitHash(window.location.hash).search);
@@ -157,6 +233,7 @@ it("rounds bodyweight on unit changes and saves the rounded weight for calculati
     sex: "men",
     unit: "kg",
     weight: 80 / POUNDS_TO_KG,
+    graphCategory: 1,
   });
   cleanup();
   render(<App />);
@@ -186,11 +263,12 @@ it("restores bodyweight from shared links and history, and handles out-of-range 
   expect((restored as HTMLInputElement).value).toBe("173");
   fireEvent.input(restored, { target: { value: "100" } });
   expect(screen.getByRole("status").textContent).toContain("No standards are listed below 114 lb");
-  expect(screen.queryAllByRole("table")).toHaveLength(0);
+  expect(screen.getAllByRole("table")).toHaveLength(5);
+  expect(screen.queryByRole("img", { name: "Strength standards graph" })).toBeNull();
   fireEvent.input(restored, { target: { value: "400" } });
   expect(
     within(screen.getByRole("table", { name: "Press — Adult men (lb)" })).getByRole("row", {
-      name: "100 136 171 203 284",
+      name: "320+ 100 136 171 203 284",
     }),
   ).toBeTruthy();
   fireEvent.focusOut(restored);
@@ -208,7 +286,7 @@ it("uses the bounded slider to select and persist a bodyweight, adjusting bounds
   expect((input as HTMLInputElement).value).toBe("80");
   expect(
     within(screen.getByRole("table", { name: "Press — Adult men (kg)" })).getAllByRole("row"),
-  ).toHaveLength(2);
+  ).toHaveLength(13);
   expect(
     unpackState(new URLSearchParams(splitHash(window.location.hash).search).get("s")!),
   ).toEqual({
@@ -216,6 +294,7 @@ it("uses the bounded slider to select and persist a bodyweight, adjusting bounds
     sex: "men",
     unit: "kg",
     weight: 80 / POUNDS_TO_KG,
+    graphCategory: 1,
   });
   fireEvent.input(slider, { target: { value: "146" } });
   await user.click(screen.getByRole("radio", { name: "Women" }));
