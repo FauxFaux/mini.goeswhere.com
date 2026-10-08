@@ -7,7 +7,7 @@ export interface LocationPickerState {
 }
 
 export const locationPickerCodec: UrlCodec<LocationPickerState> = {
-  defaultState: { v: 1, location: null },
+  defaultState: { v: 1, location: { latitude: 51.5074, longitude: -0.1278 } },
   decode(value) {
     if (!isRecord(value)) throw new Error("Location picker state must be an object.");
     if (value.v !== 1) throw new UnsupportedStateVersion();
@@ -30,9 +30,15 @@ export const locationPickerCodec: UrlCodec<LocationPickerState> = {
       }
       if (params.has("v") && params.get("v") !== "1") throw new UnsupportedStateVersion();
       if (!params.has("lat") && !params.has("lon")) return locationPickerCodec.defaultState;
+      // Both empty coordinates explicitly persist Clear; omitted coordinates default to London.
+      if (params.get("lat") === "" && params.get("lon") === "") return { v: 1, location: null };
       const coordinate = (key: string) => {
         const value = params.get(key);
-        if (value === null || value.length > 32 || !/^-?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value)) {
+        if (
+          value === null ||
+          value.length > 32 ||
+          !/^-?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value)
+        ) {
           throw new Error(`Invalid ${key} coordinate.`);
         }
         return Number(value);
@@ -45,8 +51,8 @@ export const locationPickerCodec: UrlCodec<LocationPickerState> = {
     write(params, state) {
       params.delete("v");
       if (state.location === null) {
-        params.delete("lat");
-        params.delete("lon");
+        params.set("lat", "");
+        params.set("lon", "");
       } else {
         params.set("lat", String(state.location.latitude));
         params.set("lon", String(state.location.longitude));

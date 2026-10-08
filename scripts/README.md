@@ -18,3 +18,16 @@ expansion into SI units. Nonlinear relations show `x` as the input value.
 
 Run `python3 -m unittest discover -s scripts -p '*_test.py'` to test ingestion.
 Run `npm run format` after regeneration.
+
+Regenerate the city catalogue with `python3 scripts/ingest-cities.py`. This reads
+`datae/worldcities.csv` and writes compact `src/assets/cities.json`. Both paths
+default relative to the repository; override with a positional input path and
+`--output PATH` if needed.
+
+Each row is `[city, iso2, admin_name, latitude, longitude]`, with coordinates
+rounded to three decimal places. Per country, selection keeps the largest ten
+cities, plus cities with at least 50,000 people within the largest 150, and all
+primary capitals regardless of rank or population. Missing populations rank as
+zero; population ties retain CSV order. Countries appear in CSV encounter order,
+with selected cities ordered by descending population within each country.
+The generated JSON is excluded from formatting to preserve its compact layout.
