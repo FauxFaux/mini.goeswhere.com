@@ -42,3 +42,56 @@
 .calculator-result[aria-busy="true"] {
   opacity: 0.5;
 }
+
+.calculator-units {
+  margin-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.calculator-units label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.calculator-units input {
+  width: min(100%, 32rem);
+}
+
+.calculator-unit-table-scroll {
+  overflow-x: auto;
+}
+
+.calculator-unit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.calculator-unit-table caption {
+  text-align: left;
+  margin-bottom: 0.75rem;
+  color: var(--muted);
+}
+
+.calculator-unit-table th,
+.calculator-unit-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.6rem;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+  min-width: 8rem;
+}
+
+.calculator-unit-table th[scope="row"] {
+  font-weight: normal;
+}
+
+.calculator-unit-table th[scope="row"] p {
+  margin-block: 0.5rem 0;
+}
+
+.calculator-unit-category th {
+  background: #22252a;
+  padding-block: 0.85rem;
+}

@@ -4,10 +4,12 @@ export interface CalculatorState {
   v: 1;
   /** Stable tile identities keep focus when other tiles are removed. */
   tiles: { id: string; expression: string }[];
+  unitFilter?: string;
 }
 
 export const MAX_TILES = 48;
 export const MAX_EXPRESSION_LENGTH = 1000;
+export const MAX_UNIT_FILTER_LENGTH = 256;
 
 export const calculatorCodec: UrlCodec<CalculatorState> = {
   defaultState: {
@@ -22,6 +24,12 @@ export const calculatorCodec: UrlCodec<CalculatorState> = {
   decode(value) {
     if (!isRecord(value)) throw new Error("Calculator state must be an object.");
     if (value.v !== 1) throw new UnsupportedStateVersion();
+    if (
+      value.unitFilter !== undefined &&
+      (typeof value.unitFilter !== "string" || value.unitFilter.length > MAX_UNIT_FILTER_LENGTH)
+    ) {
+      throw new Error(`Unit filter must be text of at most ${MAX_UNIT_FILTER_LENGTH} characters.`);
+    }
     if (!Array.isArray(value.tiles) || value.tiles.length > MAX_TILES) {
       throw new Error(`Calculator state must contain at most ${MAX_TILES} tiles.`);
     }
@@ -41,6 +49,10 @@ export const calculatorCodec: UrlCodec<CalculatorState> = {
       ids.add(tile.id);
       return { id: tile.id, expression: tile.expression };
     });
-    return { v: 1, tiles };
+    return {
+      v: 1,
+      tiles,
+      ...(value.unitFilter !== undefined ? { unitFilter: value.unitFilter } : {}),
+    };
   },
 };

@@ -5,6 +5,7 @@ import sourceUrl from "../../assets/qalculate-sources.tar.gz?url";
 import licenseUrl from "../../assets/qalculate-COPYING?url";
 import { CalculatorEngine } from "./engine.ts";
 import { evaluateExpression, type ExpressionResult } from "./evaluate.ts";
+import { CalculatorUnitList } from "./unit-list.tsx";
 import {
   calculatorCodec,
   MAX_EXPRESSION_LENGTH,
@@ -75,6 +76,7 @@ function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
       {us.tiles.length >= MAX_TILES && (
         <p class="muted">Maximum of {MAX_TILES} expressions reached.</p>
       )}
+      <CalculatorUnitList uss={[us, setUs]} />
     </>
   );
 }

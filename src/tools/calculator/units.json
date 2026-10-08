@@ -1,0 +1,3869 @@
+{
+  "source": "libqalculate/data/units.xml.in",
+  "sha256": "8dafe4567264b645f45457fd1888900884657e5d8e747ce8d1887502a864226a",
+  "units": [
+    {
+      "id": "m",
+      "title": "Meter",
+      "names": ["m", "meter", "meters", "metre", "metres"],
+      "category": "Length",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "km_c",
+      "title": "Kilometer",
+      "names": ["km_c"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "10^3 × m",
+      "description": ""
+    },
+    {
+      "id": "dm_c",
+      "title": "Decimeter",
+      "names": ["dm_c"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "10^-1 × m",
+      "description": ""
+    },
+    {
+      "id": "cm_c",
+      "title": "Centimeter",
+      "names": ["cm_c"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "10^-2 × m",
+      "description": ""
+    },
+    {
+      "id": "mm_c",
+      "title": "Millimeter",
+      "names": ["mm_c"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "10^-3 × m",
+      "description": ""
+    },
+    {
+      "id": "um_c",
+      "title": "Micrometer",
+      "names": ["um_c"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "10^-6 × m",
+      "description": ""
+    },
+    {
+      "id": "nm_c",
+      "title": "Nanometer",
+      "names": ["nm_c"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "10^-9 × m",
+      "description": ""
+    },
+    {
+      "id": "micron",
+      "title": "Micron",
+      "names": ["micron", "microns"],
+      "category": "Length",
+      "baseUnit": "um_c (Micrometer)",
+      "definition": "um_c",
+      "description": ""
+    },
+    {
+      "id": "nautical_mile",
+      "title": "Nautical Mile",
+      "names": ["nautical_mile", "nautical_miles", "nmi"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(1852) × m",
+      "description": ""
+    },
+    {
+      "id": "Å",
+      "title": "Ångström",
+      "names": ["Å", "Å", "ångström", "angstrom"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(1E-10) × m",
+      "description": ""
+    },
+    {
+      "id": "US_in",
+      "title": "U.S. Survey Inch",
+      "names": ["in_US", "US_in", "US_inch", "US_inches"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(100/3937) × m",
+      "description": ""
+    },
+    {
+      "id": "in",
+      "title": "Inch",
+      "names": ["in", "inch", "inches"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(0.0254) × m",
+      "description": ""
+    },
+    {
+      "id": "hand",
+      "title": "Hand",
+      "names": ["hand", "hands"],
+      "category": "Length",
+      "baseUnit": "in (Inch)",
+      "definition": "(4) × in",
+      "description": ""
+    },
+    {
+      "id": "ft",
+      "title": "Foot",
+      "names": ["ft", "foot", "feet"],
+      "category": "Length",
+      "baseUnit": "hand (Hand)",
+      "definition": "(3) × hand",
+      "description": ""
+    },
+    {
+      "id": "US_ft",
+      "title": "U.S. Survey Foot",
+      "names": ["ft_US", "US_ft", "US_foot", "US_feet"],
+      "category": "Length",
+      "baseUnit": "US_in (U.S. Survey Inch)",
+      "definition": "(12) × US_in",
+      "description": ""
+    },
+    {
+      "id": "li",
+      "title": "Link",
+      "names": ["li", "link", "links"],
+      "category": "Length",
+      "baseUnit": "in (Inch)",
+      "definition": "(7.92) × in",
+      "description": ""
+    },
+    {
+      "id": "yd",
+      "title": "Yard",
+      "names": ["yd", "yard", "yards"],
+      "category": "Length",
+      "baseUnit": "ft (Foot)",
+      "definition": "(3) × ft",
+      "description": ""
+    },
+    {
+      "id": "rd",
+      "title": "Rod (pole/perch)",
+      "names": ["rd", "rod", "rods"],
+      "category": "Length",
+      "baseUnit": "ft (Foot)",
+      "definition": "(16.5) × ft",
+      "description": ""
+    },
+    {
+      "id": "US_rd",
+      "title": "U.S. Survey Rod",
+      "names": ["rd_US", "US_rd", "US_rod", "US_rods"],
+      "category": "Length",
+      "baseUnit": "US_ft (U.S. Survey Foot)",
+      "definition": "(16.5) × US_ft",
+      "description": ""
+    },
+    {
+      "id": "fathom",
+      "title": "Fathom",
+      "names": ["fathom", "fathoms"],
+      "category": "Length",
+      "baseUnit": "yd (Yard)",
+      "definition": "(2) × yd",
+      "description": ""
+    },
+    {
+      "id": "ch",
+      "title": "Chain",
+      "names": ["ch", "chain", "chains"],
+      "category": "Length",
+      "baseUnit": "li (Link)",
+      "definition": "(100) × li",
+      "description": ""
+    },
+    {
+      "id": "fur",
+      "title": "Furlong",
+      "names": ["fur", "furlong", "furlongs"],
+      "category": "Length",
+      "baseUnit": "ch (Chain)",
+      "definition": "(10) × ch",
+      "description": ""
+    },
+    {
+      "id": "mi",
+      "title": "Mile",
+      "names": ["mi", "mile", "miles"],
+      "category": "Length",
+      "baseUnit": "yd (Yard)",
+      "definition": "(1760) × yd",
+      "description": ""
+    },
+    {
+      "id": "US_mi",
+      "title": "U.S. Survey Mile",
+      "names": ["mi_US", "US_mi", "US_mile", "US_miles"],
+      "category": "Length",
+      "baseUnit": "US_ft (U.S. Survey Foot)",
+      "definition": "(5280) × US_ft",
+      "description": ""
+    },
+    {
+      "id": "thou",
+      "title": "Thou/mil (1/1000 in)",
+      "names": ["thou", "mil", "mils"],
+      "category": "Length",
+      "baseUnit": "in (Inch)",
+      "definition": "(0.001) × in",
+      "description": ""
+    },
+    {
+      "id": "au",
+      "title": "Astronomical Unit",
+      "names": ["au", "astronomical_unit", "astronomical_units"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(149597870700) × m",
+      "description": ""
+    },
+    {
+      "id": "ly",
+      "title": "Light Year",
+      "names": ["ly", "lightyear", "lightyears"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(9460730472580800) × m",
+      "description": ""
+    },
+    {
+      "id": "light_second",
+      "title": "Light Second",
+      "names": ["light_second", "light_seconds"],
+      "category": "Length",
+      "baseUnit": "ly (Light Year)",
+      "definition": "(1/31557600) × ly",
+      "description": ""
+    },
+    {
+      "id": "light_minute",
+      "title": "Light Minute",
+      "names": ["light_minute", "light_minutes"],
+      "category": "Length",
+      "baseUnit": "light_second (Light Second)",
+      "definition": "(60) × light_second",
+      "description": ""
+    },
+    {
+      "id": "light_hour",
+      "title": "Light Hour",
+      "names": ["light_hour", "light_hours"],
+      "category": "Length",
+      "baseUnit": "light_minute (Light Minute)",
+      "definition": "(60) × light_minute",
+      "description": ""
+    },
+    {
+      "id": "pc",
+      "title": "Parsec",
+      "names": ["pc", "parsec", "parsecs"],
+      "category": "Length",
+      "baseUnit": "AU",
+      "definition": "(648000/pi) × AU",
+      "description": ""
+    },
+    {
+      "id": "solar_radius",
+      "title": "Solar Radius (nominal)",
+      "names": ["solar_radius", "R_☉"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(695700000) × m",
+      "description": ""
+    },
+    {
+      "id": "pied_du_roi",
+      "title": "Pied du roi (French Royal Foot)",
+      "names": ["pied_du_roi", "pieds_du_roi"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(9000/27706) × m",
+      "description": ""
+    },
+    {
+      "id": "pouce",
+      "title": "Pouce (French Royal Inch)",
+      "names": ["pouce", "pouces"],
+      "category": "Length",
+      "baseUnit": "pied_du_roi (Pied du roi (French Royal Foot))",
+      "definition": "(1/12) × pied_du_roi",
+      "description": ""
+    },
+    {
+      "id": "ligne",
+      "title": "Ligne",
+      "names": ["ligne", "lignes"],
+      "category": "Length",
+      "baseUnit": "pouce (Pouce (French Royal Inch))",
+      "definition": "(1/12) × pouce",
+      "description": ""
+    },
+    {
+      "id": "toise",
+      "title": "Toise",
+      "names": ["toise", "toises"],
+      "category": "Length",
+      "baseUnit": "pied_du_roi (Pied du roi (French Royal Foot))",
+      "definition": "(6) × pied_du_roi",
+      "description": ""
+    },
+    {
+      "id": "planck_length",
+      "title": "Planck Length",
+      "names": ["planck_length", "l_P"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(sqrt(planck2pi*newtonian_constant/c^3)) × m",
+      "description": ""
+    },
+    {
+      "id": "bohr_unit",
+      "title": "Bohr (Atomic Unit of Length)",
+      "names": ["bohr_unit", "a_0unit"],
+      "category": "Length",
+      "baseUnit": "m (Meter)",
+      "definition": "(bohr_radius) × m",
+      "description": ""
+    },
+    {
+      "id": "planck_c_p_eV",
+      "title": "Electronvolt Distance",
+      "names": ["planck_c_p_eV"],
+      "category": "Length",
+      "baseUnit": "planck_unit (Reduced Planck (Atomic/Natural Unit of Action)) × c_unit (Speed of Light (Natural Unit of Velocity)) × eV (Electronvolt)",
+      "definition": "planck_unit × c_unit × (eV)^-1",
+      "description": ""
+    },
+    {
+      "id": "planck_p_electron_c",
+      "title": "Planck per Electron Mass Light Speed",
+      "names": ["planck_p_electron_c"],
+      "category": "Length",
+      "baseUnit": "planck_unit (Reduced Planck (Atomic/Natural Unit of Action)) × electron_unit (Atomic/Natural Unit of Mass) × c_unit (Speed of Light (Natural Unit of Velocity))",
+      "definition": "planck_unit × (electron_unit)^-1 × (c_unit)^-1",
+      "description": ""
+    },
+    {
+      "id": "l_N",
+      "title": "Natural Unit of Length",
+      "names": ["l_N", "ƛ_unit"],
+      "category": "Length",
+      "baseUnit": "planck_p_electron_c (Planck per Electron Mass Light Speed)",
+      "definition": "planck_p_electron_c",
+      "description": ""
+    },
+    {
+      "id": "rack_unit",
+      "title": "Rack Unit",
+      "names": ["U", "rack_unit", "rack_units", "RU"],
+      "category": "Length",
+      "baseUnit": "in (Inch)",
+      "definition": "(1.75) × in",
+      "description": ""
+    },
+    {
+      "id": "rad",
+      "title": "Radian",
+      "names": ["rad", "radian", "radians"],
+      "category": "Angle / Plane Angle",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "deg",
+      "title": "Degree",
+      "names": ["deg", "°", "degree", "degrees"],
+      "category": "Angle / Plane Angle",
+      "baseUnit": "rad (Radian)",
+      "definition": "(pi/180) × rad",
+      "description": ""
+    },
+    {
+      "id": "gra",
+      "title": "Gradian (Gon)",
+      "names": ["gra", "gradian", "gradians", "gon", "gons"],
+      "category": "Angle / Plane Angle",
+      "baseUnit": "rad (Radian)",
+      "definition": "(pi/200) × rad",
+      "description": ""
+    },
+    {
+      "id": "arcmin",
+      "title": "Arcminute",
+      "names": ["arcmin", "arcminute", "arcminutes"],
+      "category": "Angle / Plane Angle",
+      "baseUnit": "deg (Degree)",
+      "definition": "(1/60) × deg",
+      "description": ""
+    },
+    {
+      "id": "arcsec",
+      "title": "Arcsecond",
+      "names": ["arcsec", "arcsecond", "arcseconds"],
+      "category": "Angle / Plane Angle",
+      "baseUnit": "arcmin (Arcminute)",
+      "definition": "(1/60) × arcmin",
+      "description": ""
+    },
+    {
+      "id": "turn",
+      "title": "Turn",
+      "names": [
+        "tr",
+        "turn",
+        "turns",
+        "pla",
+        "rev",
+        "revolution",
+        "revolutions",
+        "cyc",
+        "cycle",
+        "cycles"
+      ],
+      "category": "Angle / Plane Angle",
+      "baseUnit": "deg (Degree)",
+      "definition": "(360) × deg",
+      "description": ""
+    },
+    {
+      "id": "sqdeg",
+      "title": "Square Degree",
+      "names": ["sqdeg"],
+      "category": "Angle / Solid Angle",
+      "baseUnit": "deg (Degree)",
+      "definition": "(deg)^2",
+      "description": ""
+    },
+    {
+      "id": "sr",
+      "title": "Steradian",
+      "names": ["sr", "steradian", "steradians"],
+      "category": "Angle / Solid Angle",
+      "baseUnit": "rad (Radian)",
+      "definition": "(rad)^2",
+      "description": ""
+    },
+    {
+      "id": "rad_p_sqs",
+      "title": "Radians per Second Squared",
+      "names": ["rad_p_sqs"],
+      "category": "Angle / Angular Acceleration",
+      "baseUnit": "rad (Radian) × s (Second)",
+      "definition": "rad × (s)^-2",
+      "description": ""
+    },
+    {
+      "id": "rad_p_s",
+      "title": "Radians per Second",
+      "names": ["rad_p_s"],
+      "category": "Angle / Angular Velocity",
+      "baseUnit": "rad (Radian) × s (Second)",
+      "definition": "rad × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "turn_p_min",
+      "title": "Revolutions per Minute",
+      "names": ["turn_p_min"],
+      "category": "Angle / Angular Velocity",
+      "baseUnit": "turn (Turn) × min (Minute)",
+      "definition": "turn × (min)^-1",
+      "description": ""
+    },
+    {
+      "id": "rpm",
+      "title": "Revolutions per Minute (RPM)",
+      "names": ["rpm"],
+      "category": "Angle / Angular Velocity",
+      "baseUnit": "turn_p_min (Revolutions per Minute)",
+      "definition": "turn_p_min",
+      "description": ""
+    },
+    {
+      "id": "g",
+      "title": "Gram",
+      "names": ["g", "gram", "grams"],
+      "category": "Mass",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "kg_c",
+      "title": "Kilogram",
+      "names": ["kg_c"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "10^3 × g",
+      "description": ""
+    },
+    {
+      "id": "hg_c",
+      "title": "Hectogram",
+      "names": ["hg_c"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "10^2 × g",
+      "description": ""
+    },
+    {
+      "id": "t",
+      "title": "Metric Ton (Tonne)",
+      "names": ["t", "tonne", "tonnes", "ton", "tons"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(1000000) × g",
+      "description": ""
+    },
+    {
+      "id": "gr",
+      "title": "Grain",
+      "names": ["gr", "grain", "grains"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(0.06479891) × g",
+      "description": ""
+    },
+    {
+      "id": "pwt",
+      "title": "Pennyweight",
+      "names": ["pwt", "pennyweight", "pennyweights"],
+      "category": "Mass",
+      "baseUnit": "gr (Grain)",
+      "definition": "(24) × gr",
+      "description": ""
+    },
+    {
+      "id": "oz_t",
+      "title": "Ounce (troy)",
+      "names": ["oz_t", "troy_ounce", "troy_ounces"],
+      "category": "Mass",
+      "baseUnit": "pwt (Pennyweight)",
+      "definition": "(20) × pwt",
+      "description": ""
+    },
+    {
+      "id": "lb_t",
+      "title": "Pound (troy)",
+      "names": ["lb_t", "troy_pound", "troy_pounds"],
+      "category": "Mass",
+      "baseUnit": "oz_t (Ounce (troy))",
+      "definition": "(12) × oz_t",
+      "description": ""
+    },
+    {
+      "id": "dr",
+      "title": "Dram",
+      "names": ["dr", "dram", "drams"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(1.7718451953125) × g",
+      "description": ""
+    },
+    {
+      "id": "oz",
+      "title": "Ounce",
+      "names": ["oz", "ounce", "ounces"],
+      "category": "Mass",
+      "baseUnit": "dr (Dram)",
+      "definition": "(16) × dr",
+      "description": ""
+    },
+    {
+      "id": "lb",
+      "title": "Pound",
+      "names": ["lb", "℔", "pound", "pounds"],
+      "category": "Mass",
+      "baseUnit": "oz (Ounce)",
+      "definition": "(16) × oz",
+      "description": ""
+    },
+    {
+      "id": "cwt",
+      "title": "Short Hundredweight (Cental)",
+      "names": ["cwt", "hundredweight", "cental", "hundredweights", "centals"],
+      "category": "Mass",
+      "baseUnit": "lb (Pound)",
+      "definition": "(100) × lb",
+      "description": ""
+    },
+    {
+      "id": "l_cwt",
+      "title": "Long Hundredweight",
+      "names": ["l_cwt", "long_hundredweight", "long_hundredweights"],
+      "category": "Mass",
+      "baseUnit": "lb (Pound)",
+      "definition": "(112) × lb",
+      "description": ""
+    },
+    {
+      "id": "s_ton",
+      "title": "Short Ton",
+      "names": ["s_ton", "short_ton", "short_tons"],
+      "category": "Mass",
+      "baseUnit": "lb (Pound)",
+      "definition": "(2000) × lb",
+      "description": ""
+    },
+    {
+      "id": "l_ton",
+      "title": "Long Ton",
+      "names": ["l_ton", "long_ton", "long_tons"],
+      "category": "Mass",
+      "baseUnit": "lb (Pound)",
+      "definition": "(2240) × lb",
+      "description": ""
+    },
+    {
+      "id": "stone",
+      "title": "Stone",
+      "names": ["stone", "stones"],
+      "category": "Mass",
+      "baseUnit": "lb (Pound)",
+      "definition": "(14) × lb",
+      "description": ""
+    },
+    {
+      "id": "carat",
+      "title": "Carat",
+      "names": ["carat", "carats"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(0.2) × g",
+      "description": ""
+    },
+    {
+      "id": "pfund",
+      "title": "Pfund",
+      "names": ["pfund"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(500) × g",
+      "description": ""
+    },
+    {
+      "id": "zentner",
+      "title": "Zentner",
+      "names": ["zentner"],
+      "category": "Mass",
+      "baseUnit": "pfund (Pfund)",
+      "definition": "(100) × pfund",
+      "description": ""
+    },
+    {
+      "id": "planck_mass",
+      "title": "Planck Mass",
+      "names": ["planck_mass", "m_P"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(sqrt(planck2pi*c/newtonian_constant)*1000) × g",
+      "description": ""
+    },
+    {
+      "id": "electron_unit",
+      "title": "Atomic/Natural Unit of Mass",
+      "names": ["electron_unit", "m_eunit"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(electron_mass*1000) × g",
+      "description": ""
+    },
+    {
+      "id": "eV_p_sqc",
+      "title": "Electronvolt Mass",
+      "names": ["eV_p_sqc"],
+      "category": "Mass",
+      "baseUnit": "eV (Electronvolt) × c_unit (Speed of Light (Natural Unit of Velocity))",
+      "definition": "eV × (c_unit)^-2",
+      "description": ""
+    },
+    {
+      "id": "u",
+      "title": "Atomic Mass Unit",
+      "names": ["u", "AMU", "atomic_mass_unit", "atomic_mass_units"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(atomic_mass_constant*1000) × g",
+      "description": ""
+    },
+    {
+      "id": "Da",
+      "title": "Dalton",
+      "names": ["Da", "dalton", "daltons"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(atomic_mass_constant*1000) × g",
+      "description": ""
+    },
+    {
+      "id": "kDa_c",
+      "title": "Kilodalton",
+      "names": ["kDa_c"],
+      "category": "Mass",
+      "baseUnit": "Da (Dalton)",
+      "definition": "10^3 × Da",
+      "description": ""
+    },
+    {
+      "id": "solar_mass",
+      "title": "Solar Mass",
+      "names": ["solar_mass", "M_☉"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(1.988470(70)E33) × g",
+      "description": ""
+    },
+    {
+      "id": "slug",
+      "title": "Slug",
+      "names": ["slug", "slugs"],
+      "category": "Mass",
+      "baseUnit": "g (Gram)",
+      "definition": "(8896443230521/609600000) × g",
+      "description": ""
+    },
+    {
+      "id": "kg_p_cum",
+      "title": "Kilogram per Cubic Meter",
+      "names": ["kg_p_cum"],
+      "category": "Mass / Density",
+      "baseUnit": "g (Gram) × m (Meter)",
+      "definition": "10^3 × g × (m)^-3",
+      "description": ""
+    },
+    {
+      "id": "g_p_cudm",
+      "title": "Gram per Cubic Decimeter",
+      "names": ["g_p_cudm"],
+      "category": "Mass / Density",
+      "baseUnit": "g (Gram) × m (Meter)",
+      "definition": "g × (10^-1 × m)^-3",
+      "description": ""
+    },
+    {
+      "id": "g_p_cucm",
+      "title": "Gram per Cubic Centimeter",
+      "names": ["g_p_cucm"],
+      "category": "Mass / Density",
+      "baseUnit": "g (Gram) × m (Meter)",
+      "definition": "g × (10^-2 × m)^-3",
+      "description": ""
+    },
+    {
+      "id": "g_p_mol",
+      "title": "Gram per Mole",
+      "names": ["g_p_mol"],
+      "category": "Mass / Atomic Mass",
+      "baseUnit": "g (Gram) × mol (Mole)",
+      "definition": "g × (mol)^-1",
+      "description": ""
+    },
+    {
+      "id": "kg_p_kg",
+      "title": "Kilogram per Kilogram",
+      "names": ["kg_p_kg"],
+      "category": "Mass / Mass Fraction",
+      "baseUnit": "g (Gram)",
+      "definition": "10^3 × g × (10^3 × g)^-1",
+      "description": ""
+    },
+    {
+      "id": "s",
+      "title": "Second",
+      "names": ["s", "second", "seconds"],
+      "category": "Time",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "min",
+      "title": "Minute",
+      "names": ["min", "minute", "minutes"],
+      "category": "Time",
+      "baseUnit": "s (Second)",
+      "definition": "(60) × s",
+      "description": ""
+    },
+    {
+      "id": "h",
+      "title": "Hour",
+      "names": ["h", "hour", "hours", "hr", "hrs"],
+      "category": "Time",
+      "baseUnit": "min (Minute)",
+      "definition": "(60) × min",
+      "description": ""
+    },
+    {
+      "id": "d",
+      "title": "Day",
+      "names": ["d", "day", "days"],
+      "category": "Time",
+      "baseUnit": "h (Hour)",
+      "definition": "(24) × h",
+      "description": ""
+    },
+    {
+      "id": "week",
+      "title": "Week",
+      "names": ["week", "weeks"],
+      "category": "Time",
+      "baseUnit": "d (Day)",
+      "definition": "(7) × d",
+      "description": ""
+    },
+    {
+      "id": "fortnight",
+      "title": "Fortnight",
+      "names": ["fortnight", "fortnights"],
+      "category": "Time",
+      "baseUnit": "week (Week)",
+      "definition": "(2) × week",
+      "description": ""
+    },
+    {
+      "id": "year",
+      "title": "Julian Year",
+      "names": ["year", "years", "a_j", "yr", "annus"],
+      "category": "Time",
+      "baseUnit": "d (Day)",
+      "definition": "(365.25) × d",
+      "description": "Acts as calendar years when added to or subtracted from dates, but as exactly 365.25 days when converted to other units. Use the yearfrac() function, instead of subtraction, to calculate the exact number of calendar years between two dates."
+    },
+    {
+      "id": "a_g",
+      "title": "Mean Gregorian Year",
+      "names": ["a_g", "gregorian_year", "gregorian_years"],
+      "category": "Time",
+      "baseUnit": "d (Day)",
+      "definition": "(365.2425) × d",
+      "description": ""
+    },
+    {
+      "id": "a_t",
+      "title": "Mean Tropical Year",
+      "names": ["a_t", "tropical_year", "tropical_years"],
+      "category": "Time",
+      "baseUnit": "d (Day)",
+      "definition": "(365.24219) × d",
+      "description": ""
+    },
+    {
+      "id": "month",
+      "title": "Month",
+      "names": ["month", "months"],
+      "category": "Time",
+      "baseUnit": "d (Day)",
+      "definition": "(30.4375) × d",
+      "description": ""
+    },
+    {
+      "id": "planck_time",
+      "title": "Planck Time",
+      "names": ["planck_time", "t_P"],
+      "category": "Time",
+      "baseUnit": "s (Second)",
+      "definition": "(sqrt(planck2pi*newtonian_constant/c^5)) × s",
+      "description": ""
+    },
+    {
+      "id": "planck_p_Ha",
+      "title": "Atomic Unit of Time",
+      "names": ["planck_p_Ha"],
+      "category": "Time",
+      "baseUnit": "planck_unit (Reduced Planck (Atomic/Natural Unit of Action)) × Ha (Hartree (Atomic Unit of Energy))",
+      "definition": "planck_unit × (Ha)^-1",
+      "description": ""
+    },
+    {
+      "id": "planck_p_electron_sqc",
+      "title": "Natural Unit of Time",
+      "names": ["planck_p_electron_sqc"],
+      "category": "Time",
+      "baseUnit": "planck_unit (Reduced Planck (Atomic/Natural Unit of Action)) × electron_unit (Atomic/Natural Unit of Mass) × c_unit (Speed of Light (Natural Unit of Velocity))",
+      "definition": "planck_unit × (electron_unit)^-1 × (c_unit)^-2",
+      "description": ""
+    },
+    {
+      "id": "planck_p_eV",
+      "title": "Electronvolt Time",
+      "names": ["planck_p_eV"],
+      "category": "Time",
+      "baseUnit": "planck_unit (Reduced Planck (Atomic/Natural Unit of Action)) × eV (Electronvolt)",
+      "definition": "planck_unit × (eV)^-1",
+      "description": ""
+    },
+    {
+      "id": "Hz",
+      "title": "Hertz",
+      "names": ["Hz", "hertz"],
+      "category": "Time / Frequency",
+      "baseUnit": "s (Second)",
+      "definition": "(s)^-1",
+      "description": ""
+    },
+    {
+      "id": "A",
+      "title": "Ampere",
+      "names": ["A", "ampere", "amperes", "amp"],
+      "category": "Electricity / Electric Current",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "abampere",
+      "title": "Abampere",
+      "names": ["abampere", "abA", "abamperes", "Bi", "biot"],
+      "category": "Electricity / Electric Current",
+      "baseUnit": "A (Ampere)",
+      "definition": "(10) × A",
+      "description": ""
+    },
+    {
+      "id": "A_p_sqm",
+      "title": "Ampere per Square Meter",
+      "names": ["A_p_sqm"],
+      "category": "Electricity / Current Density",
+      "baseUnit": "A (Ampere) × m (Meter)",
+      "definition": "A × (m)^-2",
+      "description": ""
+    },
+    {
+      "id": "A_s",
+      "title": "Ampere Second",
+      "names": ["A_s"],
+      "category": "Electricity / Electric Charge",
+      "baseUnit": "A (Ampere) × s (Second)",
+      "definition": "A × s",
+      "description": ""
+    },
+    {
+      "id": "C",
+      "title": "Coulomb",
+      "names": ["C", "coulomb", "coulombs"],
+      "category": "Electricity / Electric Charge",
+      "baseUnit": "A_s (Ampere Second)",
+      "definition": "A_s",
+      "description": ""
+    },
+    {
+      "id": "abcoulomb",
+      "title": "Abcoulomb",
+      "names": ["abcoulomb", "abcoulombs", "abC", "aC"],
+      "category": "Electricity / Electric Charge",
+      "baseUnit": "C (Coulomb)",
+      "definition": "(10) × C",
+      "description": ""
+    },
+    {
+      "id": "statcoulomb",
+      "title": "Statcoulomb (Franklin)",
+      "names": ["statcoulomb", "statcoulombs", "statC", "franklin", "Fr", "franklins", "esu"],
+      "category": "Electricity / Electric Charge",
+      "baseUnit": "C (Coulomb)",
+      "definition": "(1/2997924580) × C",
+      "description": ""
+    },
+    {
+      "id": "planck_charge",
+      "title": "Planck Charge",
+      "names": ["planck_charge", "q_P"],
+      "category": "Electricity / Electric Charge",
+      "baseUnit": "C (Coulomb)",
+      "definition": "(sqrt(4pi*electric_constant*planck2pi*c)) × C",
+      "description": ""
+    },
+    {
+      "id": "e_unit",
+      "title": "Atomic Unit of Charge",
+      "names": ["e_unit", "q_A"],
+      "category": "Electricity / Electric Charge",
+      "baseUnit": "C (Coulomb)",
+      "definition": "(1.602176634E-19) × C",
+      "description": ""
+    },
+    {
+      "id": "C_p_cum",
+      "title": "Coulomb per Cubic Meter",
+      "names": ["C_p_cum"],
+      "category": "Electricity / Electric Charge Density",
+      "baseUnit": "C (Coulomb) × m (Meter)",
+      "definition": "C × (m)^-3",
+      "description": ""
+    },
+    {
+      "id": "C_m",
+      "title": "Coulomb Meter",
+      "names": ["C_m"],
+      "category": "Electricity / Electric Dipole Moment",
+      "baseUnit": "C (Coulomb) × m (Meter)",
+      "definition": "C × m",
+      "description": ""
+    },
+    {
+      "id": "statcoulomb_cm",
+      "title": "Statcoulomb Centimeter",
+      "names": ["statcoulomb_cm"],
+      "category": "Electricity / Electric Dipole Moment",
+      "baseUnit": "statcoulomb (Statcoulomb (Franklin)) × m (Meter)",
+      "definition": "statcoulomb × 10^-2 × m",
+      "description": ""
+    },
+    {
+      "id": "D",
+      "title": "Debye",
+      "names": ["D", "debye", "debyes"],
+      "category": "Electricity / Electric Dipole Moment",
+      "baseUnit": "statcoulomb_cm (Statcoulomb Centimeter)",
+      "definition": "(1E-18) × statcoulomb_cm",
+      "description": ""
+    },
+    {
+      "id": "C_p_sqm",
+      "title": "Coulomb per Square Meter",
+      "names": ["C_p_sqm"],
+      "category": "Electricity / Electric Flux Density",
+      "baseUnit": "C (Coulomb) × m (Meter)",
+      "definition": "C × (m)^-2",
+      "description": ""
+    },
+    {
+      "id": "W_p_A",
+      "title": "Watt per Ampere",
+      "names": ["W_p_A"],
+      "category": "Electricity / Electric Potential",
+      "baseUnit": "W (Watt) × A (Ampere)",
+      "definition": "W × (A)^-1",
+      "description": ""
+    },
+    {
+      "id": "V",
+      "title": "Volt",
+      "names": ["V", "volt", "volts"],
+      "category": "Electricity / Electric Potential",
+      "baseUnit": "W_p_A (Watt per Ampere)",
+      "definition": "W_p_A",
+      "description": ""
+    },
+    {
+      "id": "statvolt",
+      "title": "Statvolt",
+      "names": ["statvolt", "statvolts", "statV"],
+      "category": "Electricity / Electric Potential",
+      "baseUnit": "V (Volt)",
+      "definition": "(299.792458) × V",
+      "description": ""
+    },
+    {
+      "id": "abvolt",
+      "title": "Abvolt",
+      "names": ["abvolt", "abvolts", "abV"],
+      "category": "Electricity / Electric Potential",
+      "baseUnit": "V (Volt)",
+      "definition": "(1E-8) × V",
+      "description": ""
+    },
+    {
+      "id": "Ha_p_e",
+      "title": "Atomic Unit of Electric Potential",
+      "names": ["Ha_p_e"],
+      "category": "Electricity / Electric Potential",
+      "baseUnit": "Ha (Hartree (Atomic Unit of Energy)) × e_unit (Atomic Unit of Charge)",
+      "definition": "Ha × (e_unit)^-1",
+      "description": ""
+    },
+    {
+      "id": "C_p_V",
+      "title": "Coulomb per Volt",
+      "names": ["C_p_V"],
+      "category": "Electricity / Capacitance",
+      "baseUnit": "C (Coulomb) × V (Volt)",
+      "definition": "C × (V)^-1",
+      "description": ""
+    },
+    {
+      "id": "F",
+      "title": "Farad",
+      "names": ["F", "farad", "farads"],
+      "category": "Electricity / Capacitance",
+      "baseUnit": "C_p_V (Coulomb per Volt)",
+      "definition": "C_p_V",
+      "description": ""
+    },
+    {
+      "id": "V_p_C",
+      "title": "Volt per Coulomb",
+      "names": ["V_p_C"],
+      "category": "Electricity / Electrical Elastance",
+      "baseUnit": "V (Volt) × C (Coulomb)",
+      "definition": "V × (C)^-1",
+      "description": ""
+    },
+    {
+      "id": "recF",
+      "title": "Reciprocal Farad",
+      "names": ["recF"],
+      "category": "Electricity / Electrical Elastance",
+      "baseUnit": "F (Farad)",
+      "definition": "(F)^-1",
+      "description": ""
+    },
+    {
+      "id": "daraf",
+      "title": "Daraf",
+      "names": ["daraf", "darafs"],
+      "category": "Electricity / Electrical Elastance",
+      "baseUnit": "recF (Reciprocal Farad)",
+      "definition": "recF",
+      "description": ""
+    },
+    {
+      "id": "V_p_A",
+      "title": "Volt per Ampere",
+      "names": ["V_p_A"],
+      "category": "Electricity / Electric Resistance",
+      "baseUnit": "V (Volt) × A (Ampere)",
+      "definition": "V × (A)^-1",
+      "description": ""
+    },
+    {
+      "id": "ohm",
+      "title": "Ohm",
+      "names": ["Ω", "ohm", "ohms", "Ω"],
+      "category": "Electricity / Electric Resistance",
+      "baseUnit": "V_p_A (Volt per Ampere)",
+      "definition": "V_p_A",
+      "description": ""
+    },
+    {
+      "id": "abohm",
+      "title": "Abohm",
+      "names": ["abohm", "abohms", "abΩ"],
+      "category": "Electricity / Electric Resistance",
+      "baseUnit": "ohm (Ohm)",
+      "definition": "(1E-9) × ohm",
+      "description": ""
+    },
+    {
+      "id": "statohm",
+      "title": "Statohm",
+      "names": ["statohm", "statohms", "statΩ"],
+      "category": "Electricity / Electric Resistance",
+      "baseUnit": "ohm (Ohm)",
+      "definition": "(8.9875517873681764E11) × ohm",
+      "description": ""
+    },
+    {
+      "id": "A_p_V",
+      "title": "Ampere per Volt",
+      "names": ["A_p_V"],
+      "category": "Electricity / Electric Conductance",
+      "baseUnit": "A (Ampere) × V (Volt)",
+      "definition": "A × (V)^-1",
+      "description": ""
+    },
+    {
+      "id": "S",
+      "title": "Siemens",
+      "names": ["S", "siemens", "℧"],
+      "category": "Electricity / Electric Conductance",
+      "baseUnit": "A_p_V (Ampere per Volt)",
+      "definition": "A_p_V",
+      "description": ""
+    },
+    {
+      "id": "V_p_m",
+      "title": "Volt per Meter",
+      "names": ["V_p_m"],
+      "category": "Electricity / Electric Field Strength",
+      "baseUnit": "V (Volt) × m (Meter)",
+      "definition": "V × (m)^-1",
+      "description": ""
+    },
+    {
+      "id": "N_p_C",
+      "title": "Newton per Coulomb",
+      "names": ["N_p_C"],
+      "category": "Electricity / Electric Field Strength",
+      "baseUnit": "N (Newton) × C (Coulomb)",
+      "definition": "N × (C)^-1",
+      "description": ""
+    },
+    {
+      "id": "Ha_p_e_bohr",
+      "title": "Atomic Unit of Electric Field",
+      "names": ["Ha_p_e_bohr"],
+      "category": "Electricity / Electric Field Strength",
+      "baseUnit": "Ha (Hartree (Atomic Unit of Energy)) × e_unit (Atomic Unit of Charge) × bohr_unit (Bohr (Atomic Unit of Length))",
+      "definition": "Ha × (e_unit)^-1 × (bohr_unit)^-1",
+      "description": ""
+    },
+    {
+      "id": "F_p_m",
+      "title": "Farad per Meter",
+      "names": ["F_p_m"],
+      "category": "Electricity / Permittivity",
+      "baseUnit": "F (Farad) × m (Meter)",
+      "definition": "F × (m)^-1",
+      "description": ""
+    },
+    {
+      "id": "Wb_p_A",
+      "title": "Weber per Ampere",
+      "names": ["Wb_p_A"],
+      "category": "Electricity / Inductance",
+      "baseUnit": "Wb (Weber) × A (Ampere)",
+      "definition": "Wb × (A)^-1",
+      "description": ""
+    },
+    {
+      "id": "H",
+      "title": "Henry",
+      "names": ["H", "henry", "henrys"],
+      "category": "Electricity / Inductance",
+      "baseUnit": "Wb_p_A (Weber per Ampere)",
+      "definition": "Wb_p_A",
+      "description": ""
+    },
+    {
+      "id": "abhenry",
+      "title": "Abhenry",
+      "names": ["abhenry", "abhenrys", "abH"],
+      "category": "Electricity / Inductance",
+      "baseUnit": "H (Henry)",
+      "definition": "(1E-9) × H",
+      "description": ""
+    },
+    {
+      "id": "H_p_m",
+      "title": "Henry per Meter",
+      "names": ["H_p_m"],
+      "category": "Electricity / Permeability",
+      "baseUnit": "H (Henry) × m (Meter)",
+      "definition": "H × (m)^-1",
+      "description": ""
+    },
+    {
+      "id": "K",
+      "title": "Kelvin",
+      "names": ["K", "K", "kelvin", "kelvins"],
+      "category": "Temperature",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "oC",
+      "title": "Degree Celsius",
+      "names": ["oC", "°C", "℃", "celsius", "centigrade", "centigrades"],
+      "category": "Temperature",
+      "baseUnit": "K (Kelvin)",
+      "definition": "x → (x + 273.15) × K",
+      "description": ""
+    },
+    {
+      "id": "oR",
+      "title": "Degree Rankine",
+      "names": ["oR", "oRa", "°R", "°Ra", "rankine"],
+      "category": "Temperature",
+      "baseUnit": "K (Kelvin)",
+      "definition": "(5/9) × K",
+      "description": ""
+    },
+    {
+      "id": "oF",
+      "title": "Degree Fahrenheit",
+      "names": ["oF", "°F", "℉", "fahrenheit"],
+      "category": "Temperature",
+      "baseUnit": "K (Kelvin)",
+      "definition": "x → ((x+459.67)*5/9) × K",
+      "description": ""
+    },
+    {
+      "id": "planck_temperature",
+      "title": "Planck Temperature",
+      "names": ["planck_temperature", "T_P"],
+      "category": "Temperature",
+      "baseUnit": "K (Kelvin)",
+      "definition": "(sqrt((planck2pi*c^5)/newtonian_constant)/boltzmann) × K",
+      "description": ""
+    },
+    {
+      "id": "eV_p_kB",
+      "title": "Electronvolt Temperature",
+      "names": ["eV_p_kB"],
+      "category": "Temperature",
+      "baseUnit": "eV (Electronvolt) × boltzmann_unit (Boltzmann (unit))",
+      "definition": "eV × (boltzmann_unit)^-1",
+      "description": ""
+    },
+    {
+      "id": "mol",
+      "title": "Mole",
+      "names": ["mol", "mole", "moles"],
+      "category": "Substance",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "einstein",
+      "title": "Einstein (one mole of photons)",
+      "names": ["einstein", "einsteins"],
+      "category": "Substance",
+      "baseUnit": "mol (Mole)",
+      "definition": "mol",
+      "description": ""
+    },
+    {
+      "id": "mol_p_sqm_p_s",
+      "title": "Mole per Square Meter Second",
+      "names": ["mol_p_sqm_p_s"],
+      "category": "Substance / Molar Flux",
+      "baseUnit": "mol (Mole) × m (Meter) × s (Second)",
+      "definition": "mol × (m)^-2 × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "micromol_p_sqm_p_s",
+      "title": "Micromole per Square Meter Second",
+      "names": ["micromol_p_sqm_p_s"],
+      "category": "Substance / Molar Flux",
+      "baseUnit": "mol (Mole) × m (Meter) × s (Second)",
+      "definition": "10^-6 × mol × (m)^-2 × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "einstein_p_sqm_p_s",
+      "title": "Einstein per Square Meter Second",
+      "names": ["einstein_p_sqm_p_s"],
+      "category": "Substance / Molar Flux",
+      "baseUnit": "einstein (Einstein (one mole of photons)) × m (Meter) × s (Second)",
+      "definition": "einstein × (m)^-2 × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "microeinstein_p_sqm_p_s",
+      "title": "Microeinstein per Square Meter Second",
+      "names": ["microeinstein_p_sqm_p_s"],
+      "category": "Substance / Molar Flux",
+      "baseUnit": "einstein (Einstein (one mole of photons)) × m (Meter) × s (Second)",
+      "definition": "10^-6 × einstein × (m)^-2 × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "mol_p_cum",
+      "title": "Mole per Cubic Meter",
+      "names": ["mol_p_cum"],
+      "category": "Substance / Substance Concentration",
+      "baseUnit": "mol (Mole) × m (Meter)",
+      "definition": "mol × (m)^-3",
+      "description": ""
+    },
+    {
+      "id": "mol_p_L",
+      "title": "Mole per Liter",
+      "names": ["mol_p_L"],
+      "category": "Substance / Substance Concentration",
+      "baseUnit": "mol (Mole) × L (Liter)",
+      "definition": "mol × (L)^-1",
+      "description": ""
+    },
+    {
+      "id": "mol_p_cudm",
+      "title": "Mole per Cubic Decimeter",
+      "names": ["mol_p_cudm"],
+      "category": "Substance / Substance Concentration",
+      "baseUnit": "mol (Mole) × m (Meter)",
+      "definition": "mol × (10^-1 × m)^-3",
+      "description": ""
+    },
+    {
+      "id": "molar",
+      "title": "Molar",
+      "names": ["molar"],
+      "category": "Substance / Substance Concentration",
+      "baseUnit": "mol_p_L (Mole per Liter)",
+      "definition": "mol_p_L",
+      "description": ""
+    },
+    {
+      "id": "recs_mol",
+      "title": "Reciprocal Seconds Mole",
+      "names": ["recs_mol"],
+      "category": "Substance / Catalytic Activity",
+      "baseUnit": "mol (Mole) × s (Second)",
+      "definition": "mol × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "kat",
+      "title": "Katal",
+      "names": ["kat", "katal", "katals"],
+      "category": "Substance / Catalytic Activity",
+      "baseUnit": "recs_mol (Reciprocal Seconds Mole)",
+      "definition": "recs_mol",
+      "description": ""
+    },
+    {
+      "id": "kat_p_cum",
+      "title": "Katal per Cubic Meter",
+      "names": ["kat_p_cum"],
+      "category": "Substance / Catalytic Concentration",
+      "baseUnit": "kat (Katal) × m (Meter)",
+      "definition": "kat × (m)^-3",
+      "description": ""
+    },
+    {
+      "id": "cd",
+      "title": "Candela",
+      "names": ["cd", "candela", "candelas"],
+      "category": "Light / Luminous Intensity",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "cd_p_sqm",
+      "title": "Candela per Square Meter",
+      "names": ["cd_p_sqm"],
+      "category": "Light / Luminance",
+      "baseUnit": "cd (Candela) × m (Meter)",
+      "definition": "cd × (m)^-2",
+      "description": ""
+    },
+    {
+      "id": "sb",
+      "title": "Stilb",
+      "names": ["sb", "stilb", "stilbs"],
+      "category": "Light / Luminance",
+      "baseUnit": "cd_p_sqm (Candela per Square Meter)",
+      "definition": "(10000) × cd_p_sqm",
+      "description": ""
+    },
+    {
+      "id": "lambert",
+      "title": "Lambert",
+      "names": ["lambert", "lamberts"],
+      "category": "Light / Luminance",
+      "baseUnit": "cd_p_sqm (Candela per Square Meter)",
+      "definition": "(10000/pi) × cd_p_sqm",
+      "description": ""
+    },
+    {
+      "id": "foot_lambert",
+      "title": "Foot-Lambert",
+      "names": ["foot_lambert", "foot_lamberts"],
+      "category": "Light / Luminance",
+      "baseUnit": "lambert (Lambert)",
+      "definition": "(1/929.0304) × lambert",
+      "description": ""
+    },
+    {
+      "id": "cd_sr",
+      "title": "Candela Steradian",
+      "names": ["cd_sr"],
+      "category": "Light / Luminous Flux",
+      "baseUnit": "cd (Candela) × sr (Steradian)",
+      "definition": "cd × sr",
+      "description": ""
+    },
+    {
+      "id": "lm",
+      "title": "Lumen",
+      "names": ["lm", "lumen", "lumens"],
+      "category": "Light / Luminous Flux",
+      "baseUnit": "cd_sr (Candela Steradian)",
+      "definition": "cd_sr",
+      "description": ""
+    },
+    {
+      "id": "lm_p_sqm",
+      "title": "Lumen per Square Meter",
+      "names": ["lm_p_sqm"],
+      "category": "Light / Illuminance",
+      "baseUnit": "lm (Lumen) × m (Meter)",
+      "definition": "lm × (m)^-2",
+      "description": ""
+    },
+    {
+      "id": "lm_p_sqft",
+      "title": "Lumen per Square Foot",
+      "names": ["lm_p_sqft"],
+      "category": "Light / Illuminance",
+      "baseUnit": "lm (Lumen) × ft (Foot)",
+      "definition": "lm × (ft)^-2",
+      "description": ""
+    },
+    {
+      "id": "lx",
+      "title": "Lux",
+      "names": ["lx", "lux"],
+      "category": "Light / Illuminance",
+      "baseUnit": "lm_p_sqm (Lumen per Square Meter)",
+      "definition": "lm_p_sqm",
+      "description": ""
+    },
+    {
+      "id": "fc",
+      "title": "Foot-Candle",
+      "names": ["fc", "foot_candle", "foot_candles"],
+      "category": "Light / Illuminance",
+      "baseUnit": "lm_p_sqft (Lumen per Square Foot)",
+      "definition": "lm_p_sqft",
+      "description": ""
+    },
+    {
+      "id": "ph",
+      "title": "Phot",
+      "names": ["ph", "phot", "phots"],
+      "category": "Light / Illuminance",
+      "baseUnit": "lx (Lux)",
+      "definition": "(10000) × lx",
+      "description": ""
+    },
+    {
+      "id": "W_p_sr",
+      "title": "Watt per Steradian",
+      "names": ["W_p_sr"],
+      "category": "Light / Radiant Intensity",
+      "baseUnit": "W (Watt) × sr (Steradian)",
+      "definition": "W × (sr)^-1",
+      "description": ""
+    },
+    {
+      "id": "W_p_sqm",
+      "title": "Watt per Square Meter",
+      "names": ["W_p_sqm"],
+      "category": "Light / Irradiance",
+      "baseUnit": "W (Watt) × m (Meter)",
+      "definition": "W × (m)^-2",
+      "description": ""
+    },
+    {
+      "id": "erg_p_sqcm_p_s",
+      "title": "Erg per Square Centimeter Second",
+      "names": ["erg_p_sqcm_p_s"],
+      "category": "Light / Irradiance",
+      "baseUnit": "erg (Erg) × m (Meter) × s (Second)",
+      "definition": "erg × (10^-2 × m)^-2 × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "W_p_sqm_sr",
+      "title": "Watt per Square Meter Steradian",
+      "names": ["W_p_sqm_sr"],
+      "category": "Light / Radiance",
+      "baseUnit": "W (Watt) × sr (Steradian) × m (Meter)",
+      "definition": "W × (sr)^-1 × (m)^-2",
+      "description": ""
+    },
+    {
+      "id": "sqm",
+      "title": "Square Meter",
+      "names": ["sqm"],
+      "category": "Area",
+      "baseUnit": "m (Meter)",
+      "definition": "(m)^2",
+      "description": ""
+    },
+    {
+      "id": "sqkm",
+      "title": "Square Kilometer",
+      "names": ["sqkm"],
+      "category": "Area",
+      "baseUnit": "m (Meter)",
+      "definition": "(10^3 × m)^2",
+      "description": ""
+    },
+    {
+      "id": "a",
+      "title": "Are",
+      "names": ["a", "are", "ares"],
+      "category": "Area",
+      "baseUnit": "m (Meter)",
+      "definition": "(100) × (m)^2",
+      "description": ""
+    },
+    {
+      "id": "cmil",
+      "title": "Circular Mil",
+      "names": ["cmil", "cmils"],
+      "category": "Area",
+      "baseUnit": "mil (Thou/mil (1/1000 in))",
+      "definition": "(pi/4) × (mil)^2",
+      "description": ""
+    },
+    {
+      "id": "kcmil",
+      "title": "Thousand of Circular Mil",
+      "names": ["kcmil", "MCM"],
+      "category": "Area",
+      "baseUnit": "cmil (Circular Mil)",
+      "definition": "(1000) × cmil",
+      "description": ""
+    },
+    {
+      "id": "ha",
+      "title": "Hectare",
+      "names": ["ha", "hectare", "hectares"],
+      "category": "Area",
+      "baseUnit": "a (Are)",
+      "definition": "(100) × a",
+      "description": ""
+    },
+    {
+      "id": "decare",
+      "title": "Decare",
+      "names": ["da", "decare", "decares"],
+      "category": "Area",
+      "baseUnit": "a (Are)",
+      "definition": "(10) × a",
+      "description": ""
+    },
+    {
+      "id": "b",
+      "title": "Barn",
+      "names": ["b", "barn", "barns"],
+      "category": "Area",
+      "baseUnit": "m (Meter)",
+      "definition": "(1E-28) × (m)^2",
+      "description": ""
+    },
+    {
+      "id": "rood",
+      "title": "Rood",
+      "names": ["rood", "roods"],
+      "category": "Area",
+      "baseUnit": "yd (Yard)",
+      "definition": "(1210) × (yd)^2",
+      "description": ""
+    },
+    {
+      "id": "acre",
+      "title": "Acre",
+      "names": ["acre", "acres"],
+      "category": "Area",
+      "baseUnit": "ch (Chain)",
+      "definition": "(10) × (ch)^2",
+      "description": ""
+    },
+    {
+      "id": "section",
+      "title": "Section",
+      "names": ["section", "sections"],
+      "category": "Area",
+      "baseUnit": "US_mi (U.S. Survey Mile)",
+      "definition": "(US_mi)^2",
+      "description": ""
+    },
+    {
+      "id": "township",
+      "title": "Township",
+      "names": ["township", "townships"],
+      "category": "Area",
+      "baseUnit": "section (Section)",
+      "definition": "(36) × section",
+      "description": ""
+    },
+    {
+      "id": "sqft",
+      "title": "Square Foot",
+      "names": ["sqft"],
+      "category": "Area",
+      "baseUnit": "ft (Foot)",
+      "definition": "(ft)^2",
+      "description": ""
+    },
+    {
+      "id": "sqin",
+      "title": "Square Inch",
+      "names": ["sqin"],
+      "category": "Area",
+      "baseUnit": "in (Inch)",
+      "definition": "(in)^2",
+      "description": ""
+    },
+    {
+      "id": "sqmi",
+      "title": "Square Mile",
+      "names": ["sqmi"],
+      "category": "Area",
+      "baseUnit": "mi (Mile)",
+      "definition": "(mi)^2",
+      "description": ""
+    },
+    {
+      "id": "darcy",
+      "title": "Darcy",
+      "names": ["darcy", "darcys"],
+      "category": "Area",
+      "baseUnit": "sqm (Square Meter)",
+      "definition": "(1/1.01325E12) × sqm",
+      "description": ""
+    },
+    {
+      "id": "millidarcy",
+      "title": "Millidarcy",
+      "names": ["millidarcy"],
+      "category": "Area",
+      "baseUnit": "darcy (Darcy)",
+      "definition": "10^-3 × darcy",
+      "description": ""
+    },
+    {
+      "id": "cum",
+      "title": "Cubic Meter",
+      "names": ["cum"],
+      "category": "Volume",
+      "baseUnit": "m (Meter)",
+      "definition": "(m)^3",
+      "description": ""
+    },
+    {
+      "id": "L",
+      "title": "Liter",
+      "names": ["L", "l", "ℓ", "liter", "liters", "litre", "litres"],
+      "category": "Volume",
+      "baseUnit": "m (Meter)",
+      "definition": "(0.001) × (m)^3",
+      "description": ""
+    },
+    {
+      "id": "ml_c",
+      "title": "Milliliter",
+      "names": ["ml_c"],
+      "category": "Volume",
+      "baseUnit": "L (Liter)",
+      "definition": "10^-3 × L",
+      "description": ""
+    },
+    {
+      "id": "cl_c",
+      "title": "Centiliter",
+      "names": ["cl_c"],
+      "category": "Volume",
+      "baseUnit": "L (Liter)",
+      "definition": "10^-2 × L",
+      "description": ""
+    },
+    {
+      "id": "dl_c",
+      "title": "Deciliter",
+      "names": ["dl_c"],
+      "category": "Volume",
+      "baseUnit": "L (Liter)",
+      "definition": "10^-1 × L",
+      "description": ""
+    },
+    {
+      "id": "cuin",
+      "title": "Cubic Inch",
+      "names": ["cuin"],
+      "category": "Volume",
+      "baseUnit": "in (Inch)",
+      "definition": "(in)^3",
+      "description": ""
+    },
+    {
+      "id": "cucm",
+      "title": "Cubic Centimeter",
+      "names": ["cucm"],
+      "category": "Volume",
+      "baseUnit": "m (Meter)",
+      "definition": "(10^-2 × m)^3",
+      "description": ""
+    },
+    {
+      "id": "cc",
+      "title": "Cubic Centimeter (cc)",
+      "names": ["cc", "CC"],
+      "category": "Volume",
+      "baseUnit": "cucm (Cubic Centimeter)",
+      "definition": "cucm",
+      "description": ""
+    },
+    {
+      "id": "l_p_km",
+      "title": "Liter per Kilometer",
+      "names": ["l_p_km"],
+      "category": "Volume / Fuel Economy",
+      "baseUnit": "L (Liter) × m (Meter)",
+      "definition": "L × (10^3 × m)^-1",
+      "description": ""
+    },
+    {
+      "id": "km_p_l",
+      "title": "Kilometer per Liter",
+      "names": ["km_p_l"],
+      "category": "Volume / Fuel Economy",
+      "baseUnit": "m (Meter) × L (Liter)",
+      "definition": "10^3 × m × (L)^-1",
+      "description": ""
+    },
+    {
+      "id": "mile_p_gal",
+      "title": "Miles per Gallon",
+      "names": ["mile_p_gal"],
+      "category": "Volume / Fuel Economy",
+      "baseUnit": "mi (Mile) × gal (U.S. Gallon)",
+      "definition": "mi × (gal)^-1",
+      "description": ""
+    },
+    {
+      "id": "mpg",
+      "title": "Miles per Gallon",
+      "names": ["mpg"],
+      "category": "Volume / Fuel Economy",
+      "baseUnit": "mile_p_gal (Miles per Gallon)",
+      "definition": "mile_p_gal",
+      "description": ""
+    },
+    {
+      "id": "teaspoon",
+      "title": "Teaspoon",
+      "names": ["teaspoon", "tsp", "teaspoons"],
+      "category": "Volume / Cooking",
+      "baseUnit": "L (Liter)",
+      "definition": "(0.005) × L",
+      "description": ""
+    },
+    {
+      "id": "dessertspoon",
+      "title": "Dessertspoon",
+      "names": ["dessertspoon", "dessertspoons"],
+      "category": "Volume / Cooking",
+      "baseUnit": "teaspoon (Teaspoon)",
+      "definition": "(2) × teaspoon",
+      "description": ""
+    },
+    {
+      "id": "tablespoon",
+      "title": "Tablespoon",
+      "names": ["tablespoon", "tbsp", "tablespoons"],
+      "category": "Volume / Cooking",
+      "baseUnit": "teaspoon (Teaspoon)",
+      "definition": "(3) × teaspoon",
+      "description": ""
+    },
+    {
+      "id": "US_teaspoon",
+      "title": "U.S. Teaspoon",
+      "names": ["US_teaspoon", "tsp_US", "US_teaspoons"],
+      "category": "Volume / Cooking",
+      "baseUnit": "fl_oz (U.S. Fluid Ounce)",
+      "definition": "(1/6) × fl_oz",
+      "description": ""
+    },
+    {
+      "id": "US_dessertspoon",
+      "title": "U.S. Dessertspoon",
+      "names": ["US_dessertspoon", "US_dessertspoons"],
+      "category": "Volume / Cooking",
+      "baseUnit": "US_teaspoon (U.S. Teaspoon)",
+      "definition": "(2) × US_teaspoon",
+      "description": ""
+    },
+    {
+      "id": "US_tablespoon",
+      "title": "U.S. Tablespoon",
+      "names": ["US_tablespoon", "tbsp_US", "US_tablespoons"],
+      "category": "Volume / Cooking",
+      "baseUnit": "US_teaspoon (U.S. Teaspoon)",
+      "definition": "(3) × US_teaspoon",
+      "description": ""
+    },
+    {
+      "id": "cup",
+      "title": "Cup (U.S. Legal)",
+      "names": ["cup", "cups"],
+      "category": "Volume / Cooking",
+      "baseUnit": "L (Liter)",
+      "definition": "(0.24) × L",
+      "description": ""
+    },
+    {
+      "id": "cup_US",
+      "title": "U.S. Cup",
+      "names": ["cup_US", "US_cup", "US_cups"],
+      "category": "Volume / Cooking",
+      "baseUnit": "US_tablespoon (U.S. Tablespoon)",
+      "definition": "(16) × US_tablespoon",
+      "description": ""
+    },
+    {
+      "id": "UK_fl_oz",
+      "title": "Imperial Fluid Ounce",
+      "names": ["fl_oz_UK", "UK_fl_oz", "imperial_fluid_ounce", "imperial_fluid_ounces"],
+      "category": "Volume / Imperial Capacity",
+      "baseUnit": "L (Liter)",
+      "definition": "(0.0284130625) × L",
+      "description": ""
+    },
+    {
+      "id": "UK_gi",
+      "title": "Imperial Gill",
+      "names": ["gi_UK", "UK_gi", "imperial_gill", "imperial_gills"],
+      "category": "Volume / Imperial Capacity",
+      "baseUnit": "UK_fl_oz (Imperial Fluid Ounce)",
+      "definition": "(5) × UK_fl_oz",
+      "description": ""
+    },
+    {
+      "id": "UK_pt",
+      "title": "Imperial Pint",
+      "names": ["pt_UK", "UK_pt", "imperial_pint", "imperial_pints"],
+      "category": "Volume / Imperial Capacity",
+      "baseUnit": "UK_gi (Imperial Gill)",
+      "definition": "(4) × UK_gi",
+      "description": ""
+    },
+    {
+      "id": "UK_qt",
+      "title": "Imperial Quart",
+      "names": ["qt_UK", "UK_qt", "imperial_quart", "imperial_quarts"],
+      "category": "Volume / Imperial Capacity",
+      "baseUnit": "UK_pt (Imperial Pint)",
+      "definition": "(2) × UK_pt",
+      "description": ""
+    },
+    {
+      "id": "UK_gal",
+      "title": "Imperial Gallon",
+      "names": ["gal_UK", "UK_gal", "imperial_gallon", "imperial_gallons"],
+      "category": "Volume / Imperial Capacity",
+      "baseUnit": "UK_qt (Imperial Quart)",
+      "definition": "(4) × UK_qt",
+      "description": ""
+    },
+    {
+      "id": "imperial_minim",
+      "title": "Imperial Minim",
+      "names": ["imperial_minim", "imperial_minims"],
+      "category": "Volume / Imperial Capacity",
+      "baseUnit": "UK_fl_oz (Imperial Fluid Ounce)",
+      "definition": "(1/480) × UK_fl_oz",
+      "description": ""
+    },
+    {
+      "id": "imperial_fluid_scruple",
+      "title": "Imperial Fluid Scruple",
+      "names": ["imperial_fluid_scruple", "imperial_fluid_scruples", "imperial_fluid_scuple"],
+      "category": "Volume / Imperial Capacity",
+      "baseUnit": "imperial_minim (Imperial Minim)",
+      "definition": "(20) × imperial_minim",
+      "description": ""
+    },
+    {
+      "id": "UK_fl_dr",
+      "title": "Imperial Fluid Drachm",
+      "names": ["fl_dr_UK", "UK_fl_dr", "imperial_fluid_drachm", "imperial_fluid_drachms"],
+      "category": "Volume / Imperial Capacity",
+      "baseUnit": "imperial_fluid_scruple (Imperial Fluid Scruple)",
+      "definition": "(3) × imperial_fluid_scruple",
+      "description": ""
+    },
+    {
+      "id": "UK_bu",
+      "title": "Imperial Bushel",
+      "names": ["bu_UK", "UK_bu", "imperial_bushel", "imperial_bushels"],
+      "category": "Volume / Imperial Capacity",
+      "baseUnit": "UK_gal (Imperial Gallon)",
+      "definition": "(8) × UK_gal",
+      "description": ""
+    },
+    {
+      "id": "fl_oz",
+      "title": "U.S. Fluid Ounce",
+      "names": ["fl_oz", "fluid_ounce", "fluid_ounces"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "in (Inch)",
+      "definition": "(231/128) × (in)^3",
+      "description": ""
+    },
+    {
+      "id": "gi",
+      "title": "U.S. Gill",
+      "names": ["gi", "gill", "gills"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "fl_oz (U.S. Fluid Ounce)",
+      "definition": "(4) × fl_oz",
+      "description": ""
+    },
+    {
+      "id": "liq_pt",
+      "title": "U.S. Liquid Pint",
+      "names": ["liq_pt", "liquid_pint", "liquid_pints"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "gi (U.S. Gill)",
+      "definition": "(4) × gi",
+      "description": ""
+    },
+    {
+      "id": "liq_qt",
+      "title": "U.S. Liquid Quart",
+      "names": ["liq_qt", "liquid_quart", "liquid_quarts"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "liq_pt (U.S. Liquid Pint)",
+      "definition": "(2) × liq_pt",
+      "description": ""
+    },
+    {
+      "id": "minim",
+      "title": "U.S. Minim",
+      "names": ["minim", "minims"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "fl_oz (U.S. Fluid Ounce)",
+      "definition": "(1/480) × fl_oz",
+      "description": ""
+    },
+    {
+      "id": "fl_dr",
+      "title": "U.S. Fluid Drachm",
+      "names": ["fl_dr", "fluid_drachm", "fluid_drachms"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "minim (U.S. Minim)",
+      "definition": "(60) × minim",
+      "description": ""
+    },
+    {
+      "id": "dry_pt",
+      "title": "U.S. Dry Pint",
+      "names": ["dry_pt", "dry_pint", "dry_pints"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "in (Inch)",
+      "definition": "(33.6003125) × (in)^3",
+      "description": ""
+    },
+    {
+      "id": "dry_qt",
+      "title": "U.S. Dry Quart",
+      "names": ["dry_qt", "dry_quart", "dry_quarts"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "dry_pt (U.S. Dry Pint)",
+      "definition": "(2) × dry_pt",
+      "description": ""
+    },
+    {
+      "id": "pk",
+      "title": "U.S. Peck",
+      "names": ["pk", "peck", "pecks"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "dry_qt (U.S. Dry Quart)",
+      "definition": "(8) × dry_qt",
+      "description": ""
+    },
+    {
+      "id": "bu",
+      "title": "U.S. Bushel",
+      "names": ["bu", "bushel", "bushels"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "pk (U.S. Peck)",
+      "definition": "(4) × pk",
+      "description": ""
+    },
+    {
+      "id": "gal",
+      "title": "U.S. Gallon",
+      "names": ["gal", "gallon", "gallons"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "liq_qt (U.S. Liquid Quart)",
+      "definition": "(4) × liq_qt",
+      "description": ""
+    },
+    {
+      "id": "bbl",
+      "title": "U.S. Barrel (oil)",
+      "names": ["bbl", "barrel", "barrels"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "gal (U.S. Gallon)",
+      "definition": "(42) × gal",
+      "description": ""
+    },
+    {
+      "id": "acre_ft",
+      "title": "Acre-Foot",
+      "names": ["acre_ft"],
+      "category": "Volume / U.S. Capacity",
+      "baseUnit": "acre (Acre) × ft (Foot)",
+      "definition": "acre × ft",
+      "description": ""
+    },
+    {
+      "id": "cum_p_kg",
+      "title": "Cubic Meter per Kilogram",
+      "names": ["cum_p_kg"],
+      "category": "Volume / Specific Volume",
+      "baseUnit": "m (Meter) × g (Gram)",
+      "definition": "(m)^3 × (10^3 × g)^-1",
+      "description": ""
+    },
+    {
+      "id": "l_p_s",
+      "title": "Liter per Second",
+      "names": ["l_p_s"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "L (Liter) × s (Second)",
+      "definition": "L × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "l_p_min",
+      "title": "Liter per Minute",
+      "names": ["l_p_min"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "L (Liter) × min (Minute)",
+      "definition": "L × (min)^-1",
+      "description": ""
+    },
+    {
+      "id": "l_p_h",
+      "title": "Liter per Hour",
+      "names": ["l_p_h"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "L (Liter) × h (Hour)",
+      "definition": "L × (h)^-1",
+      "description": ""
+    },
+    {
+      "id": "cum_p_s",
+      "title": "Cubic Meter per Second",
+      "names": ["cum_p_s"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "m (Meter) × s (Second)",
+      "definition": "(m)^3 × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "cucm_p_min",
+      "title": "Cubic Centimeter per Minute",
+      "names": ["cucm_p_min"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "m (Meter) × min (Minute)",
+      "definition": "(10^-2 × m)^3 × (min)^-1",
+      "description": ""
+    },
+    {
+      "id": "cumec",
+      "title": "Cumecs",
+      "names": ["cumec", "cumecs"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "cum_p_s (Cubic Meter per Second)",
+      "definition": "cum_p_s",
+      "description": ""
+    },
+    {
+      "id": "sverdrup",
+      "title": "Sverdrup",
+      "names": ["sverdrup"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "cum_p_s (Cubic Meter per Second)",
+      "definition": "(1000000) × cum_p_s",
+      "description": ""
+    },
+    {
+      "id": "cuf_p_min",
+      "title": "Cubic Foot per Minute",
+      "names": ["cuf_p_min"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "ft (Foot) × min (Minute)",
+      "definition": "(ft)^3 × (min)^-1",
+      "description": ""
+    },
+    {
+      "id": "cfm",
+      "title": "Cubic Foot per Minute (CFM)",
+      "names": ["cfm"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "cuf_p_min (Cubic Foot per Minute)",
+      "definition": "cuf_p_min",
+      "description": ""
+    },
+    {
+      "id": "cuf_p_s",
+      "title": "Cubic Foot per Second",
+      "names": ["cuf_p_s"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "ft (Foot) × s (Second)",
+      "definition": "(ft)^3 × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "cfs",
+      "title": "Cubic Foot per Second (CFS)",
+      "names": ["cfs"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "cuf_p_s (Cubic Foot per Second)",
+      "definition": "cuf_p_s",
+      "description": ""
+    },
+    {
+      "id": "gal_p_min",
+      "title": "Gallons per Minute",
+      "names": ["gal_p_min"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "gal (U.S. Gallon) × min (Minute)",
+      "definition": "gal × (min)^-1",
+      "description": ""
+    },
+    {
+      "id": "gpm",
+      "title": "Gallons per Minute (U.S.)",
+      "names": ["gpm"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "gal_p_min (Gallons per Minute)",
+      "definition": "gal_p_min",
+      "description": ""
+    },
+    {
+      "id": "gal_p_h",
+      "title": "Gallons per Hour",
+      "names": ["gal_p_h"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "gal (U.S. Gallon) × h (Hour)",
+      "definition": "gal × (h)^-1",
+      "description": ""
+    },
+    {
+      "id": "gph",
+      "title": "Gallons per Hour (U.S.)",
+      "names": ["gph"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "gal_p_h (Gallons per Hour)",
+      "definition": "gal_p_h",
+      "description": ""
+    },
+    {
+      "id": "gal_p_s",
+      "title": "Gallons per Second (U.S.)",
+      "names": ["gal_p_s"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "gal (U.S. Gallon) × s (Second)",
+      "definition": "gal × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "acre_ft_p_d",
+      "title": "Acre-Foot per Day",
+      "names": ["acre_ft_p_d"],
+      "category": "Volume / Volumetric Flow Rate",
+      "baseUnit": "acre (Acre) × ft (Foot) × d (Day)",
+      "definition": "acre × ft × (d)^-1",
+      "description": ""
+    },
+    {
+      "id": "m_p_s",
+      "title": "Meter per Second",
+      "names": ["m_p_s"],
+      "category": "Speed",
+      "baseUnit": "m (Meter) × s (Second)",
+      "definition": "m × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "km_p_h",
+      "title": "Kilometer per Hour",
+      "names": ["km_p_h"],
+      "category": "Speed",
+      "baseUnit": "m (Meter) × h (Hour)",
+      "definition": "10^3 × m × (h)^-1",
+      "description": ""
+    },
+    {
+      "id": "kph",
+      "title": "Kilometer per Hour (kph)",
+      "names": ["kph", "kmph"],
+      "category": "Speed",
+      "baseUnit": "km_p_h (Kilometer per Hour)",
+      "definition": "km_p_h",
+      "description": ""
+    },
+    {
+      "id": "nautical_mile_p_h",
+      "title": "Nautical Mile per Hour",
+      "names": ["nautical_mile_p_h"],
+      "category": "Speed",
+      "baseUnit": "nautical_mile (Nautical Mile) × h (Hour)",
+      "definition": "nautical_mile × (h)^-1",
+      "description": ""
+    },
+    {
+      "id": "knot",
+      "title": "Knot",
+      "names": ["knot", "knots"],
+      "category": "Speed",
+      "baseUnit": "nautical_mile_p_h (Nautical Mile per Hour)",
+      "definition": "nautical_mile_p_h",
+      "description": ""
+    },
+    {
+      "id": "mile_p_h",
+      "title": "Miles per Hour",
+      "names": ["mile_p_h"],
+      "category": "Speed",
+      "baseUnit": "mi (Mile) × h (Hour)",
+      "definition": "mi × (h)^-1",
+      "description": ""
+    },
+    {
+      "id": "mph",
+      "title": "Miles per Hour",
+      "names": ["mph"],
+      "category": "Speed",
+      "baseUnit": "mile_p_h (Miles per Hour)",
+      "definition": "mile_p_h",
+      "description": ""
+    },
+    {
+      "id": "min_p_km",
+      "title": "Minutes per Kilometer",
+      "names": ["min_p_km"],
+      "category": "Speed",
+      "baseUnit": "min (Minute) × m (Meter)",
+      "definition": "min × (10^3 × m)^-1",
+      "description": ""
+    },
+    {
+      "id": "min_p_mile",
+      "title": "Minutes per Mile",
+      "names": ["min_p_mile"],
+      "category": "Speed",
+      "baseUnit": "min (Minute) × mi (Mile)",
+      "definition": "min × (mi)^-1",
+      "description": ""
+    },
+    {
+      "id": "c_unit",
+      "title": "Speed of Light (Natural Unit of Velocity)",
+      "names": ["c_unit"],
+      "category": "Speed",
+      "baseUnit": "m_p_s (Meter per Second)",
+      "definition": "(299792458) × m_p_s",
+      "description": ""
+    },
+    {
+      "id": "bohr_Ha_p_planck",
+      "title": "Atomic Unit of Velocity",
+      "names": ["bohr_Ha_p_planck"],
+      "category": "Speed",
+      "baseUnit": "bohr_unit (Bohr (Atomic Unit of Length)) × Ha (Hartree (Atomic Unit of Energy)) × planck_unit (Reduced Planck (Atomic/Natural Unit of Action))",
+      "definition": "bohr_unit × Ha × (planck_unit)^-1",
+      "description": ""
+    },
+    {
+      "id": "m_p_sqs",
+      "title": "Meter per Second Squared",
+      "names": ["m_p_sqs"],
+      "category": "Speed / Acceleration",
+      "baseUnit": "m (Meter) × s (Second)",
+      "definition": "m × (s)^-2",
+      "description": ""
+    },
+    {
+      "id": "Gal",
+      "title": "Galileo",
+      "names": ["Gal", "galileo", "galileos"],
+      "category": "Speed / Acceleration",
+      "baseUnit": "m_p_sqs (Meter per Second Squared)",
+      "definition": "(1/100) × m_p_sqs",
+      "description": ""
+    },
+    {
+      "id": "gee",
+      "title": "Standard Gravity (unit)",
+      "names": ["standard_gravity_unit", "gee", "gees"],
+      "category": "Speed / Acceleration",
+      "baseUnit": "m_p_sqs (Meter per Second Squared)",
+      "definition": "(9.80665) × m_p_sqs",
+      "description": ""
+    },
+    {
+      "id": "m_p_scu",
+      "title": "Meter per Second Cubed (Jerk)",
+      "names": ["m_p_scu"],
+      "category": "Speed / Acceleration / Acceleration Change",
+      "baseUnit": "m (Meter) × s (Second)",
+      "definition": "m × (s)^-3",
+      "description": ""
+    },
+    {
+      "id": "gee_p_s",
+      "title": "Standard Gravity per Second",
+      "names": ["gee_p_s"],
+      "category": "Speed / Acceleration / Acceleration Change",
+      "baseUnit": "gee (Standard Gravity (unit)) × s (Second)",
+      "definition": "gee × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "m_p_sfourth",
+      "title": "Meter per Second to the Fourth (Snap)",
+      "names": ["m_p_sfourth"],
+      "category": "Speed / Acceleration / Acceleration Change",
+      "baseUnit": "m (Meter) × s (Second)",
+      "definition": "m × (s)^-4",
+      "description": ""
+    },
+    {
+      "id": "m_p_sfifth",
+      "title": "Meter per Second to the Fifth (Crackle)",
+      "names": ["m_p_sfifth"],
+      "category": "Speed / Acceleration / Acceleration Change",
+      "baseUnit": "m (Meter) × s (Second)",
+      "definition": "m × (s)^-5",
+      "description": ""
+    },
+    {
+      "id": "m_p_ssixth",
+      "title": "Meter per Second to the Sixth (Pop)",
+      "names": ["m_p_ssixth"],
+      "category": "Speed / Acceleration / Acceleration Change",
+      "baseUnit": "m (Meter) × s (Second)",
+      "definition": "m × (s)^-6",
+      "description": ""
+    },
+    {
+      "id": "recm",
+      "title": "Reciprocal Meter",
+      "names": ["recm"],
+      "category": "Magnetism / Wave Number",
+      "baseUnit": "m (Meter)",
+      "definition": "(m)^-1",
+      "description": ""
+    },
+    {
+      "id": "kayser",
+      "title": "Kayser",
+      "names": ["kayser", "kaysers"],
+      "category": "Magnetism / Wave Number",
+      "baseUnit": "recm (Reciprocal Meter)",
+      "definition": "(100) × recm",
+      "description": ""
+    },
+    {
+      "id": "A_p_m",
+      "title": "Ampere per Meter",
+      "names": ["A_p_m"],
+      "category": "Magnetism / Magnetic Field Strength",
+      "baseUnit": "A (Ampere) × m (Meter)",
+      "definition": "A × (m)^-1",
+      "description": ""
+    },
+    {
+      "id": "Oe",
+      "title": "Oersted",
+      "names": ["Oe", "oersted", "oersteds"],
+      "category": "Magnetism / Magnetic Field Strength",
+      "baseUnit": "A_p_m (Ampere per Meter)",
+      "definition": "(1000/(4*pi)) × A_p_m",
+      "description": ""
+    },
+    {
+      "id": "V_s",
+      "title": "Volt Seconds",
+      "names": ["V_s"],
+      "category": "Magnetism / Magnetic Flux",
+      "baseUnit": "V (Volt) × s (Second)",
+      "definition": "V × s",
+      "description": ""
+    },
+    {
+      "id": "Wb",
+      "title": "Weber",
+      "names": ["Wb", "weber", "webers"],
+      "category": "Magnetism / Magnetic Flux",
+      "baseUnit": "V_s (Volt Seconds)",
+      "definition": "V_s",
+      "description": ""
+    },
+    {
+      "id": "Mx",
+      "title": "Maxwell",
+      "names": ["Mx", "maxwell", "maxwells"],
+      "category": "Magnetism / Magnetic Flux",
+      "baseUnit": "Wb (Weber)",
+      "definition": "(1E-8) × Wb",
+      "description": ""
+    },
+    {
+      "id": "Wb_p_sqm",
+      "title": "Weber per Square Meter",
+      "names": ["Wb_p_sqm"],
+      "category": "Magnetism / Magnetic Flux Density",
+      "baseUnit": "Wb (Weber) × m (Meter)",
+      "definition": "Wb × (m)^-2",
+      "description": ""
+    },
+    {
+      "id": "T",
+      "title": "Tesla",
+      "names": ["T", "tesla", "teslas"],
+      "category": "Magnetism / Magnetic Flux Density",
+      "baseUnit": "Wb_p_sqm (Weber per Square Meter)",
+      "definition": "Wb_p_sqm",
+      "description": ""
+    },
+    {
+      "id": "gauss",
+      "title": "Gauss",
+      "names": ["gauss"],
+      "category": "Magnetism / Magnetic Flux Density",
+      "baseUnit": "T (Tesla)",
+      "definition": "(0.0001) × T",
+      "description": ""
+    },
+    {
+      "id": "planck_p_e_sqbohr",
+      "title": "Atomic Unit of Magnetic Flux Density",
+      "names": ["planck_p_e_sqbohr"],
+      "category": "Magnetism / Magnetic Flux Density",
+      "baseUnit": "planck_unit (Reduced Planck (Atomic/Natural Unit of Action)) × e_unit (Atomic Unit of Charge) × bohr_unit (Bohr (Atomic Unit of Length))",
+      "definition": "planck_unit × (e_unit)^-1 × (bohr_unit)^-2",
+      "description": ""
+    },
+    {
+      "id": "A_sqm",
+      "title": "Ampere Square Meter",
+      "names": ["A_sqm"],
+      "category": "Magnetism / Magnetic Dipole Moment",
+      "baseUnit": "A (Ampere) × m (Meter)",
+      "definition": "A × (m)^2",
+      "description": ""
+    },
+    {
+      "id": "e_planck_p_electron",
+      "title": "Atomic Unit of Magnetic Dipole Moment",
+      "names": ["e_planck_p_electron"],
+      "category": "Magnetism / Magnetic Dipole Moment",
+      "baseUnit": "e_unit (Atomic Unit of Charge) × planck_unit (Reduced Planck (Atomic/Natural Unit of Action)) × electron_unit (Atomic/Natural Unit of Mass)",
+      "definition": "e_unit × planck_unit × (electron_unit)^-1",
+      "description": ""
+    },
+    {
+      "id": "m_kg_p_sqs",
+      "title": "Meter Kilogram per Second Squared",
+      "names": ["m_kg_p_sqs"],
+      "category": "Force",
+      "baseUnit": "m (Meter) × g (Gram) × s (Second)",
+      "definition": "m × 10^3 × g × (s)^-2",
+      "description": ""
+    },
+    {
+      "id": "N",
+      "title": "Newton",
+      "names": ["N", "newton", "newtons"],
+      "category": "Force",
+      "baseUnit": "m_kg_p_sqs (Meter Kilogram per Second Squared)",
+      "definition": "m_kg_p_sqs",
+      "description": ""
+    },
+    {
+      "id": "dyn",
+      "title": "Dyne",
+      "names": ["dyn", "dyne", "dynes"],
+      "category": "Force",
+      "baseUnit": "N (Newton)",
+      "definition": "(1E-5) × N",
+      "description": ""
+    },
+    {
+      "id": "lbf",
+      "title": "Pound-force",
+      "names": ["lbf", "pound_force"],
+      "category": "Force",
+      "baseUnit": "N (Newton)",
+      "definition": "(4.4482216152605) × N",
+      "description": ""
+    },
+    {
+      "id": "ozf",
+      "title": "Ounce-force",
+      "names": ["ozf", "ounce_force"],
+      "category": "Force",
+      "baseUnit": "lbf (Pound-force)",
+      "definition": "(0.0625) × lbf",
+      "description": ""
+    },
+    {
+      "id": "lb_ft_p_sqs",
+      "title": "Pound Foot per Second Squared",
+      "names": ["lb_ft_p_sqs"],
+      "category": "Force",
+      "baseUnit": "lb (Pound) × ft (Foot) × s (Second)",
+      "definition": "lb × ft × (s)^-2",
+      "description": ""
+    },
+    {
+      "id": "poundal",
+      "title": "Poundal",
+      "names": ["poundal", "poundals", "pdl"],
+      "category": "Force",
+      "baseUnit": "lb_ft_p_sqs (Pound Foot per Second Squared)",
+      "definition": "lb_ft_p_sqs",
+      "description": ""
+    },
+    {
+      "id": "pond",
+      "title": "Pond (Gram-Force)",
+      "names": ["pond", "ponds", "gf"],
+      "category": "Force",
+      "baseUnit": "N (Newton)",
+      "definition": "(0.00980665) × N",
+      "description": ""
+    },
+    {
+      "id": "kpond_c",
+      "title": "Kilopond (Kilogram-Force)",
+      "names": ["kpond_c"],
+      "category": "Force",
+      "baseUnit": "pond (Pond (Gram-Force))",
+      "definition": "10^3 × pond",
+      "description": ""
+    },
+    {
+      "id": "Ha_p_bohr",
+      "title": "Atomic Unit of Force",
+      "names": ["Ha_p_bohr"],
+      "category": "Force",
+      "baseUnit": "Ha (Hartree (Atomic Unit of Energy)) × bohr_unit (Bohr (Atomic Unit of Length))",
+      "definition": "Ha × (bohr_unit)^-1",
+      "description": ""
+    },
+    {
+      "id": "N_m",
+      "title": "Newton Meter",
+      "names": ["N_m"],
+      "category": "Force / Moment of Force",
+      "baseUnit": "N (Newton) × m (Meter)",
+      "definition": "N × m",
+      "description": ""
+    },
+    {
+      "id": "kg_m_p_s",
+      "title": "Kilogram Meter per Second",
+      "names": ["kg_m_p_s"],
+      "category": "Force / Momentum",
+      "baseUnit": "g (Gram) × m (Meter) × s (Second)",
+      "definition": "10^3 × g × m × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "eV_p_c",
+      "title": "Electronvolt Momentum",
+      "names": ["eV_p_c"],
+      "category": "Force / Momentum",
+      "baseUnit": "eV (Electronvolt) × c_unit (Speed of Light (Natural Unit of Velocity))",
+      "definition": "eV × (c_unit)^-1",
+      "description": ""
+    },
+    {
+      "id": "electron_c",
+      "title": "Natural Unit of Momentum",
+      "names": ["electron_c"],
+      "category": "Force / Momentum",
+      "baseUnit": "electron_unit (Atomic/Natural Unit of Mass) × c_unit (Speed of Light (Natural Unit of Velocity))",
+      "definition": "electron_unit × c_unit",
+      "description": ""
+    },
+    {
+      "id": "planck_p_bohr",
+      "title": "Atomic Unit of Momentum",
+      "names": ["planck_p_bohr"],
+      "category": "Force / Momentum",
+      "baseUnit": "planck_unit (Reduced Planck (Atomic/Natural Unit of Action)) × bohr_unit (Bohr (Atomic Unit of Length))",
+      "definition": "planck_unit × (bohr_unit)^-1",
+      "description": ""
+    },
+    {
+      "id": "N_p_sqm",
+      "title": "Newton per Square Meter",
+      "names": ["N_p_sqm"],
+      "category": "Force / Pressure",
+      "baseUnit": "N (Newton) × m (Meter)",
+      "definition": "N × (m)^-2",
+      "description": ""
+    },
+    {
+      "id": "lbf_p_sqin",
+      "title": "Pound-force per Square Inch",
+      "names": ["lbf_p_sqin"],
+      "category": "Force / Pressure",
+      "baseUnit": "lbf (Pound-force) × in (Inch)",
+      "definition": "lbf × (in)^-2",
+      "description": ""
+    },
+    {
+      "id": "Pa",
+      "title": "Pascal",
+      "names": ["Pa", "pascal", "pascals"],
+      "category": "Force / Pressure",
+      "baseUnit": "N_p_sqm (Newton per Square Meter)",
+      "definition": "N_p_sqm",
+      "description": ""
+    },
+    {
+      "id": "kpond_p_sqcm",
+      "title": "Kilogram-force per Square Centimetre",
+      "names": ["kpond_p_sqcm"],
+      "category": "Force / Pressure",
+      "baseUnit": "pond (Pond (Gram-Force)) × m (Meter)",
+      "definition": "10^3 × pond × (10^-2 × m)^-2",
+      "description": ""
+    },
+    {
+      "id": "psi",
+      "title": "Pound-force per Square Inch (psi)",
+      "names": ["psi"],
+      "category": "Force / Pressure",
+      "baseUnit": "lbf_p_sqin (Pound-force per Square Inch)",
+      "definition": "lbf_p_sqin",
+      "description": ""
+    },
+    {
+      "id": "ksi",
+      "title": "Kilopound-force per Square Inch (ksi)",
+      "names": ["ksi"],
+      "category": "Force / Pressure",
+      "baseUnit": "psi (Pound-force per Square Inch (psi))",
+      "definition": "(1000) × psi",
+      "description": ""
+    },
+    {
+      "id": "bar",
+      "title": "Bar",
+      "names": ["bar", "bars"],
+      "category": "Force / Pressure",
+      "baseUnit": "Pa (Pascal)",
+      "definition": "(100000) × Pa",
+      "description": ""
+    },
+    {
+      "id": "atm",
+      "title": "Atmosphere",
+      "names": ["atm", "atmosphere", "atmospheres"],
+      "category": "Force / Pressure",
+      "baseUnit": "Pa (Pascal)",
+      "definition": "(101325) × Pa",
+      "description": ""
+    },
+    {
+      "id": "Torr",
+      "title": "Torr",
+      "names": ["Torr", "torr", "torrs"],
+      "category": "Force / Pressure",
+      "baseUnit": "atm (Atmosphere)",
+      "definition": "(1/760) × atm",
+      "description": ""
+    },
+    {
+      "id": "mHg",
+      "title": "Meter of Mercury",
+      "names": ["mHg"],
+      "category": "Force / Pressure",
+      "baseUnit": "atm (Atmosphere)",
+      "definition": "(1000/760) × atm",
+      "description": ""
+    },
+    {
+      "id": "mmHg",
+      "title": "Millimeter of Mercury",
+      "names": ["mmHg"],
+      "category": "Force / Pressure",
+      "baseUnit": "mHg (Meter of Mercury)",
+      "definition": "(0.001) × mHg",
+      "description": ""
+    },
+    {
+      "id": "inHg",
+      "title": "Inch of Mercury",
+      "names": ["inHg"],
+      "category": "Force / Pressure",
+      "baseUnit": "mmHg (Millimeter of Mercury)",
+      "definition": "(25.4) × mmHg",
+      "description": ""
+    },
+    {
+      "id": "mTorr_c",
+      "title": "Millitorr",
+      "names": ["mTorr_c"],
+      "category": "Force / Pressure",
+      "baseUnit": "Torr (Torr)",
+      "definition": "10^-3 × Torr",
+      "description": ""
+    },
+    {
+      "id": "dyn_p_sqcm",
+      "title": "Dyne per Square Centimetre",
+      "names": ["dyn_p_sqcm"],
+      "category": "Force / Pressure",
+      "baseUnit": "dyn (Dyne) × m (Meter)",
+      "definition": "dyn × (10^-2 × m)^-2",
+      "description": ""
+    },
+    {
+      "id": "Ba",
+      "title": "Barye",
+      "names": ["Ba", "barye"],
+      "category": "Force / Pressure",
+      "baseUnit": "dyn_p_sqcm (Dyne per Square Centimetre)",
+      "definition": "dyn_p_sqcm",
+      "description": ""
+    },
+    {
+      "id": "mWC",
+      "title": "Meter of Water",
+      "names": ["mWC", "mwg", "mH₂O"],
+      "category": "Force / Pressure",
+      "baseUnit": "Pa (Pascal)",
+      "definition": "(9806.65) × Pa",
+      "description": ""
+    },
+    {
+      "id": "mmWC_c",
+      "title": "Millimeter of Water",
+      "names": ["mmWC_c"],
+      "category": "Force / Pressure",
+      "baseUnit": "mWC (Meter of Water)",
+      "definition": "10^-3 × mWC",
+      "description": ""
+    },
+    {
+      "id": "cmWC_c",
+      "title": "Centimeter of Water",
+      "names": ["cmWC_c"],
+      "category": "Force / Pressure",
+      "baseUnit": "mWC (Meter of Water)",
+      "definition": "10^-2 × mWC",
+      "description": ""
+    },
+    {
+      "id": "inWC",
+      "title": "Inch of Water",
+      "names": ["inWC", "iwg", "inH₂O"],
+      "category": "Force / Pressure",
+      "baseUnit": "mWC (Meter of Water)",
+      "definition": "(0.0254) × mWC",
+      "description": ""
+    },
+    {
+      "id": "Pa_s",
+      "title": "Pascal Second",
+      "names": ["Pa_s"],
+      "category": "Force / Dynamic Viscosity",
+      "baseUnit": "Pa (Pascal) × s (Second)",
+      "definition": "Pa × s",
+      "description": ""
+    },
+    {
+      "id": "P",
+      "title": "Poise",
+      "names": ["P", "poise", "poises"],
+      "category": "Force / Dynamic Viscosity",
+      "baseUnit": "Pa_s (Pascal Second)",
+      "definition": "(0.1) × Pa_s",
+      "description": ""
+    },
+    {
+      "id": "cP_c",
+      "title": "Centipoise",
+      "names": ["cP_c"],
+      "category": "Force / Dynamic Viscosity",
+      "baseUnit": "P (Poise)",
+      "definition": "10^-2 × P",
+      "description": ""
+    },
+    {
+      "id": "sqm_p_s",
+      "title": "Square Meter per Second",
+      "names": ["sqm_p_s"],
+      "category": "Force / Kinematic Viscosity",
+      "baseUnit": "m (Meter) × s (Second)",
+      "definition": "(m)^2 × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "St",
+      "title": "Stokes",
+      "names": ["St", "stokes"],
+      "category": "Force / Kinematic Viscosity",
+      "baseUnit": "sqm_p_s (Square Meter per Second)",
+      "definition": "(0.0001) × sqm_p_s",
+      "description": ""
+    },
+    {
+      "id": "cSt_c",
+      "title": "Centistokes",
+      "names": ["cSt_c"],
+      "category": "Force / Kinematic Viscosity",
+      "baseUnit": "St (Stokes)",
+      "definition": "10^-2 × St",
+      "description": ""
+    },
+    {
+      "id": "N_p_m",
+      "title": "Newton per Meter",
+      "names": ["N_p_m"],
+      "category": "Force / Surface Tension",
+      "baseUnit": "N (Newton) × m (Meter)",
+      "definition": "N × (m)^-1",
+      "description": ""
+    },
+    {
+      "id": "J",
+      "title": "Joule",
+      "names": ["J", "joule", "joules"],
+      "category": "Energy",
+      "baseUnit": "N_m (Newton Meter)",
+      "definition": "N_m",
+      "description": ""
+    },
+    {
+      "id": "kJ_c",
+      "title": "Kilojoule",
+      "names": ["kJ_c"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "10^3 × J",
+      "description": ""
+    },
+    {
+      "id": "W_h",
+      "title": "Watt Hour",
+      "names": ["W_h"],
+      "category": "Energy",
+      "baseUnit": "W (Watt) × h (Hour)",
+      "definition": "W × h",
+      "description": ""
+    },
+    {
+      "id": "kW_h",
+      "title": "Kilowatt Hour",
+      "names": ["kW_h"],
+      "category": "Energy",
+      "baseUnit": "W (Watt) × h (Hour)",
+      "definition": "10^3 × W × h",
+      "description": ""
+    },
+    {
+      "id": "cal_IT",
+      "title": "Calorie (international table)",
+      "names": ["cal_IT"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(4.1868) × J",
+      "description": ""
+    },
+    {
+      "id": "cal_th",
+      "title": "Calorie (thermochemical)",
+      "names": ["cal_th", "cal", "calorie", "calories"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(4.184) × J",
+      "description": ""
+    },
+    {
+      "id": "kcal_c",
+      "title": "Kilocalorie",
+      "names": ["kcal_c"],
+      "category": "Energy",
+      "baseUnit": "cal_th (Calorie (thermochemical))",
+      "definition": "10^3 × cal_th",
+      "description": ""
+    },
+    {
+      "id": "Calorie",
+      "title": "Calorie (capital C)",
+      "names": ["Calorie", "Calories"],
+      "category": "Energy",
+      "baseUnit": "cal_th (Calorie (thermochemical))",
+      "definition": "(1000) × cal_th",
+      "description": ""
+    },
+    {
+      "id": "gTNT",
+      "title": "Gram of TNT",
+      "names": ["gTNT", "gramTNT"],
+      "category": "Energy",
+      "baseUnit": "cal_th (Calorie (thermochemical))",
+      "definition": "(1000) × cal_th",
+      "description": ""
+    },
+    {
+      "id": "tTNT",
+      "title": "Ton of TNT",
+      "names": ["tTNT", "tonTNT"],
+      "category": "Energy",
+      "baseUnit": "gTNT (Gram of TNT)",
+      "definition": "(1000000) × gTNT",
+      "description": ""
+    },
+    {
+      "id": "cal_fifteen",
+      "title": "Calorie (15 degrees Celsius)",
+      "names": ["cal_fifteen"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(4.1855) × J",
+      "description": ""
+    },
+    {
+      "id": "cal_mean",
+      "title": "Calorie (mean)",
+      "names": ["cal_mean"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(4.19002) × J",
+      "description": ""
+    },
+    {
+      "id": "cal_IUNS",
+      "title": "Calorie (IUNS)",
+      "names": ["cal_IUNS"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(4.182) × J",
+      "description": ""
+    },
+    {
+      "id": "Btu",
+      "title": "British Thermal Unit (IT)",
+      "names": ["Btu"],
+      "category": "Energy",
+      "baseUnit": "cal_IT (Calorie (international table))",
+      "definition": "(45359237/180000) × cal_IT",
+      "description": ""
+    },
+    {
+      "id": "therm",
+      "title": "Therm (IT)",
+      "names": ["therm", "therms", "thm"],
+      "category": "Energy",
+      "baseUnit": "Btu (British Thermal Unit (IT))",
+      "definition": "(100000) × Btu",
+      "description": ""
+    },
+    {
+      "id": "therm_ISO",
+      "title": "Therm (ISO)",
+      "names": ["therm_ISO", "therms_ISO", "thm_ISO"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(105506000) × J",
+      "description": ""
+    },
+    {
+      "id": "therm_US",
+      "title": "Therm (U.S.)",
+      "names": ["therm_US", "therms_US", "thm_US"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(105480400) × J",
+      "description": ""
+    },
+    {
+      "id": "thermie",
+      "title": "Thermie",
+      "names": ["thermie", "thermies", "th"],
+      "category": "Energy",
+      "baseUnit": "cal_IT (Calorie (international table))",
+      "definition": "(1E6) × cal_IT",
+      "description": ""
+    },
+    {
+      "id": "eV",
+      "title": "Electronvolt",
+      "names": ["eV", "electronvolt", "electronvolts"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(1.602176634E-19) × J",
+      "description": ""
+    },
+    {
+      "id": "erg",
+      "title": "Erg",
+      "names": ["erg", "ergs"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(1E-7) × J",
+      "description": ""
+    },
+    {
+      "id": "foe",
+      "title": "Foe",
+      "names": ["foe", "foes"],
+      "category": "Energy",
+      "baseUnit": "erg (Erg)",
+      "definition": "(1E51) × erg",
+      "description": ""
+    },
+    {
+      "id": "ft_lbf",
+      "title": "Foot-Pound Force",
+      "names": ["ft_lbf"],
+      "category": "Energy",
+      "baseUnit": "ft (Foot) × lbf (Pound-force)",
+      "definition": "ft × lbf",
+      "description": ""
+    },
+    {
+      "id": "Ha",
+      "title": "Hartree (Atomic Unit of Energy)",
+      "names": ["Ha", "E_h", "hartree"],
+      "category": "Energy",
+      "baseUnit": "J (Joule)",
+      "definition": "(2*rydberg*planck*c) × J",
+      "description": ""
+    },
+    {
+      "id": "Ry",
+      "title": "Rydberg (unit)",
+      "names": ["Ry", "rydberg_unit"],
+      "category": "Energy",
+      "baseUnit": "Ha (Hartree (Atomic Unit of Energy))",
+      "definition": "(0.5) × Ha",
+      "description": ""
+    },
+    {
+      "id": "electron_sqc",
+      "title": "Natural Unit of Energy",
+      "names": ["electron_sqc"],
+      "category": "Energy",
+      "baseUnit": "electron_unit (Atomic/Natural Unit of Mass) × c_unit (Speed of Light (Natural Unit of Velocity))",
+      "definition": "electron_unit × (c_unit)^2",
+      "description": ""
+    },
+    {
+      "id": "J_p_kg",
+      "title": "Joule per Kilogram",
+      "names": ["J_p_kg"],
+      "category": "Energy / Specific Energy",
+      "baseUnit": "J (Joule) × g (Gram)",
+      "definition": "J × (10^3 × g)^-1",
+      "description": ""
+    },
+    {
+      "id": "kcal_p_g",
+      "title": "Kilocalerie per Gram",
+      "names": ["kcal_p_g"],
+      "category": "Energy / Specific Energy",
+      "baseUnit": "cal_th (Calorie (thermochemical)) × g (Gram)",
+      "definition": "10^3 × cal_th × (g)^-1",
+      "description": ""
+    },
+    {
+      "id": "J_p_s",
+      "title": "Joule per Second",
+      "names": ["J_p_s"],
+      "category": "Energy / Power",
+      "baseUnit": "J (Joule) × s (Second)",
+      "definition": "J × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "W",
+      "title": "Watt",
+      "names": ["W", "watt", "watts"],
+      "category": "Energy / Power",
+      "baseUnit": "J_p_s (Joule per Second)",
+      "definition": "J_p_s",
+      "description": ""
+    },
+    {
+      "id": "hp",
+      "title": "Horse Power",
+      "names": ["hp", "horsepower", "horsepowers"],
+      "category": "Energy / Power",
+      "baseUnit": "W (Watt)",
+      "definition": "(745.699987158227022) × W",
+      "description": ""
+    },
+    {
+      "id": "PS",
+      "title": "Pferdestärke",
+      "names": ["PS", "pferdestärke"],
+      "category": "Energy / Power",
+      "baseUnit": "W (Watt)",
+      "definition": "(735.49875) × W",
+      "description": ""
+    },
+    {
+      "id": "dBm",
+      "title": "Decibel Milliwatt",
+      "names": ["dBm"],
+      "category": "Energy / Power",
+      "baseUnit": "W (Watt)",
+      "definition": "x → (10^((x-30)/10)) × W",
+      "description": ""
+    },
+    {
+      "id": "dBW",
+      "title": "Decibel Watt",
+      "names": ["dBW"],
+      "category": "Energy / Power",
+      "baseUnit": "W (Watt)",
+      "definition": "x → (10^(x/10)) × W",
+      "description": ""
+    },
+    {
+      "id": "erg_p_s",
+      "title": "Erg per Second",
+      "names": ["erg_p_s"],
+      "category": "Energy / Power",
+      "baseUnit": "erg (Erg) × s (Second)",
+      "definition": "erg × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "solar_luminosity",
+      "title": "Solar Luminosity (nominal)",
+      "names": ["solar_luminosity", "L_☉"],
+      "category": "Energy / Power",
+      "baseUnit": "W (Watt)",
+      "definition": "(3.828E26) × W",
+      "description": ""
+    },
+    {
+      "id": "Btu_p_h",
+      "title": "Btu per Hour",
+      "names": ["Btu_p_h"],
+      "category": "Energy / Power",
+      "baseUnit": "Btu (British Thermal Unit (IT)) × h (Hour)",
+      "definition": "Btu × (h)^-1",
+      "description": ""
+    },
+    {
+      "id": "ton_refrigaration",
+      "title": "Ton of Refrigeration",
+      "names": ["ton_refrigaration", "TOR"],
+      "category": "Energy / Power",
+      "baseUnit": "Btu_p_h (Btu per Hour)",
+      "definition": "(12000) × Btu_p_h",
+      "description": ""
+    },
+    {
+      "id": "J_p_K",
+      "title": "Joule per Kelvin",
+      "names": ["J_p_K"],
+      "category": "Energy / Entropy",
+      "baseUnit": "J (Joule) × K (Kelvin)",
+      "definition": "J × (K)^-1",
+      "description": ""
+    },
+    {
+      "id": "boltzmann_unit",
+      "title": "Boltzmann (unit)",
+      "names": ["boltzmann_unit", "k_Bunit"],
+      "category": "Energy / Entropy",
+      "baseUnit": "J_p_K (Joule per Kelvin)",
+      "definition": "(1.380649E-23) × J_p_K",
+      "description": ""
+    },
+    {
+      "id": "J_p_kg_K",
+      "title": "Joule per Kilogram Kelvin",
+      "names": ["J_p_kg_K"],
+      "category": "Energy / Specific Entropy",
+      "baseUnit": "J (Joule) × g (Gram) × K (Kelvin)",
+      "definition": "J × (10^3 × g)^-1 × (K)^-1",
+      "description": ""
+    },
+    {
+      "id": "W_p_m_K",
+      "title": "Watt per Meter Kelvin",
+      "names": ["W_p_m_K"],
+      "category": "Energy / Thermal Conductivity",
+      "baseUnit": "W (Watt) × m (Meter) × K (Kelvin)",
+      "definition": "W × (m)^-1 × (K)^-1",
+      "description": ""
+    },
+    {
+      "id": "J_p_cum",
+      "title": "Joule per Cubic Meter",
+      "names": ["J_p_cum"],
+      "category": "Energy / Energy Density",
+      "baseUnit": "J (Joule) × m (Meter)",
+      "definition": "J × (m)^-3",
+      "description": ""
+    },
+    {
+      "id": "J_p_mol",
+      "title": "Joule per Mole",
+      "names": ["J_p_mol"],
+      "category": "Energy / Molar Energy",
+      "baseUnit": "J (Joule) × mol (Mole)",
+      "definition": "J × (mol)^-1",
+      "description": ""
+    },
+    {
+      "id": "J_p_mol_K",
+      "title": "Joule per Mole Kelvin",
+      "names": ["J_p_mol_K"],
+      "category": "Energy / Molar Entropy",
+      "baseUnit": "J (Joule) × mol (Mole) × K (Kelvin)",
+      "definition": "J × (mol)^-1 × (K)^-1",
+      "description": ""
+    },
+    {
+      "id": "J_s",
+      "title": "Joule Second",
+      "names": ["J_s"],
+      "category": "Energy / Action",
+      "baseUnit": "J (Joule) × s (Second)",
+      "definition": "J × s",
+      "description": ""
+    },
+    {
+      "id": "planck_unit",
+      "title": "Reduced Planck (Atomic/Natural Unit of Action)",
+      "names": ["planck_unit", "ℏ_unit"],
+      "category": "Energy / Action",
+      "baseUnit": "J_s (Joule Second)",
+      "definition": "(3.313035075E-34/pi) × J_s",
+      "description": ""
+    },
+    {
+      "id": "Bq",
+      "title": "Becquerel",
+      "names": ["Bq", "becquerel", "becquerels"],
+      "category": "Radioactivity",
+      "baseUnit": "s (Second)",
+      "definition": "(s)^-1",
+      "description": ""
+    },
+    {
+      "id": "Ci",
+      "title": "Curie",
+      "names": ["Ci", "curie", "curies"],
+      "category": "Radioactivity",
+      "baseUnit": "Bq (Becquerel)",
+      "definition": "(3.7E10) × Bq",
+      "description": ""
+    },
+    {
+      "id": "Rd",
+      "title": "Rutherford",
+      "names": ["Rd", "rutherford", "rutherfords"],
+      "category": "Radioactivity",
+      "baseUnit": "Bq (Becquerel)",
+      "definition": "(1E6) × Bq",
+      "description": ""
+    },
+    {
+      "id": "Gy",
+      "title": "Gray",
+      "names": ["Gy", "gray", "grays"],
+      "category": "Radioactivity / Absorbed Dose",
+      "baseUnit": "J_p_kg (Joule per Kilogram)",
+      "definition": "J_p_kg",
+      "description": ""
+    },
+    {
+      "id": "rad_radioactivity",
+      "title": "Rad",
+      "names": ["rad_radioactivity"],
+      "category": "Radioactivity / Absorbed Dose",
+      "baseUnit": "Gy (Gray)",
+      "definition": "(1/100) × Gy",
+      "description": ""
+    },
+    {
+      "id": "erg_p_g",
+      "title": "Erg per Gram",
+      "names": ["erg_p_g"],
+      "category": "Radioactivity / Absorbed Dose",
+      "baseUnit": "erg (Erg) × g (Gram)",
+      "definition": "erg × (g)^-1",
+      "description": ""
+    },
+    {
+      "id": "Sv",
+      "title": "Sievert",
+      "names": ["Sv", "sievert", "sieverts"],
+      "category": "Radioactivity / Dose Equivalent",
+      "baseUnit": "J_p_kg (Joule per Kilogram)",
+      "definition": "J_p_kg",
+      "description": ""
+    },
+    {
+      "id": "rem_radioactivity",
+      "title": "Roentgen Equivalent Man (Rem)",
+      "names": ["rem_radioactivity", "rem"],
+      "category": "Radioactivity / Dose Equivalent",
+      "baseUnit": "Sv (Sievert)",
+      "definition": "(1/100) × Sv",
+      "description": ""
+    },
+    {
+      "id": "mrem_c",
+      "title": "Millirem",
+      "names": ["mrem_c"],
+      "category": "Radioactivity / Dose Equivalent",
+      "baseUnit": "rem_radioactivity (Roentgen Equivalent Man (Rem))",
+      "definition": "10^-3 × rem_radioactivity",
+      "description": ""
+    },
+    {
+      "id": "C_p_kg",
+      "title": "Coulomb per Kilogram",
+      "names": ["C_p_kg"],
+      "category": "Radioactivity / Exposure",
+      "baseUnit": "C (Coulomb) × g (Gram)",
+      "definition": "C × (10^3 × g)^-1",
+      "description": ""
+    },
+    {
+      "id": "R",
+      "title": "Roentgen",
+      "names": ["R", "roentgen", "röntgen", "roentgens", "röntgens"],
+      "category": "Radioactivity / Exposure",
+      "baseUnit": "C_p_kg (Coulomb per Kilogram)",
+      "definition": "(0.000258) × C_p_kg",
+      "description": ""
+    },
+    {
+      "id": "Gy_p_s",
+      "title": "Gray per Second",
+      "names": ["Gy_p_s"],
+      "category": "Radioactivity / Absorbed Dose Rate",
+      "baseUnit": "Gy (Gray) × s (Second)",
+      "definition": "Gy × (s)^-1",
+      "description": ""
+    },
+    {
+      "id": "mrem_p_h",
+      "title": "Millirem per Hour",
+      "names": ["mrem_p_h"],
+      "category": "Radioactivity / Absorbed Dose Rate",
+      "baseUnit": "rem_radioactivity (Roentgen Equivalent Man (Rem)) × h (Hour)",
+      "definition": "10^-3 × rem_radioactivity × (h)^-1",
+      "description": ""
+    },
+    {
+      "id": "Np",
+      "title": "Neper",
+      "names": ["Np", "neper", "nepers"],
+      "category": "Ratio",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "bel",
+      "title": "Bel",
+      "names": ["bel", "bels"],
+      "category": "Ratio",
+      "baseUnit": "Np (Neper)",
+      "definition": "(0.5*ln(10)) × Np",
+      "description": ""
+    },
+    {
+      "id": "dB",
+      "title": "Decibel",
+      "names": ["dB", "decibel", "decibels"],
+      "category": "Ratio",
+      "baseUnit": "bel (Bel)",
+      "definition": "(0.1) × bel",
+      "description": ""
+    },
+    {
+      "id": "bit",
+      "title": "Bit (Binary Digit)",
+      "names": ["bit", "bits", "shannon", "shannons", "Sh", "binary_digit", "binary_digits"],
+      "category": "Information",
+      "baseUnit": "",
+      "definition": "Base unit",
+      "description": ""
+    },
+    {
+      "id": "nat",
+      "title": "Nat",
+      "names": ["nat", "nats"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "(log2(e)) × bit",
+      "description": ""
+    },
+    {
+      "id": "trit",
+      "title": "Trit (Ternary Digit)",
+      "names": [
+        "trit",
+        "trits",
+        "trinary_digit",
+        "trinary_digits",
+        "ternary_digit",
+        "ternary_digits"
+      ],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "(log2(3)) × bit",
+      "description": ""
+    },
+    {
+      "id": "octal_digit",
+      "title": "Octal Digit",
+      "names": ["octal_digit", "octal_digits"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "(3) × bit",
+      "description": ""
+    },
+    {
+      "id": "hartley",
+      "title": "Hartley (Decimal Digit)",
+      "names": ["hartley", "hartleys", "Hart", "dit", "dits", "decimal_digit", "decimal_digits"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "(log2(10)) × bit",
+      "description": ""
+    },
+    {
+      "id": "byte",
+      "title": "Byte (8-bit)",
+      "names": ["byte", "B", "bytes", "octet", "octets", "o"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "(8) × bit",
+      "description": ""
+    },
+    {
+      "id": "nibble",
+      "title": "Nibble (Hexadecimal Digit)",
+      "names": [
+        "nibble",
+        "nibbles",
+        "nybble",
+        "nybbles",
+        "semioctet",
+        "semioctets",
+        "hex_digit",
+        "hex_digits",
+        "hexadecimal_digit",
+        "hexadecimal_digits"
+      ],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "(4) × bit",
+      "description": ""
+    },
+    {
+      "id": "tribble",
+      "title": "Tribble",
+      "names": ["tribble", "tribbles"],
+      "category": "Information",
+      "baseUnit": "nibble (Nibble (Hexadecimal Digit))",
+      "definition": "(3) × nibble",
+      "description": ""
+    },
+    {
+      "id": "nonet",
+      "title": "Nonet",
+      "names": ["nonet", "nonets"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "(9) × bit",
+      "description": ""
+    },
+    {
+      "id": "declet",
+      "title": "Declet",
+      "names": ["declet", "declets"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "(10) × bit",
+      "description": ""
+    },
+    {
+      "id": "word",
+      "title": "Word (16-bit)",
+      "names": ["word", "words"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "(16) × bit",
+      "description": ""
+    },
+    {
+      "id": "kbyte_c",
+      "title": "Kilobyte",
+      "names": ["kbyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "10^3 × byte",
+      "description": ""
+    },
+    {
+      "id": "Mbyte_c",
+      "title": "Megabyte",
+      "names": ["Mbyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "10^6 × byte",
+      "description": ""
+    },
+    {
+      "id": "Gbyte_c",
+      "title": "Gigabyte",
+      "names": ["Gbyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "10^9 × byte",
+      "description": ""
+    },
+    {
+      "id": "Tbyte_c",
+      "title": "Terabyte",
+      "names": ["Tbyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "10^12 × byte",
+      "description": ""
+    },
+    {
+      "id": "Pbyte_c",
+      "title": "Petabyte",
+      "names": ["Pbyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "10^15 × byte",
+      "description": ""
+    },
+    {
+      "id": "Ebyte_c",
+      "title": "Exabyte",
+      "names": ["Ebyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "10^18 × byte",
+      "description": ""
+    },
+    {
+      "id": "Kibyte_c",
+      "title": "Kibibyte",
+      "names": ["Kibyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "2^10 × byte",
+      "description": ""
+    },
+    {
+      "id": "Mibyte_c",
+      "title": "Mebibyte",
+      "names": ["Mibyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "2^20 × byte",
+      "description": ""
+    },
+    {
+      "id": "Gibyte_c",
+      "title": "Gibibyte",
+      "names": ["Gibyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "2^30 × byte",
+      "description": ""
+    },
+    {
+      "id": "Tibyte_c",
+      "title": "Tebibyte",
+      "names": ["Tibyte_c"],
+      "category": "Information",
+      "baseUnit": "byte (Byte (8-bit))",
+      "definition": "2^40 × byte",
+      "description": ""
+    },
+    {
+      "id": "kbit_c",
+      "title": "Kilobit",
+      "names": ["kbit_c"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "10^3 × bit",
+      "description": ""
+    },
+    {
+      "id": "Mbit_c",
+      "title": "Megabit",
+      "names": ["Mbit_c"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "10^6 × bit",
+      "description": ""
+    },
+    {
+      "id": "Gbit_c",
+      "title": "Gigabit",
+      "names": ["Gbit_c"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "10^9 × bit",
+      "description": ""
+    },
+    {
+      "id": "Tbit_c",
+      "title": "Terabit",
+      "names": ["Tbit_c"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "10^12 × bit",
+      "description": ""
+    },
+    {
+      "id": "Pbit_c",
+      "title": "Petabit",
+      "names": ["Pbit_c"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "10^15 × bit",
+      "description": ""
+    },
+    {
+      "id": "Kibit_c",
+      "title": "Kibibit",
+      "names": ["Kibit_c"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "2^10 × bit",
+      "description": ""
+    },
+    {
+      "id": "Mibit_c",
+      "title": "Mebibit",
+      "names": ["Mibit_c"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "2^20 × bit",
+      "description": ""
+    },
+    {
+      "id": "Gibit_c",
+      "title": "Gibibit",
+      "names": ["Gibit_c"],
+      "category": "Information",
+      "baseUnit": "bit (Bit (Binary Digit))",
+      "definition": "2^30 × bit",
+      "description": ""
+    },
+    {
+      "id": "pt",
+      "title": "PostScript Point (DTP)",
+      "names": ["pt", "pts", "point", "points", "bp_tex", "tex_bp"],
+      "category": "Typography",
+      "baseUnit": "in (Inch)",
+      "definition": "(1/72) × in",
+      "description": "The PostScript point, or desktop publishing point, is the screen-independent typographic unit commonly used in computer software and for digital printing. It is known as the big point (bp) in TeX."
+    },
+    {
+      "id": "tex_point",
+      "title": "TeX Point",
+      "names": ["tex_point", "pt_TeX", "tex_pt", "tex_points"],
+      "category": "Typography",
+      "baseUnit": "in (Inch)",
+      "definition": "(1/72.27) × in",
+      "description": ""
+    },
+    {
+      "id": "tex_scaled_point",
+      "title": "TeX Scaled Point",
+      "names": ["tex_scaled_point", "sp_TeX", "tex_sp", "tex_scaled_points"],
+      "category": "Typography",
+      "baseUnit": "tex_point (TeX Point)",
+      "definition": "(1/65536) × tex_point",
+      "description": ""
+    },
+    {
+      "id": "pica",
+      "title": "PostScript Pica",
+      "names": ["pica", "picas"],
+      "category": "Typography",
+      "baseUnit": "pt (PostScript Point (DTP))",
+      "definition": "(12) × pt",
+      "description": ""
+    },
+    {
+      "id": "twip",
+      "title": "Twip",
+      "names": ["twip", "twips"],
+      "category": "Typography",
+      "baseUnit": "pt (PostScript Point (DTP))",
+      "definition": "(1/20) × pt",
+      "description": ""
+    },
+    {
+      "id": "agate",
+      "title": "Agate",
+      "names": ["agate", "agates"],
+      "category": "Typography",
+      "baseUnit": "pt (PostScript Point (DTP))",
+      "definition": "(5.5) × pt",
+      "description": ""
+    },
+    {
+      "id": "ata_pica",
+      "title": "Johnson Pica",
+      "names": ["johnson_pica", "ata_pica", "ata_picas"],
+      "category": "Typography",
+      "baseUnit": "in (Inch)",
+      "definition": "(0.166) × in",
+      "description": ""
+    },
+    {
+      "id": "ata_point",
+      "title": "American Point",
+      "names": ["US_point", "ata_point", "pt_US", "ata_pt", "US_points", "ata_points"],
+      "category": "Typography",
+      "baseUnit": "ata_pica (Johnson Pica)",
+      "definition": "(1/12) × ata_pica",
+      "description": ""
+    },
+    {
+      "id": "new_didot",
+      "title": "New Didot Point",
+      "names": ["new_didot"],
+      "category": "Typography",
+      "baseUnit": "m (Meter)",
+      "definition": "(0.000375) × m",
+      "description": ""
+    },
+    {
+      "id": "didot",
+      "title": "Didot Point",
+      "names": ["didot", "dd"],
+      "category": "Typography",
+      "baseUnit": "pouce (Pouce (French Royal Inch))",
+      "definition": "(1/72) × pouce",
+      "description": ""
+    },
+    {
+      "id": "cicero",
+      "title": "Cicero",
+      "names": ["cicero"],
+      "category": "Typography",
+      "baseUnit": "didot (Didot Point)",
+      "definition": "(12) × didot",
+      "description": ""
+    }
+  ]
+}
