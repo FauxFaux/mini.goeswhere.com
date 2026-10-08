@@ -1,6 +1,7 @@
 import { UrlHandler } from "../../boot/url-handler.tsx";
 import type { State } from "../../boot/url-state.ts";
 import { strengthStandardsCodec, type StrengthStandardsState } from "./state.ts";
+import { StandardsGraph } from "./graph.tsx";
 import {
   bodyweightBounds,
   clampBodyweight,
@@ -146,6 +147,7 @@ function StandardsTables({ uss: [state, setState] }: { uss: State<StrengthStanda
         pounds and rounded to one decimal place. A “+” marks an open-ended bodyweight row. Your
         choices are saved in the URL.
       </p>
+      <StandardsGraph state={state} />
       {standards.map((activity) => {
         const rows = activity[state.sex];
         const selected =

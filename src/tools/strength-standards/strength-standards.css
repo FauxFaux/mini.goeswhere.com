@@ -72,3 +72,49 @@
 .strength-standards tbody tr:nth-child(even) {
   background: #22252a;
 }
+
+.strength-standards-graph {
+  max-width: 40rem;
+  margin: 2rem 0;
+}
+
+.strength-standards-graph svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 0.75rem;
+}
+
+.strength-standards-graph text {
+  fill: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.strength-standards-graph .strength-standards-axis-label {
+  fill: currentColor;
+}
+
+.strength-standards-grid {
+  stroke: var(--border);
+}
+
+.strength-standards-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+
+.strength-standards-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.strength-standards-swatch {
+  width: 1.25rem;
+  height: 3px;
+}

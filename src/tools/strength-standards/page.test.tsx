@@ -10,6 +10,46 @@ import { POUNDS_TO_KG } from "./standards.ts";
 beforeEach(() => window.history.replaceState(null, "", "/#/strength-standards?note=keep"));
 afterEach(cleanup);
 
+it("keeps the highest lift near the graph top continuously across former scale boundaries", async () => {
+  render(<App />);
+  const slider = await screen.findByRole("slider", { name: "Bodyweight slider (kg)" });
+  let previousTop: number | undefined;
+  for (const weight of [52, 60, 64, 65, 66, 70, 80, 100, 146]) {
+    fireEvent.input(slider, { target: { value: String(weight) } });
+    const graph = screen.getByRole("img", { name: "Strength standards graph" });
+    const highestPoint = Math.min(
+      ...Array.from(graph.querySelectorAll("circle"), (point) => Number(point.getAttribute("cy"))),
+    );
+    expect(highestPoint).toBeGreaterThan(36);
+    expect(highestPoint).toBeLessThan(55);
+    if (previousTop !== undefined) expect(highestPoint).toBeCloseTo(previousTop, 8);
+    previousTop = highestPoint;
+  }
+});
+
+it("plots all five interpolated lifts only when bodyweight is selected and updates for sex and units", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const slider = await screen.findByRole("slider", { name: "Bodyweight slider (kg)" });
+  expect(screen.queryByRole("img", { name: "Strength standards graph" })).toBeNull();
+  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  fireEvent.input(slider, { target: { value: "173" } });
+  const graph = screen.getByRole("img", { name: "Strength standards graph" });
+  expect(graph.querySelectorAll("polyline")).toHaveLength(5);
+  expect(graph.querySelectorAll("circle")).toHaveLength(25);
+  expect(within(graph).getByText("Press, Cat. III: 133.5 lb")).toBeTruthy();
+  expect(within(graph).getByText("Lift weight (lb)")).toBeTruthy();
+  const points = graph.querySelector("polyline")!.getAttribute("points");
+  await user.click(screen.getByRole("radio", { name: "Women" }));
+  expect(within(graph).getByText("Press, Cat. III: 80 lb")).toBeTruthy();
+  expect(graph.querySelector("polyline")!.getAttribute("points")).not.toBe(points);
+  await user.click(screen.getByRole("radio", { name: "Kilograms (kg)" }));
+  expect(within(graph).getByText("Lift weight (kg)")).toBeTruthy();
+  expect(within(graph).getByText("Press, Cat. III: 36.1 kg")).toBeTruthy();
+  await user.clear(screen.getByRole("spinbutton", { name: "Bodyweight (kg)" }));
+  expect(screen.queryByRole("img", { name: "Strength standards graph" })).toBeNull();
+});
+
 it("defaults to men/kg and persists both toggles without adding history entries", async () => {
   const user = userEvent.setup();
   const historyLength = window.history.length;
