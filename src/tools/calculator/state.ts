@@ -14,12 +14,7 @@ export const MAX_UNIT_FILTER_LENGTH = 256;
 export const calculatorCodec: UrlCodec<CalculatorState> = {
   defaultState: {
     v: 1,
-    tiles: [
-      { id: "arithmetic", expression: "(12 + 8) * 3" },
-      { id: "powers", expression: "2 ^ 10" },
-      { id: "functions", expression: "sqrt(144) + max(3, 7)" },
-      { id: "circle", expression: "pi * 5 ^ 2" },
-    ],
+    tiles: [{ id: "arithmetic", expression: "(12 + 8) * 3" }],
   },
   decode(value) {
     if (!isRecord(value)) throw new Error("Calculator state must be an object.");

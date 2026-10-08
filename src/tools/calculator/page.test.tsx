@@ -6,6 +6,7 @@ import type { CalculationResult } from "../../assets/qalculate.mjs";
 import { useMiniLocation, useMiniSearch } from "../../boot/hash-location.ts";
 import { packState, unpackState } from "../../boot/url-state.ts";
 import { Calculator } from "./page.tsx";
+import { MAX_TILES } from "./state.ts";
 
 const mock = vi.hoisted(() => ({ calculate: vi.fn(), dispose: vi.fn() }));
 vi.mock("./engine.ts", () => ({
@@ -41,6 +42,52 @@ const result = (output: string): CalculationResult => ({
 });
 
 describe("asynchronous calculator UI", () => {
+  it("starts with one card and adds and focuses blank cards on Enter", () => {
+    window.history.replaceState(null, "", "/#/calculator");
+    mock.calculate.mockResolvedValue(result("60"));
+    mount();
+    const first = screen.getByRole("textbox", { name: "Expression 1" });
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    fireEvent.keyDown(first, { key: "Enter", isComposing: true });
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    fireEvent.keyDown(first, { key: "Enter" });
+    const second = screen.getByRole("textbox", { name: "Expression 2" });
+    expect(document.activeElement).toBe(second);
+    expect((second as HTMLInputElement).value).toBe("");
+    fireEvent.input(second, { target: { value: "2 + 2" } });
+    fireEvent.keyDown(second, { key: "Enter" });
+    expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Expression 3" }));
+    const state = unpackState(
+      new URLSearchParams(window.location.hash.split("?")[1]).get("s")!,
+    ) as {
+      tiles: { expression: string }[];
+    };
+    expect(state.tiles.map((tile) => tile.expression)).toEqual(["(12 + 8) * 3", "2 + 2", ""]);
+    fireEvent.click(screen.getByRole("button", { name: "Remove expression 2" }));
+    expect(screen.getAllByRole("textbox")).toHaveLength(2);
+    expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Expression 2" }));
+  });
+
+  it("does not add a card on Enter when the maximum is reached", () => {
+    window.history.replaceState(
+      null,
+      "",
+      `/#/calculator?s=${packState({
+        v: 1,
+        tiles: Array.from({ length: MAX_TILES }, (_, index) => ({
+          id: String(index),
+          expression: "",
+        })),
+      })}`,
+    );
+    mount();
+    const input = screen.getByRole("textbox", { name: "Expression 1" });
+    input.focus();
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(screen.getAllByRole("textbox")).toHaveLength(MAX_TILES);
+    expect(document.activeElement).toBe(input);
+  });
+
   it.each([false, true])("renders a comparison with approximate=%s", async (approximate) => {
     mock.calculate.mockResolvedValue({
       ...result("x = 2"),

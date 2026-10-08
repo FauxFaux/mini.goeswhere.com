@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "preact/hooks";
+import { TrashIcon } from "@primer/octicons-react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { UrlHandler } from "../../boot/url-handler.tsx";
 import type { State } from "../../boot/url-state.ts";
 import sourceUrl from "../../assets/qalculate-sources.tar.gz?url";
@@ -20,6 +21,16 @@ export function Calculator() {
 }
 
 function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
+  const [focusId, setFocusId] = useState<string>();
+  const addExpression = () => {
+    if (us.tiles.length >= MAX_TILES) return;
+    const id = crypto.randomUUID();
+    setUs((previous) => ({
+      ...previous,
+      tiles: [...previous.tiles, { id, expression: "" }],
+    }));
+    setFocusId(id);
+  };
   const engine = useMemo(() => new CalculatorEngine(), []);
   useEffect(() => () => engine.dispose(), [engine]);
   return (
@@ -39,6 +50,8 @@ function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
             engine={engine}
             tile={tile}
             number={index + 1}
+            focus={tile.id === focusId}
+            onAdd={addExpression}
             onEdit={(expression) =>
               setUs((previous) => ({
                 ...previous,
@@ -57,16 +70,7 @@ function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
         ))}
       </div>
       {us.tiles.length === 0 && <p>No expressions yet. Add one to start calculating.</p>}
-      <button
-        type="button"
-        disabled={us.tiles.length >= MAX_TILES}
-        onClick={() =>
-          setUs((previous) => ({
-            ...previous,
-            tiles: [...previous.tiles, { id: crypto.randomUUID(), expression: "" }],
-          }))
-        }
-      >
+      <button type="button" disabled={us.tiles.length >= MAX_TILES} onClick={addExpression}>
         Add expression
       </button>
       <p class="muted">
@@ -88,13 +92,21 @@ function CalculatorTile({
   number,
   onEdit,
   onRemove,
+  onAdd,
+  focus,
 }: {
   engine: CalculatorEngine;
   tile: CalculatorState["tiles"][number];
   number: number;
   onEdit: (expression: string) => void;
   onRemove: () => void;
+  onAdd: () => void;
+  focus: boolean;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  useLayoutEffect(() => {
+    if (focus) inputRef.current?.focus();
+  }, [focus]);
   const [retry, setRetry] = useState(0);
   const [completed, setCompleted] = useState<{
     expression: string;
@@ -127,24 +139,36 @@ function CalculatorTile({
   const outputId = `result-${tile.id}`;
   return (
     <section class="calculator-tile" aria-label={`Calculation ${number}`}>
-      <div class="calculator-tile-heading">
-        <label for={inputId}>Expression {number}</label>
-        <button type="button" aria-label={`Remove expression ${number}`} onClick={onRemove}>
-          Remove
+      <div class="calculator-input-row">
+        <input
+          ref={inputRef}
+          id={inputId}
+          type="text"
+          aria-label={`Expression ${number}`}
+          value={tile.expression}
+          maxLength={MAX_EXPRESSION_LENGTH}
+          spellcheck={false}
+          autocomplete="off"
+          placeholder="e.g. 2 + 2"
+          aria-describedby={outputId}
+          aria-invalid={result.kind === "error"}
+          onInput={(event) => onEdit(event.currentTarget.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.isComposing) {
+              event.preventDefault();
+              onAdd();
+            }
+          }}
+        />
+        <button
+          class="calculator-remove"
+          type="button"
+          aria-label={`Remove expression ${number}`}
+          onClick={onRemove}
+        >
+          <TrashIcon />
         </button>
       </div>
-      <input
-        id={inputId}
-        type="text"
-        value={tile.expression}
-        maxLength={MAX_EXPRESSION_LENGTH}
-        spellcheck={false}
-        autocomplete="off"
-        placeholder="e.g. 2 + 2"
-        aria-describedby={outputId}
-        aria-invalid={result.kind === "error"}
-        onInput={(event) => onEdit(event.currentTarget.value)}
-      />
       <div class="calculator-result" aria-busy={pending}>
         {displayedResult.kind === "ok" && (
           <div class="calculator-interpretation" aria-label="Interpreted expression">
