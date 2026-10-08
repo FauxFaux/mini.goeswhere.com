@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import vm from "node:vm";
 import path from "node:path";
+import { Window } from "happy-dom";
+const htmlWindow = new Window();
 const assets = path.resolve("dist/assets");
 const files = await readdir(assets);
 const entry = files.find((name) => /^calculator\.worker-.*\.js$/.test(name));
@@ -72,10 +74,12 @@ await ready;
 assert.equal(requests.length, 1);
 assert.match(requests[0], /qalculate-.*\.wasm$/);
 let id = 0;
-for (const [expression, expected] of [
-  ["1+1", "2"],
-  ["1 m + 5 mm", "1.005 m"],
-  ["diff(x^3,x)", "3x²"],
+for (const [expression, expected, approximate, resultIsComparison] of [
+  ["1+1", "2", false, false],
+  ["1 m + 5 mm", "1.005 m", false, false],
+  ["diff(x^3,x)", "3x2", false, false],
+  ["sqrt(2)", "1.4142136", true, false],
+  ["x+1=3", "x = 2", false, true],
 ]) {
   const response = new Promise((resolve, reject) => {
     replyResolve = resolve;
@@ -84,10 +88,18 @@ for (const [expression, expected] of [
   scope.onmessage({ data: { id: ++id, expression, timeoutMs: 2000 } });
   const data = await response;
   assert.equal(data.id, id);
-  assert.equal(data.result.output, expected);
+  assert.equal(
+    new htmlWindow.DOMParser().parseFromString(data.result.output, "text/html").body.textContent,
+    expected,
+  );
+  assert.match(data.result.output, /<span style="color:/);
+  assert.match(data.result.input, /<span style="color:/);
+  assert.equal(data.result.approximate, approximate);
+  assert.equal(data.result.resultIsComparison, resultIsComparison);
   assert.equal(data.result.messages.length, 0);
 }
 clearTimeout(deadline);
+await htmlWindow.happyDOM.close();
 console.log(
   "Production worker smoke passed: browser runtime, hashed wasm URL, arithmetic, units, differentiation.",
 );

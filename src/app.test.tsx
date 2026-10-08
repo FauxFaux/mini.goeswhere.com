@@ -46,7 +46,7 @@ describe("mini app routing and state", () => {
       expect(
         within(screen.getByRole("region", { name: "Calculation 1" })).getByRole("status")
           .textContent,
-      ).toBe("14"),
+      ).toBe("= 14"),
     );
     expect(document.activeElement).toBe(input);
     expect(window.location.hash).toMatch(/^#\/calculator\?s=/);
@@ -64,7 +64,7 @@ describe("mini app routing and state", () => {
     expect(window.location.href).toBe(original);
     window.location.hash = `/calculator?s=${packState({ ...first, tiles: [{ id: "shared", expression: "9 ^ 2" }] })}`;
     await waitFor(() => expect((input as HTMLInputElement).value).toBe("9 ^ 2"));
-    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("81"));
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("= 81"));
   });
 
   it("adds and removes independent tiles while keeping results and URL state consistent", async () => {

@@ -25,8 +25,11 @@ instance per mounted calculator: libqalculate uses a global calculator pointer.
 The worker is terminated on navigation or fatal failure, and Retry creates a
 fresh runtime. No SharedArrayBuffer or cross-origin isolation is required.
 
-`calculate(expression, timeoutMs)` returns plain-text `input`, `output`, and
-`messages` with error, warning, or info severity. Angles use radians, unknown
+`calculate(expression, timeoutMs)` returns HTML `input` (the interpreted expression) and `output`, plus
+plain-text `messages` with error, warning, or info severity. The `approximate`
+and `resultIsComparison` flags drive the equality sign and comparison parentheses. HTML uses the bright
+colour palette for dark backgrounds. The UI renders only supported formatting tags
+and allowlisted colours/styles; it never inserts the returned HTML directly. Angles use radians, unknown
 symbols support algebra, and approximate results default to eight significant
 digits. Errors are shown locally; warnings accompany results. Calculations
 are dispatched immediately after edits, run sequentially, and obsolete queued

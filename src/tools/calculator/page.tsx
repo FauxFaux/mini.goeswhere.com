@@ -5,6 +5,7 @@ import sourceUrl from "../../assets/qalculate-sources.tar.gz?url";
 import licenseUrl from "../../assets/qalculate-COPYING?url";
 import { CalculatorEngine } from "./engine.ts";
 import { evaluateExpression, type ExpressionResult } from "./evaluate.ts";
+import { CalculatorFormattedExpression } from "./formatted-expression.tsx";
 import { CalculatorUnitList } from "./unit-list.tsx";
 import {
   calculatorCodec,
@@ -145,19 +146,33 @@ function CalculatorTile({
         onInput={(event) => onEdit(event.currentTarget.value)}
       />
       <div class="calculator-result" aria-busy={pending}>
+        {displayedResult.kind === "ok" && (
+          <div class="calculator-interpretation" aria-label="Interpreted expression">
+            {displayedResult.resultIsComparison && "("}
+            <CalculatorFormattedExpression html={displayedResult.input} />
+            {displayedResult.resultIsComparison && ")"}
+          </div>
+        )}
         <output
           id={outputId}
           for={inputId}
           aria-live="polite"
           class={displayedResult.kind === "error" ? "error" : ""}
         >
-          {displayedResult.kind === "ok"
-            ? String(displayedResult.value)
-            : displayedResult.kind === "error"
-              ? displayedResult.message
-              : displayedResult.kind === "loading"
-                ? "Calculating…"
-                : "Enter an expression"}
+          {displayedResult.kind === "ok" ? (
+            <>
+              <span class="calculator-equality">{displayedResult.approximate ? "≈" : "="}</span>{" "}
+              {displayedResult.resultIsComparison && "("}
+              <CalculatorFormattedExpression html={displayedResult.value} />
+              {displayedResult.resultIsComparison && ")"}
+            </>
+          ) : displayedResult.kind === "error" ? (
+            displayedResult.message
+          ) : displayedResult.kind === "loading" ? (
+            "Calculating…"
+          ) : (
+            "Enter an expression"
+          )}
         </output>
         {displayedResult.kind === "ok" &&
           displayedResult.messages.map((message, index) => (

@@ -12,7 +12,13 @@ class FakeWorker {
   }
 }
 const signal = () => new AbortController().signal;
-const result = { input: "1 + 1", output: "2", messages: [] };
+const result = {
+  input: "1 + 1",
+  output: "2",
+  approximate: false,
+  resultIsComparison: false,
+  messages: [],
+};
 afterEach(() => vi.useRealTimers());
 
 describe("calculator worker lifecycle", () => {

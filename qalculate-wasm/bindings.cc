@@ -28,14 +28,19 @@ emscripten::val calculate(const std::string &expression, int timeout_ms) {
     PrintOptions printing;
     printing.use_unicode_signs = true;
     printing.interval_display = INTERVAL_DISPLAY_SIGNIFICANT_DIGITS;
+    bool approximate = false;
+    printing.is_approximate = &approximate;
+    bool result_is_comparison = false;
     std::string input;
     auto output = instance->calculateAndPrint(
         instance->unlocalizeExpression(expression, evaluation.parse_options),
         timeout_ms, evaluation, printing, AUTOMATIC_FRACTION_AUTO,
-        AUTOMATIC_APPROXIMATION_AUTO, &input, -1, nullptr, false, 0);
+        AUTOMATIC_APPROXIMATION_AUTO, &input, -1, &result_is_comparison, true, 2, TAG_TYPE_HTML);
     auto result = emscripten::val::object();
     result.set("input", input);
     result.set("output", output);
+    result.set("approximate", approximate);
+    result.set("resultIsComparison", result_is_comparison);
     result.set("messages", messages());
     return result;
 }

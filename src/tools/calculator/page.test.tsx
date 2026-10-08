@@ -32,9 +32,52 @@ function mount() {
     </Router>,
   );
 }
-const result = (output: string): CalculationResult => ({ input: "", output, messages: [] });
+const result = (output: string): CalculationResult => ({
+  input: "",
+  output,
+  approximate: false,
+  resultIsComparison: false,
+  messages: [],
+});
 
 describe("asynchronous calculator UI", () => {
+  it.each([false, true])("renders a comparison with approximate=%s", async (approximate) => {
+    mock.calculate.mockResolvedValue({
+      ...result("x = 2"),
+      input: "x + 1 = 3",
+      approximate,
+      resultIsComparison: true,
+    });
+    mount();
+    await waitFor(() =>
+      expect(screen.getByRole("status").textContent).toBe(`${approximate ? "≈" : "="} (x = 2)`),
+    );
+    expect(screen.getByLabelText("Interpreted expression").textContent).toBe("(x + 1 = 3)");
+    expect(
+      screen.getByRole("status").querySelector(".calculator-equality")?.getAttribute("style"),
+    ).toBeNull();
+  });
+
+  it("shows the interpreted expression and renders coloured results", async () => {
+    mock.calculate.mockResolvedValue({
+      input:
+        '<span style="color:#FFFFAA">x</span><sup>2</sup> + <span style="color:#AAFFFF">1</span>',
+      output:
+        '<span style="color:#FFFFAA">x</span><sup>2</sup> + <span style="color:#AAFFFF">1</span>',
+      approximate: false,
+      resultIsComparison: false,
+      messages: [],
+    });
+    mount();
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("= x2 + 1"));
+    const interpretation = screen.getByLabelText("Interpreted expression");
+    expect(interpretation.textContent).toBe("x2 + 1");
+    expect(interpretation.querySelector("sup")?.textContent).toBe("2");
+    expect(
+      screen.getByRole("status").querySelector<HTMLSpanElement>("span[style]")?.style.color,
+    ).toBe("#ffffaa");
+  });
+
   it("filters the unit table, persists inputs, and restores filters from history", async () => {
     mock.calculate.mockResolvedValue(result("42"));
     mount();
@@ -103,17 +146,17 @@ describe("asynchronous calculator UI", () => {
         }),
     );
     mount();
-    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("42"));
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("= 42"));
     const output = screen.getByRole("status");
     fireEvent.input(screen.getByRole("textbox", { name: "Expression 1" }), {
       target: { value: "next" },
     });
-    expect(output.textContent).toBe("42");
+    expect(output.textContent).toBe("= 42");
     expect(output.parentElement?.getAttribute("aria-busy")).toBe("true");
     await act(async () => {
       resolveNext(result("43"));
     });
-    await waitFor(() => expect(output.textContent).toBe("43"));
+    await waitFor(() => expect(output.textContent).toBe("= 43"));
     expect(output.parentElement?.getAttribute("aria-busy")).toBe("false");
     fireEvent.input(screen.getByRole("textbox", { name: "Expression 1" }), {
       target: { value: "" },
@@ -140,12 +183,12 @@ describe("asynchronous calculator UI", () => {
     });
     const payload = new URLSearchParams(window.location.hash.split("?")[1]).get("s")!;
     expect(unpackState(payload)).toEqual({ v: 1, tiles: [{ id: "one", expression: "latest" }] });
-    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("latest result"));
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("= latest result"));
     expect(oldSignal.aborted).toBe(true);
     await act(async () => {
       resolveFirst(result("obsolete result"));
     });
-    expect(screen.getByRole("status").textContent).toBe("latest result");
+    expect(screen.getByRole("status").textContent).toBe("= latest result");
   });
 
   it("recovers from a loading failure without changing shared inputs", async () => {
@@ -157,7 +200,7 @@ describe("asynchronous calculator UI", () => {
     await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Wasm failed to load"));
     expect(screen.getByRole("textbox").getAttribute("aria-invalid")).toBe("true");
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("42"));
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("= 42"));
     expect(screen.getByRole("textbox").getAttribute("aria-invalid")).toBe("false");
     expect(window.location.href).toBe(original);
   });
@@ -169,7 +212,7 @@ describe("asynchronous calculator UI", () => {
     });
     const view = mount();
     await screen.findByText("Division by zero.");
-    expect(screen.getByRole("status").textContent).toBe("∞");
+    expect(screen.getByRole("status").textContent).toBe("= ∞");
     const requestSignal = mock.calculate.mock.calls[0][1] as AbortSignal;
     fireEvent.click(screen.getByRole("button", { name: "Remove expression 1" }));
     await waitFor(() => expect(requestSignal.aborted).toBe(true));

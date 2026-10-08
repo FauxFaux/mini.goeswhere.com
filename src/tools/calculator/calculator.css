@@ -21,7 +21,8 @@
 }
 
 .calculator-tile input,
-.calculator-tile output {
+.calculator-tile output,
+.calculator-interpretation {
   font-family: ui-monospace, monospace;
 }
 
@@ -94,4 +95,17 @@
 .calculator-unit-category th {
   background: #22252a;
   padding-block: 0.85rem;
+}
+
+.calculator-interpretation {
+  margin-top: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.calculator-interpretation + output {
+  margin-top: 0.5rem;
+}
+
+.calculator-equality {
+  color: inherit;
 }
