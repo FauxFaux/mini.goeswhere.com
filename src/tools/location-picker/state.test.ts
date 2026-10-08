@@ -2,9 +2,8 @@ import { expect, it } from "vitest";
 import { UnsupportedStateVersion } from "../../boot/url-state.ts";
 import { locationPickerCodec as codec } from "./state.ts";
 
-it("round trips selections and clearing while preserving unrelated parameters", () => {
+it("round trips selections while preserving unrelated parameters", () => {
   for (const location of [
-    null,
     { latitude: 51.5074, longitude: -0.1278 },
     { latitude: -90, longitude: 180 },
     { latitude: 90, longitude: -180 },
@@ -26,6 +25,10 @@ it("defaults to London without rewriting", () => {
     location: { latitude: 51.5074, longitude: -0.1278 },
   });
   expect(params.toString()).toBe("note=keep");
+  const cleared = new URLSearchParams("note=keep&lat=&lon=");
+  expect(codec.query!.decode(cleared)).toEqual(codec.defaultState);
+  expect(cleared.toString()).toBe("note=keep&lat=&lon=");
+  expect(codec.decode({ v: 1, location: null })).toEqual(codec.defaultState);
 });
 
 it.each([

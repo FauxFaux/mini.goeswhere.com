@@ -3,7 +3,7 @@ import { isLocation, type Location } from "./projection.ts";
 
 export interface LocationPickerState {
   v: 1;
-  location: Location | null;
+  location: Location;
 }
 
 export const locationPickerCodec: UrlCodec<LocationPickerState> = {
@@ -11,7 +11,7 @@ export const locationPickerCodec: UrlCodec<LocationPickerState> = {
   decode(value) {
     if (!isRecord(value)) throw new Error("Location picker state must be an object.");
     if (value.v !== 1) throw new UnsupportedStateVersion();
-    if (value.location === null) return { v: 1, location: null };
+    if (value.location === null) return locationPickerCodec.defaultState;
     const location = value.location;
     if (
       !isRecord(location) ||
@@ -30,8 +30,9 @@ export const locationPickerCodec: UrlCodec<LocationPickerState> = {
       }
       if (params.has("v") && params.get("v") !== "1") throw new UnsupportedStateVersion();
       if (!params.has("lat") && !params.has("lon")) return locationPickerCodec.defaultState;
-      // Both empty coordinates explicitly persist Clear; omitted coordinates default to London.
-      if (params.get("lat") === "" && params.get("lon") === "") return { v: 1, location: null };
+      // Older links could explicitly clear the location; restore those to London.
+      if (params.get("lat") === "" && params.get("lon") === "")
+        return locationPickerCodec.defaultState;
       const coordinate = (key: string) => {
         const value = params.get(key);
         if (
@@ -50,13 +51,8 @@ export const locationPickerCodec: UrlCodec<LocationPickerState> = {
     },
     write(params, state) {
       params.delete("v");
-      if (state.location === null) {
-        params.set("lat", "");
-        params.set("lon", "");
-      } else {
-        params.set("lat", String(state.location.latitude));
-        params.set("lon", String(state.location.longitude));
-      }
+      params.set("lat", String(state.location.latitude));
+      params.set("lon", String(state.location.longitude));
     },
   },
 };

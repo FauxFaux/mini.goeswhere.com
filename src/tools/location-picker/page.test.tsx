@@ -35,15 +35,18 @@ it("follows mouse movement with the primary button held and flushes on release",
   move(first, 0);
   move(first, 2);
   move(first, 4);
-  expect(screen.getByRole("status").textContent).toBe("Selected: 51.507400° N, 0.127800° W");
+  const latitude = screen.getByRole("spinbutton", {
+    name: "Latitude (−90 to 90)",
+  }) as HTMLInputElement;
+  expect(latitude.value).toBe("51.5074");
   expect(window.location.href).toBe(url);
   move(first, 1);
-  expect(screen.getByRole("status").textContent).toContain("10.000000° N");
+  expect(latitude.value).toBe("10");
   move(second, 1);
-  expect(screen.getByRole("status").textContent).toContain("30.000000° S");
+  expect(latitude.value).toBe("-30");
   expect(window.location.href).toBe(url);
   fireEvent.mouseMove(map, { clientX: 420, clientY: 90, buttons: 1 });
-  expect(screen.getByRole("status").textContent).toContain("map gap");
+  expect(latitude.value).toBe("-30");
   fireEvent.pointerUp(document);
   expect(savedLocation()).toEqual({ latitude: -30, longitude: 150 });
   expect(window.history.length).toBe(historyLength);
@@ -63,18 +66,20 @@ it("picks scaled map coordinates, ignores gaps, and keeps edits in one history e
   fireEvent.click(map, { clientX: 20 + point[0] / 2, clientY: 40 + point[1] / 2 });
   await waitFor(() => expect(window.location.hash).toContain("lat=51.5074"));
   await waitFor(() => expect(savedLocation()).toEqual({ latitude: 51.5074, longitude: -0.1278 }));
-  expect(screen.getByRole("status").textContent).toContain("51.507400° N");
+  expect(
+    (screen.getByRole("spinbutton", { name: "Latitude (−90 to 90)" }) as HTMLInputElement).value,
+  ).toBe("51.5074");
   expect(window.history.length).toBe(historyLength);
   expect(window.location.hash).toContain("note=keep");
   const url = window.location.href;
   fireEvent.click(map, { clientX: 420, clientY: 90 });
-  expect(screen.getByRole("status").textContent).toContain("map gap");
+  expect(savedLocation()).toEqual({ latitude: 51.5074, longitude: -0.1278 });
   expect(window.location.href).toBe(url);
   fireEvent.keyDown(map, { key: "ArrowRight", shiftKey: true });
   await waitFor(() => expect(savedLocation()).toEqual({ latitude: 51.5074, longitude: -0.0278 }));
 });
 
-it("sets coordinates, rejects invalid input, and clears the selection", async () => {
+it("sets coordinates and preserves the selection when inputs are invalid or empty", async () => {
   render(<App />);
   const latitude = await screen.findByRole("spinbutton", { name: "Latitude (−90 to 90)" });
   const longitude = screen.getByRole("spinbutton", { name: "Longitude (−180 to 180)" });
@@ -86,16 +91,16 @@ it("sets coordinates, rejects invalid input, and clears the selection", async ()
   fireEvent.input(latitude, { target: { value: "91" } });
   fireEvent.submit(latitude.closest("form")!);
   expect(window.location.href).toBe(url);
-  fireEvent.click(screen.getByRole("button", { name: "Clear" }));
-  await waitFor(() => expect(savedLocation()).toBeNull());
-  expect(window.location.hash).toBe("#/location-picker?note=keep&lat=&lon=");
-  expect((latitude as HTMLInputElement).value).toBe("");
+  fireEvent.input(latitude, { target: { value: "" } });
+  fireEvent.submit(latitude.closest("form")!);
+  expect(window.location.href).toBe(url);
+  expect(savedLocation()).toEqual({ latitude: -33.8688, longitude: 151.2093 });
   cleanup();
   render(<App />);
   expect(
     ((await screen.findByRole("spinbutton", { name: "Latitude (−90 to 90)" })) as HTMLInputElement)
       .value,
-  ).toBe("");
+  ).toBe("-33.8688");
 });
 
 it("restores shared selections, external links, and Back navigation without rewriting reads", async () => {
