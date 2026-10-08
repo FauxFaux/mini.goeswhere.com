@@ -3,7 +3,13 @@ import type { State } from "../../boot/url-state.ts";
 import { MAX_UNIT_FILTER_LENGTH, type CalculatorState } from "./state.ts";
 import { calculatorUnits, filterUnits, groupUnits } from "./units.ts";
 
-export function CalculatorUnitList({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
+export function CalculatorUnitList({
+  uss: [us, setUs],
+  onInsert,
+}: {
+  uss: State<CalculatorState>;
+  onInsert: (name: string) => void;
+}) {
   const filter = us.unitFilter ?? "";
   const units = useMemo(() => filterUnits(calculatorUnits, filter), [filter]);
   const groups = useMemo(() => groupUnits(units), [units]);
@@ -11,9 +17,10 @@ export function CalculatorUnitList({ uss: [us, setUs] }: { uss: State<Calculator
     <section class="calculator-units" aria-labelledby="calculator-units-heading">
       <h2 id="calculator-units-heading">Units</h2>
       <p class="muted">
-        Use these names in expressions, for example <code>10 ft to m</code>. Prefix matches come
-        first, then substring matches; each checks title, names, category, then base unit. Search
-        ignores case; unit names in expressions may be case-sensitive.
+        Click a name to insert it at the cursor in your last focused expression, for example{" "}
+        <code>10 ft to m</code>. Prefix matches come first, then substring matches; each checks
+        title, names, category, then base unit. Search ignores case; unit names in expressions may
+        be case-sensitive.
       </p>
       <label for="calculator-unit-filter">Filter units</label>
       <input
@@ -63,8 +70,18 @@ export function CalculatorUnitList({ uss: [us, setUs] }: { uss: State<Calculator
                   <td>
                     {unit.names.map((name, index) => (
                       <span key={name}>
-                        {index > 0 && ", "}
-                        <code>{name}</code>
+                        {index > 0 && " "}
+                        <span class="calculator-unit-name-group">
+                          <button
+                            type="button"
+                            class="calculator-unit-name"
+                            aria-label={`Insert unit ${name}`}
+                            onClick={() => onInsert(name)}
+                          >
+                            <code>{name}</code>
+                          </button>
+                          {index < unit.names.length - 1 && ","}
+                        </span>
                       </span>
                     ))}
                   </td>

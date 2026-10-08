@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
 import { Router } from "wouter";
 import type { CalculationResult } from "../../assets/qalculate.mjs";
 import { useMiniLocation, useMiniSearch } from "../../boot/hash-location.ts";
@@ -73,6 +74,108 @@ describe("asynchronous calculator UI", () => {
     expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Expression 2" }));
   });
 
+  it("adds, focuses, evaluates and persists each example without replacing existing expressions", () => {
+    mock.calculate.mockResolvedValue(result("42"));
+    mount();
+    const examples = ["sin((pi ∕ 2))", "1m+5mm", "10 kilograms to g", "solve(2x + 7)"];
+    examples.forEach((expression, index) => {
+      fireEvent.click(screen.getByRole("button", { name: `Add expression ${expression}` }));
+      const input = screen.getByRole("textbox", { name: `Expression ${index + 2}` });
+      expect((input as HTMLInputElement).value).toBe(expression);
+      expect(document.activeElement).toBe(input);
+      expect(mock.calculate).toHaveBeenLastCalledWith(expression, expect.any(AbortSignal));
+    });
+    const state = calculatorCodec.query!.decode(
+      new URLSearchParams(window.location.hash.split("?")[1]),
+    );
+    expect(state.tiles.map((tile) => tile.expression)).toEqual(["first", ...examples]);
+  });
+
+  it("inserts unit names at the last cursor, replaces selections and restores focus", async () => {
+    mock.calculate.mockResolvedValue(result("42"));
+    const user = userEvent.setup();
+    mount();
+    const first = screen.getByRole("textbox", { name: "Expression 1" }) as HTMLInputElement;
+    await user.click(first);
+    fireEvent.input(first, { target: { value: "10  + 2" } });
+    first.setSelectionRange(3, 3);
+    await user.click(screen.getByRole("searchbox", { name: "Filter units" }));
+    await user.type(screen.getByRole("searchbox", { name: "Filter units" }), "meter");
+    await user.click(screen.getByRole("button", { name: "Insert unit m", exact: true }));
+    expect(first.value).toBe("10 m + 2");
+    expect(document.activeElement).toBe(first);
+    expect(first.selectionStart).toBe(4);
+    first.setSelectionRange(3, 4);
+    await user.click(screen.getByRole("button", { name: "Insert unit meter", exact: true }));
+    expect(first.value).toBe("10 meter + 2");
+    expect(first.selectionStart).toBe(8);
+    expect(new URLSearchParams(window.location.hash.split("?")[1]).getAll("e")).toEqual([
+      "10 meter + 2",
+    ]);
+    await user.click(screen.getByRole("button", { name: "Add expression", exact: true }));
+    const second = screen.getByRole("textbox", { name: "Expression 2" }) as HTMLInputElement;
+    await user.click(screen.getByRole("button", { name: "Insert unit m", exact: true }));
+    expect(second.value).toBe("m");
+    expect(first.value).toBe("10 meter + 2");
+    await user.click(screen.getByRole("button", { name: "Remove expression 2" }));
+    await user.click(screen.getByRole("button", { name: "Insert unit m", exact: true }));
+    expect((screen.getByRole("textbox", { name: "Expression 2" }) as HTMLInputElement).value).toBe(
+      "m",
+    );
+  });
+
+  it("creates an expression for a unit when none has been focused", () => {
+    mock.calculate.mockResolvedValue(result("42"));
+    mount();
+    fireEvent.click(screen.getByRole("button", { name: "Insert unit m", exact: true }));
+    const input = screen.getByRole("textbox", { name: "Expression 2" }) as HTMLInputElement;
+    expect(input.value).toBe("m");
+    expect(document.activeElement).toBe(input);
+  });
+
+  it("moves between adjacent expressions with Up and Down, keeping the cursor within the input", async () => {
+    mock.calculate.mockResolvedValue(result("42"));
+    window.history.replaceState(
+      null,
+      "",
+      `/#/calculator?${queryState({
+        v: 1,
+        tiles: [
+          { id: "one", expression: "12345" },
+          { id: "two", expression: "12" },
+          { id: "three", expression: "123456" },
+        ],
+      })}`,
+    );
+    const user = userEvent.setup();
+    mount();
+    const first = screen.getByRole("textbox", { name: "Expression 1" }) as HTMLInputElement;
+    const second = screen.getByRole("textbox", { name: "Expression 2" }) as HTMLInputElement;
+    const third = screen.getByRole("textbox", { name: "Expression 3" }) as HTMLInputElement;
+    await user.click(first);
+    first.setSelectionRange(4, 4);
+    await user.keyboard("{ArrowUp}");
+    expect(document.activeElement).toBe(first);
+    fireEvent.keyDown(first, { key: "ArrowDown", isComposing: true });
+    expect(document.activeElement).toBe(first);
+    await user.keyboard("{ArrowDown}");
+    expect(document.activeElement).toBe(second);
+    expect(second.selectionStart).toBe(2);
+    await user.keyboard("{ArrowDown}");
+    expect(document.activeElement).toBe(third);
+    expect(third.selectionStart).toBe(2);
+    await user.keyboard("{ArrowDown}");
+    expect(document.activeElement).toBe(third);
+    await user.keyboard("{ArrowUp}{ArrowUp}");
+    expect(document.activeElement).toBe(first);
+    expect(first.selectionStart).toBe(2);
+    expect(new URLSearchParams(window.location.hash.split("?")[1]).getAll("e")).toEqual([
+      "12345",
+      "12",
+      "123456",
+    ]);
+  });
+
   it("does not add a card on Enter when the maximum is reached", () => {
     window.history.replaceState(
       null,
@@ -91,6 +194,9 @@ describe("asynchronous calculator UI", () => {
     fireEvent.keyDown(input, { key: "Enter" });
     expect(screen.getAllByRole("textbox")).toHaveLength(MAX_TILES);
     expect(document.activeElement).toBe(input);
+    expect(
+      (screen.getByRole("button", { name: "Add expression 1m+5mm" }) as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 
   it.each([false, true])("renders a comparison with approximate=%s", async (approximate) => {
@@ -272,6 +378,16 @@ describe("asynchronous calculator UI", () => {
     const requestSignal = mock.calculate.mock.calls[0][1] as AbortSignal;
     fireEvent.click(screen.getByRole("button", { name: "Remove expression 1" }));
     await waitFor(() => expect(requestSignal.aborted).toBe(true));
+    const input = screen.getByRole("textbox", { name: "Expression 1" }) as HTMLInputElement;
+    expect(input.value).toBe("");
+    expect(document.activeElement).toBe(input);
+    expect(screen.getByRole("status").textContent).toBe("Enter an expression");
+    expect(
+      calculatorCodec.query!.decode(new URLSearchParams(window.location.hash.split("?")[1])).tiles,
+    ).toEqual([{ id: "one", expression: "" }]);
+    fireEvent.click(screen.getByRole("button", { name: "Remove expression 1" }));
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(document.activeElement).toBe(input);
     view.unmount();
     expect(mock.dispose).toHaveBeenCalledOnce();
   });

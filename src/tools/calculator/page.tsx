@@ -1,3 +1,4 @@
+import type { ComponentChildren } from "preact";
 import { TrashIcon } from "@primer/octicons-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { UrlHandler } from "../../boot/url-handler.tsx";
@@ -22,12 +23,33 @@ export function Calculator() {
 
 function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
   const [focusId, setFocusId] = useState<string>();
-  const addExpression = () => {
+  const lastInput = useRef<HTMLInputElement | null>(null);
+  const [insertion, setInsertion] = useState<{ id: string; cursor: number }>();
+  const insertUnit = (name: string) => {
+    const input = lastInput.current;
+    const tile = input?.isConnected
+      ? us.tiles.find((tile) => `expression-${tile.id}` === input.id)
+      : undefined;
+    if (!tile || !input) {
+      addExpression(name);
+      return;
+    }
+    const start = Math.min(input.selectionStart ?? tile.expression.length, tile.expression.length);
+    const end = Math.min(input.selectionEnd ?? start, tile.expression.length);
+    const expression = tile.expression.slice(0, start) + name + tile.expression.slice(end);
+    if (expression.length > MAX_EXPRESSION_LENGTH) return;
+    setUs((previous) => ({
+      ...previous,
+      tiles: previous.tiles.map((item) => (item.id === tile.id ? { ...item, expression } : item)),
+    }));
+    setInsertion({ id: tile.id, cursor: start + name.length });
+  };
+  const addExpression = (expression = "") => {
     if (us.tiles.length >= MAX_TILES) return;
     const id = crypto.randomUUID();
     setUs((previous) => ({
       ...previous,
-      tiles: [...previous.tiles, { id, expression: "" }],
+      tiles: [...previous.tiles, { id, expression }],
     }));
     setFocusId(id);
   };
@@ -36,12 +58,46 @@ function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
   return (
     <>
       <h1>Calculator</h1>
-      <p>Edit any expression to see its result. Your calculations are saved in this page’s URL.</p>
+      <p class={"muted"}>Return to add new. Up/down to change expression. State in URL. Trigonometry uses radians. Exchange rates are old.</p>
       <p class="muted">
-        Use arithmetic, functions, units and symbolic expressions. Trigonometry uses radians. Try{" "}
-        <code>sin(pi / 2)</code>, <code>1 m + 5 mm</code>, <code>10 kg to g</code> or{" "}
-        <code>diff(x^3, x)</code>. Currency conversions use bundled exchange rates, which may be
-        stale.
+        Try{" "}
+        <CalculatorExample
+          expression="sin((pi ∕ 2))"
+          onAdd={addExpression}
+          disabled={us.tiles.length >= MAX_TILES}
+        >
+          <span class="calculator-function">sin</span>((<span class="calculator-variable">pi</span>{" "}
+          ∕ <span class="calculator-number">2</span>))
+        </CalculatorExample>
+        ,{" "}
+        <CalculatorExample
+          expression="1m+5mm"
+          onAdd={addExpression}
+          disabled={us.tiles.length >= MAX_TILES}
+        >
+          <span class="calculator-number">1</span>
+          <span class="calculator-unit">m</span>+<span class="calculator-number">5</span>
+          <span class="calculator-unit">mm</span>
+        </CalculatorExample>
+        ,{" "}
+        <CalculatorExample
+          expression="10 kilograms to g"
+          onAdd={addExpression}
+          disabled={us.tiles.length >= MAX_TILES}
+        >
+          <span class="calculator-number">10</span> <span class="calculator-unit">kilograms</span>{" "}
+          to <span class="calculator-unit">g</span>
+        </CalculatorExample>{" "}
+        or{" "}
+        <CalculatorExample
+          expression="solve(2x + 7)"
+          onAdd={addExpression}
+          disabled={us.tiles.length >= MAX_TILES}
+        >
+          <span class="calculator-function">solve</span>(<span class="calculator-number">2</span>
+          <i class="calculator-variable">x</i> + <span class="calculator-number">7</span>)
+        </CalculatorExample>
+        .
       </p>
       <div class="calculator-grid">
         {us.tiles.map((tile, index) => (
@@ -51,7 +107,22 @@ function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
             tile={tile}
             number={index + 1}
             focus={tile.id === focusId}
-            onAdd={addExpression}
+            insertion={insertion?.id === tile.id ? insertion : undefined}
+            onFocus={(input) => {
+              lastInput.current = input;
+            }}
+            onNavigate={(direction) => {
+              const next = us.tiles[index + direction];
+              if (!next) return false;
+              const input = lastInput.current;
+              const cursor = Math.min(
+                input?.selectionStart ?? next.expression.length,
+                next.expression.length,
+              );
+              setInsertion({ id: next.id, cursor });
+              return true;
+            }}
+            onAdd={() => addExpression()}
             onEdit={(expression) =>
               setUs((previous) => ({
                 ...previous,
@@ -60,29 +131,57 @@ function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
                 ),
               }))
             }
-            onRemove={() =>
+            onRemove={() => {
               setUs((previous) => ({
                 ...previous,
-                tiles: previous.tiles.filter((item) => item.id !== tile.id),
-              }))
-            }
+                tiles:
+                  previous.tiles.length === 1
+                    ? previous.tiles.map((item) => ({ ...item, expression: "" }))
+                    : previous.tiles.filter((item) => item.id !== tile.id),
+              }));
+              if (us.tiles.length === 1) setInsertion({ id: tile.id, cursor: 0 });
+            }}
           />
         ))}
       </div>
       {us.tiles.length === 0 && <p>No expressions yet. Add one to start calculating.</p>}
-      <button type="button" disabled={us.tiles.length >= MAX_TILES} onClick={addExpression}>
+      <button type="button" disabled={us.tiles.length >= MAX_TILES} onClick={() => addExpression()}>
         Add expression
       </button>
+      {us.tiles.length >= MAX_TILES && (
+        <p class="muted">Maximum of {MAX_TILES} expressions reached.</p>
+      )}
+      <CalculatorUnitList uss={[us, setUs]} onInsert={insertUnit} />
       <p class="muted">
         Powered by libqalculate 5.13.1. <a href={licenseUrl}>License</a>
         {" · "}
         <a href={sourceUrl}>Source and build recipe</a>
       </p>
-      {us.tiles.length >= MAX_TILES && (
-        <p class="muted">Maximum of {MAX_TILES} expressions reached.</p>
-      )}
-      <CalculatorUnitList uss={[us, setUs]} />
     </>
+  );
+}
+
+function CalculatorExample({
+  expression,
+  onAdd,
+  disabled,
+  children,
+}: {
+  expression: string;
+  onAdd: (expression: string) => void;
+  disabled: boolean;
+  children: ComponentChildren;
+}) {
+  return (
+    <button
+      type="button"
+      class="calculator-example"
+      disabled={disabled}
+      onClick={() => onAdd(expression)}
+      aria-label={`Add expression ${expression}`}
+    >
+      <code>{children}</code>
+    </button>
   );
 }
 
@@ -94,6 +193,9 @@ function CalculatorTile({
   onRemove,
   onAdd,
   focus,
+  insertion,
+  onFocus,
+  onNavigate,
 }: {
   engine: CalculatorEngine;
   tile: CalculatorState["tiles"][number];
@@ -102,11 +204,20 @@ function CalculatorTile({
   onRemove: () => void;
   onAdd: () => void;
   focus: boolean;
+  insertion: { cursor: number } | undefined;
+  onFocus: (input: HTMLInputElement) => void;
+  onNavigate: (direction: -1 | 1) => boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   useLayoutEffect(() => {
     if (focus) inputRef.current?.focus();
   }, [focus]);
+  useLayoutEffect(() => {
+    if (insertion && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(insertion.cursor, insertion.cursor);
+    }
+  }, [insertion]);
   const [retry, setRetry] = useState(0);
   const [completed, setCompleted] = useState<{
     expression: string;
@@ -152,9 +263,14 @@ function CalculatorTile({
           placeholder="e.g. 2 + 2"
           aria-describedby={outputId}
           aria-invalid={result.kind === "error"}
+          onFocus={(event) => onFocus(event.currentTarget)}
           onInput={(event) => onEdit(event.currentTarget.value)}
           onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.isComposing) {
+            if (event.isComposing) return;
+            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+              if (onNavigate(event.key === "ArrowUp" ? -1 : 1)) event.preventDefault();
+            }
+            if (event.key === "Enter") {
               event.preventDefault();
               onAdd();
             }
