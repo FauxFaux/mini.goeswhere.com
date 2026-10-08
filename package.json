@@ -1,0 +1,31 @@
+{
+  "name": "mini.goeswhere.com",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "format": "oxfmt .",
+    "lint": "oxfmt --check . && tsc -b",
+    "test": "vitest run",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@primer/octicons-react": "^19.38.0",
+    "advanced-calculator": "^1.4.2",
+    "preact": "^10.29.8",
+    "wouter": "^3.13.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.6",
+    "@testing-library/preact": "^3.2.4",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/node": "^24.13.3",
+    "happy-dom": "^20.14.5",
+    "oxfmt": "^0.72.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.3"
+  }
+}

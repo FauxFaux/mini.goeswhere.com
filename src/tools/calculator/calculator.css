@@ -1,0 +1,36 @@
+.calculator-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.calculator-tile {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.calculator-tile-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.calculator-tile input,
+.calculator-tile output {
+  font-family: ui-monospace, monospace;
+}
+
+.calculator-tile input {
+  width: 100%;
+}
+
+.calculator-tile output {
+  display: block;
+  margin-top: 1rem;
+  overflow-wrap: anywhere;
+}

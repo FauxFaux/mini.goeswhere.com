@@ -1,0 +1,102 @@
+:root {
+  color-scheme: dark;
+  font:
+    16px/1.5 system-ui,
+    sans-serif;
+  color: #e3e5e8;
+  background: #17191c;
+  --border: #3a3e45;
+  --muted: #a8aeb8;
+  --accent: #9ecbff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+header,
+main {
+  width: min(100%, 72rem);
+  margin-inline: auto;
+  padding: 1rem;
+}
+
+header {
+  border-bottom: 1px solid var(--border);
+}
+
+h1 {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.2rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+  background: #22252a;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+}
+
+button,
+summary {
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--muted);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+input {
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.muted,
+.tool-list p {
+  color: var(--muted);
+}
+
+.error {
+  color: #ffabab;
+}
+
+.tool-list {
+  padding-left: 1.25rem;
+}
+
+.tool-list li {
+  margin-block: 1.5rem;
+}
+
+.tool-list p {
+  margin-block: 0.25rem;
+}
