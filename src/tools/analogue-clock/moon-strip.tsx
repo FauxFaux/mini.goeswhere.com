@@ -1,6 +1,12 @@
 import { londonMoon, moonLitPath } from "./moon.ts";
 
-export function MoonStrip({ date }: { date: Date }) {
+export function MoonStrip({
+  date,
+  trail,
+}: {
+  date: Date;
+  trail: (ReturnType<typeof londonMoon> & { instant: number })[];
+}) {
   const moon = londonMoon(date);
   const fullness = `${Math.round(moon.fraction * 100)}% illuminated · ${moon.waxing ? "waxing" : "waning"}`;
   const description = `${moon.status}. Bearing ${moon.azimuth.toFixed(0)}°, altitude ${moon.altitude.toFixed(0)}°. ${fullness}.`;
@@ -8,14 +14,14 @@ export function MoonStrip({ date }: { date: Date }) {
     <>
       <div class="analogue-clock-moon-strip" role="img" aria-label={description}>
         <div class="analogue-clock-moon-horizon" />
-        <MoonDisk
-          fraction={moon.fraction}
-          rotation={moon.rotation}
-          style={{
-            left: `calc(16px + (100% - 32px) * ${moon.x})`,
-            top: `${16 + moon.y * 64}px`,
-          }}
-        />
+        {trail.length > 0 && (
+          <div class="analogue-clock-moon-trail" aria-hidden="true">
+            {trail.map((sample) => (
+              <MoonAt key={sample.instant} moon={sample} />
+            ))}
+          </div>
+        )}
+        <MoonAt moon={moon} />
       </div>
       <div class="analogue-clock-strip-labels" aria-hidden="true">
         <span>E</span>
@@ -47,5 +53,18 @@ function MoonDisk({
       <circle r="1" fill="#252c38" stroke="#7d8797" stroke-width="0.06" />
       <path d={moonLitPath(fraction)} fill="#eee9d7" transform={`rotate(${rotation})`} />
     </svg>
+  );
+}
+
+function MoonAt({ moon }: { moon: ReturnType<typeof londonMoon> }) {
+  return (
+    <MoonDisk
+      fraction={moon.fraction}
+      rotation={moon.rotation}
+      style={{
+        left: `calc(16px + (100% - 32px) * ${moon.x})`,
+        top: `${16 + moon.y * 64}px`,
+      }}
+    />
   );
 }

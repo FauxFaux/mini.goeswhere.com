@@ -33,6 +33,7 @@ interface Drag {
 }
 
 function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
+  const [yearScrubbing, setYearScrubbing] = useState(false);
   const minutes = localMinutes(us.seconds);
   const drag = useRef<Drag | undefined>(undefined);
   const [activeHand, setActiveHand] = useState<Hand>();
@@ -211,51 +212,57 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
           )}
           {us.show24HourNumbers && <NumberRing kind="24h" radius={160} />}
           {us.showMinuteNumbers && <NumberRing kind="minutes" radius={219} />}
-          {(["hour", "minute"] as const).map((hand) => (
-            <g
-              key={hand}
-              data-hand={hand}
-              class={`analogue-clock-hand analogue-clock-${hand}${activeHand === hand ? " analogue-clock-active" : ""}`}
-              transform={`rotate(${handAngle(minutes, hand)})`}
-              role="slider"
-              tabIndex={0}
-              aria-label={hand === "hour" ? "Hour hand" : "Minute hand"}
-              aria-describedby="analogue-clock-help"
-              aria-valuemin={0}
-              aria-valuemax={hand === "hour" ? 12 : 60}
-              aria-valuenow={hand === "hour" ? (minutes % 720) / 60 : minutes % 60}
-              aria-valuetext={
-                hand === "hour"
-                  ? `${Math.floor((minutes % 720) / 60) || 12} hours, ${Math.floor(minutes % 60)} minutes`
-                  : `${Math.floor(minutes % 60)} minutes`
-              }
-              onKeyDown={(event) => keyDown(event, hand)}
-            >
-              <line
-                class="analogue-clock-hand-target"
-                x1="0"
-                y1="-24"
-                x2="0"
-                y2={-handLengths[hand]}
-              />
-              <line
-                class="analogue-clock-hand-line"
-                x1="0"
-                y1="12"
-                x2="0"
-                y2={-handLengths[hand]}
-              />
-              <circle
-                class="analogue-clock-hand-tip"
-                cx="0"
-                cy={-handLengths[hand]}
-                r={hand === "hour" ? 12 : 9}
-              />
-            </g>
-          ))}
+          {(["hour", "minute"] as const)
+            .filter((hand) => !yearScrubbing || hand !== "minute")
+            .map((hand) => (
+              <g
+                key={hand}
+                data-hand={hand}
+                class={`analogue-clock-hand analogue-clock-${hand}${activeHand === hand ? " analogue-clock-active" : ""}`}
+                transform={`rotate(${handAngle(minutes, hand)})`}
+                role="slider"
+                tabIndex={0}
+                aria-label={hand === "hour" ? "Hour hand" : "Minute hand"}
+                aria-describedby="analogue-clock-help"
+                aria-valuemin={0}
+                aria-valuemax={hand === "hour" ? 12 : 60}
+                aria-valuenow={hand === "hour" ? (minutes % 720) / 60 : minutes % 60}
+                aria-valuetext={
+                  hand === "hour"
+                    ? `${Math.floor((minutes % 720) / 60) || 12} hours, ${Math.floor(minutes % 60)} minutes`
+                    : `${Math.floor(minutes % 60)} minutes`
+                }
+                onKeyDown={(event) => keyDown(event, hand)}
+              >
+                <line
+                  class="analogue-clock-hand-target"
+                  x1="0"
+                  y1="-24"
+                  x2="0"
+                  y2={-handLengths[hand]}
+                />
+                <line
+                  class="analogue-clock-hand-line"
+                  x1="0"
+                  y1="12"
+                  x2="0"
+                  y2={-handLengths[hand]}
+                />
+                <circle
+                  class="analogue-clock-hand-tip"
+                  cx="0"
+                  cy={-handLengths[hand]}
+                  r={hand === "hour" ? 12 : 9}
+                />
+              </g>
+            ))}
           <circle class="analogue-clock-pivot" r="13" aria-hidden="true" />
         </svg>
-        <TimeStrips uss={[us, setUs]} />
+        <TimeStrips
+          uss={[us, setUs]}
+          yearScrubbing={yearScrubbing}
+          onYearScrubbingChange={setYearScrubbing}
+        />
       </div>
       <p id="analogue-clock-strip-help" class="muted">
         London · {currentYear.year}. Sunlight and moon position are shown for London.

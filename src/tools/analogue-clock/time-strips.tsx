@@ -1,4 +1,5 @@
 import type { JSX } from "preact";
+import { moonTrail, moonTransits } from "./moon.ts";
 import { MoonStrip } from "./moon-strip.tsx";
 import type { State } from "../../boot/url-state.ts";
 import type { AnalogueClockState } from "./state.ts";
@@ -8,7 +9,17 @@ import { currentYear, secondsPerDay, seasonGradient, sunCycle, wallSeconds } fro
 
 const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export function TimeStrips({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
+export function TimeStrips({
+  uss: [us, setUs],
+  yearScrubbing,
+  onYearScrubbingChange,
+}: {
+  uss: State<AnalogueClockState>;
+  yearScrubbing: boolean;
+  onYearScrubbingChange: (scrubbing: boolean) => void;
+}) {
+  const [weekScrubbing, setWeekScrubbing] = useState(false);
+  const showMoonTrail = weekScrubbing || yearScrubbing;
   const seconds = us.seconds;
   const scrub = (kind: StripKind, origin: number, progress: number) => {
     setUs((previous) => ({ ...previous, seconds: scrubSeconds(kind, origin, progress) }));
@@ -16,6 +27,22 @@ export function TimeStrips({ uss: [us, setUs] }: { uss: State<AnalogueClockState
   const time = currentYear.at(seconds);
   const date = time.toPlainDate();
   const dateKey = date.toString();
+  const transits = useMemo(() => {
+    if (!showMoonTrail) return [];
+    return moonTransits(new Date(time.startOfDay().epochMilliseconds + 12 * 60 * 60 * 1000));
+  }, [dateKey, showMoonTrail]);
+  const nearestTransit = transits.reduce<number | undefined>(
+    (nearest, transit) =>
+      nearest === undefined ||
+      Math.abs(transit - time.epochMilliseconds) < Math.abs(nearest - time.epochMilliseconds)
+        ? transit
+        : nearest,
+    undefined,
+  );
+  const trail = useMemo(
+    () => (nearestTransit === undefined ? [] : moonTrail(nearestTransit)),
+    [nearestTransit],
+  );
   const sun = useMemo(() => sunCycle(date), [dateKey]);
   const seasons = useMemo(() => seasonGradient(currentYear.year), []);
   const dayProgress = wallSeconds(time) / secondsPerDay;
@@ -32,6 +59,7 @@ export function TimeStrips({ uss: [us, setUs] }: { uss: State<AnalogueClockState
       <ProgressStrip
         seconds={seconds}
         onScrub={scrub}
+        hideMarker={yearScrubbing}
         kind="day"
         label={`Day progress: ${clockTime}. Sunrise ${sun.sunrise}, sunset ${sun.sunset}, London.`}
         progress={dayProgress}
@@ -45,10 +73,11 @@ export function TimeStrips({ uss: [us, setUs] }: { uss: State<AnalogueClockState
           </span>
         ))}
       </div>
-      <MoonStrip date={new Date(time.epochMilliseconds)} />
+      <MoonStrip date={new Date(time.epochMilliseconds)} trail={trail} />
       <ProgressStrip
         seconds={seconds}
         onScrub={scrub}
+        onDraggingChange={setWeekScrubbing}
         kind="week"
         label={`Week progress: ${dateLabel}, ${clockTime}`}
         progress={(time.dayOfWeek - 1 + dayProgress) / 7}
@@ -62,6 +91,7 @@ export function TimeStrips({ uss: [us, setUs] }: { uss: State<AnalogueClockState
       <ProgressStrip
         seconds={seconds}
         onScrub={scrub}
+        onDraggingChange={onYearScrubbingChange}
         kind="year"
         label={`Year progress: ${dateLabel}`}
         progress={seconds / currentYear.seconds}
@@ -83,7 +113,11 @@ function ProgressStrip({
   background,
   seconds,
   onScrub,
+  hideMarker = false,
+  onDraggingChange,
 }: {
+  hideMarker?: boolean;
+  onDraggingChange?: (dragging: boolean) => void;
   kind: StripKind;
   label: string;
   progress: number;
@@ -106,6 +140,7 @@ function ProgressStrip({
     if (drag.current?.pointerId !== event.pointerId) return;
     drag.current = undefined;
     setDragging(false);
+    onDraggingChange?.(false);
     if (event.currentTarget.hasPointerCapture(event.pointerId))
       event.currentTarget.releasePointerCapture(event.pointerId);
   };
@@ -160,6 +195,7 @@ function ProgressStrip({
         event.currentTarget.setPointerCapture(event.pointerId);
         drag.current = { pointerId: event.pointerId, origin: seconds };
         setDragging(true);
+        onDraggingChange?.(true);
         move(event);
       }}
       onPointerMove={move}
@@ -172,7 +208,9 @@ function ProgressStrip({
       onKeyDown={keyDown}
       onContextMenu={(event) => event.preventDefault()}
     >
-      <span class="analogue-clock-progress-marker" style={{ left: `${progress * 100}%` }} />
+      {!hideMarker && (
+        <span class="analogue-clock-progress-marker" style={{ left: `${progress * 100}%` }} />
+      )}
     </div>
   );
 }

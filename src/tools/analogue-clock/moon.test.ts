@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { londonMoon, moonLitPath, moonProjection } from "./moon.ts";
+import { londonMoon, moonLitPath, moonProjection, moonTrail, moonTransits } from "./moon.ts";
 
 it("maps the southern sky from east through south to west and horizon to 60°", () => {
   expect(moonProjection(90, 0)).toEqual({ x: 0, y: 1 });
@@ -28,3 +28,22 @@ it("moves the terminator from the dark limb through a half disk to the lit limb"
   expect(moonLitPath(0.5)).toContain("A 0 1");
   expect(moonLitPath(1)).toContain("A 1 1 0 0 1");
 });
+
+it.each(["2026-01-03T00:00:00Z", "2026-01-03T23:00:00Z", "2026-03-29T12:00:00Z"])(
+  "samples one continuous moon pass near %s",
+  (instant) => {
+    const date = new Date(instant);
+    const transits = moonTransits(date);
+    const nearest = transits.reduce((a, b) =>
+      Math.abs(a - date.getTime()) < Math.abs(b - date.getTime()) ? a : b,
+    );
+    const trail = moonTrail(nearest);
+    expect(trail).toHaveLength(48);
+    expect(trail[0]!.instant).toBe(nearest - 12 * 60 * 60 * 1000);
+    expect(trail.at(-1)!.instant).toBe(nearest + 11.5 * 60 * 60 * 1000);
+    expect(trail[24]!.instant).toBe(nearest);
+    expect(trail[24]!.altitude).toBeGreaterThan(trail[12]!.altitude);
+    expect(trail[24]!.altitude).toBeGreaterThan(trail[36]!.altitude);
+    expect(trail[1]!.instant - trail[0]!.instant).toBe(30 * 60 * 1000);
+  },
+);

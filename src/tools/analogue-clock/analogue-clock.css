@@ -254,3 +254,10 @@
 .analogue-clock-time-strips > .analogue-clock-moon-strip {
   margin-top: 1rem;
 }
+
+.analogue-clock-moon-trail {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  pointer-events: none;
+}

@@ -461,6 +461,53 @@ it.each(["pointerCancel", "lostPointerCapture"] as const)(
   },
 );
 
+it.each(["pointerUp", "pointerCancel", "lostPointerCapture"] as const)(
+  "hides the day marker and minute hand until year drag ends with %s",
+  async (end) => {
+    const { pointer } = await strip("year");
+    const marker = () =>
+      document.querySelector(".analogue-clock-day-strip .analogue-clock-progress-marker");
+    const selected = 10 * 3600 + 22 * 60 + 17;
+    expect(marker()).not.toBeNull();
+    pointer("pointerDown", selected / currentYear.seconds);
+    expect(marker()).toBeNull();
+    expect(minutes()).toBeCloseTo(10 * 60 + 22 + 17 / 60);
+    expect(screen.queryByRole("slider", { name: "Minute hand" })).toBeNull();
+    expect(
+      document.querySelector(".analogue-clock-week-strip .analogue-clock-progress-marker"),
+    ).not.toBeNull();
+    pointer("pointerMove", (selected + 60) / currentYear.seconds);
+    expect(minutes()).toBeCloseTo(10 * 60 + 23 + 17 / 60);
+    pointer(end, (selected + 60) / currentYear.seconds);
+    expect(marker()).not.toBeNull();
+    expect(screen.getByRole("slider", { name: "Minute hand" })).toBeTruthy();
+    expect(minutes()).toBeCloseTo(10 * 60 + 23 + 17 / 60);
+    await waitFor(() => expect(persistedState().seconds).toBe(selected + 60));
+  },
+);
+
+it.each([
+  ["week", "pointerUp"],
+  ["week", "pointerCancel"],
+  ["week", "lostPointerCapture"],
+  ["year", "pointerUp"],
+  ["year", "pointerCancel"],
+  ["year", "lostPointerCapture"],
+] as const)("shows a daily moon trail only during %s dragging, ending on %s", async (kind, end) => {
+  const { pointer } = await strip(kind);
+  const trail = () => document.querySelector(".analogue-clock-moon-trail");
+  expect(trail()).toBeNull();
+  pointer("pointerDown", 0);
+  expect(trail()?.querySelectorAll("svg")).toHaveLength(48);
+  const firstPosition = trail()?.querySelector("svg")?.getAttribute("style");
+  pointer("pointerMove", 0.8);
+  expect(trail()?.querySelector("svg")?.getAttribute("style")).not.toBe(firstPosition);
+  expect(document.querySelectorAll(".analogue-clock-moon-strip > svg")).toHaveLength(1);
+  pointer(end, 0.8);
+  expect(trail()).toBeNull();
+  expect(document.querySelectorAll(".analogue-clock-moon-strip svg")).toHaveLength(1);
+});
+
 it("supports keyboard strip scrubbing", async () => {
   const { target } = await strip("day");
   fireEvent.keyDown(target, { key: "ArrowRight" });
