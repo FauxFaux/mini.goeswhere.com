@@ -13,7 +13,7 @@ import {
   type Hand,
 } from "./clock.ts";
 import { TimeStrips } from "./time-strips.tsx";
-import { localMinutes, nowSeconds, wrapSeconds } from "./year.ts";
+import { currentYear, localMinutes, nowSeconds, wrapSeconds } from "./year.ts";
 import { analogueClockCodec, type AnalogueClockState } from "./state.ts";
 import "./analogue-clock.css";
 
@@ -258,7 +258,10 @@ function ClockFace({ uss: [us, setUs] }: { uss: State<AnalogueClockState> }) {
         <TimeStrips uss={[us, setUs]} />
       </div>
       <p id="analogue-clock-strip-help" class="muted">
-        Tap or drag a strip to change the time. Use arrow keys when a clock or strip is focused.
+        London · {currentYear.year}. Sunlight and moon position are shown for London.
+        <br />
+        Tap or drag a time strip to change the time. Use arrow keys when a clock or time strip is
+        focused.
       </p>
     </section>
   );

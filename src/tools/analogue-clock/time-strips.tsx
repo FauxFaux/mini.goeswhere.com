@@ -1,4 +1,5 @@
 import type { JSX } from "preact";
+import { MoonStrip } from "./moon-strip.tsx";
 import type { State } from "../../boot/url-state.ts";
 import type { AnalogueClockState } from "./state.ts";
 import { scrubSeconds, scrubStep, type StripKind } from "./scrub.ts";
@@ -36,15 +37,15 @@ export function TimeStrips({ uss: [us, setUs] }: { uss: State<AnalogueClockState
         progress={dayProgress}
         background={sun.gradient}
       />
-      <div class="analogue-clock-strip-labels" aria-hidden="true">
-        {["00:00", "06:00", "12:00", "18:00", "24:00"].map((hour) => (
-          <span key={hour}>{hour}</span>
+      <div class="analogue-clock-strip-labels analogue-clock-day-labels" aria-hidden="true">
+        {Array.from({ length: 9 }, (_, index) => (
+          <span key={index} class={index % 2 === 1 ? "analogue-clock-extra-hour" : undefined}>
+            {String(index * 3).padStart(2, "0")}
+            <span class="analogue-clock-hour-suffix">:00</span>
+          </span>
         ))}
       </div>
-      <p class="muted analogue-clock-sun-times">
-        London · Sunrise {sun.sunrise} · Sunset {sun.sunset}
-      </p>
-      <h2>Week</h2>
+      <MoonStrip date={new Date(time.epochMilliseconds)} />
       <ProgressStrip
         seconds={seconds}
         onScrub={scrub}
@@ -58,7 +59,6 @@ export function TimeStrips({ uss: [us, setUs] }: { uss: State<AnalogueClockState
           <span key={weekday}>{weekday}</span>
         ))}
       </div>
-      <h2>Year · {currentYear.year}</h2>
       <ProgressStrip
         seconds={seconds}
         onScrub={scrub}
