@@ -39,4 +39,21 @@ describe("strength standards URL codec", () => {
   it("rejects unknown versions", () => {
     expect(() => strengthStandardsCodec.decode({ v: 2 })).toThrow(UnsupportedStateVersion);
   });
+
+  it("round trips bodyweight while preserving older links without a weight", () => {
+    const state = { v: 1, sex: "men", unit: "kg", weight: 173 };
+    expect(strengthStandardsCodec.decode(unpackState(packState(state)))).toEqual(state);
+    expect(strengthStandardsCodec.decode({ v: 1, sex: "women", unit: "lb" })).toEqual({
+      v: 1,
+      sex: "women",
+      unit: "lb",
+    });
+  });
+
+  it.each([null, "165", {}, NaN, Infinity, -Infinity])(
+    "rejects invalid bodyweight %j",
+    (weight) => {
+      expect(() => strengthStandardsCodec.decode({ v: 1, weight })).toThrow();
+    },
+  );
 });

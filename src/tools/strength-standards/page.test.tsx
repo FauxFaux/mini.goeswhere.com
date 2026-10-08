@@ -1,10 +1,11 @@
 // @vitest-environment happy-dom
-import { act, cleanup, render, screen, waitFor, within } from "@testing-library/preact";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import { App } from "../../app.tsx";
 import { navigateHash, splitHash } from "../../boot/hash-location.ts";
 import { packState, unpackState } from "../../boot/url-state.ts";
+import { POUNDS_TO_KG } from "./standards.ts";
 
 beforeEach(() => window.history.replaceState(null, "", "/#/strength-standards?note=keep"));
 afterEach(cleanup);
@@ -64,4 +65,129 @@ it("preserves corrupt links and offers recovery", async () => {
   await user.click(screen.getByRole("link", { name: "Start fresh" }));
   await waitFor(() => expect(screen.getAllByRole("table")).toHaveLength(5));
   expect(window.location.hash).toBe("#/strength-standards");
+});
+
+it("shows interpolated categories and clears back to full tables", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const weight = await screen.findByRole("spinbutton", { name: "Bodyweight (kg)" });
+  fireEvent.input(weight, { target: { value: String(173 * POUNDS_TO_KG) } });
+  const kgPress = screen.getByRole("table", { name: "Press — Adult men (kg)" });
+  expect(within(kgPress).getAllByRole("row")).toHaveLength(2);
+  expect(within(kgPress).getByRole("row", { name: "35.4 48.1 60.6 71.9 91.6" })).toBeTruthy();
+  expect(within(kgPress).queryByRole("columnheader", { name: "Bodyweight" })).toBeNull();
+  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  expect((weight as HTMLInputElement).value).toBe("173");
+  const press = screen.getByRole("table", { name: "Press — Adult men (lb)" });
+  expect(within(press).getByRole("row", { name: "78 106 133.5 158.5 202" })).toBeTruthy();
+  expect(
+    unpackState(new URLSearchParams(splitHash(window.location.hash).search).get("s")!),
+  ).toEqual({
+    v: 1,
+    sex: "men",
+    unit: "lb",
+    weight: 173,
+  });
+  await user.click(screen.getByRole("radio", { name: "Women" }));
+  expect(
+    within(screen.getByRole("table", { name: "Press — Adult women (lb)" })).getByRole("row", {
+      name: "49.5 67.5 80 106 137",
+    }),
+  ).toBeTruthy();
+  await user.clear(weight);
+  expect(
+    within(screen.getByRole("table", { name: "Press — Adult women (lb)" })).getAllByRole("row"),
+  ).toHaveLength(11);
+});
+
+it("rounds bodyweight on unit changes and saves the rounded weight for calculations and restoration", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const input = await screen.findByRole("spinbutton", { name: "Bodyweight (kg)" });
+  fireEvent.input(input, { target: { value: "80.5" } });
+  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  expect((input as HTMLInputElement).value).toBe("177");
+  let params = new URLSearchParams(splitHash(window.location.hash).search);
+  expect(unpackState(params.get("s")!)).toEqual({ v: 1, sex: "men", unit: "lb", weight: 177 });
+  await user.click(screen.getByRole("radio", { name: "Kilograms (kg)" }));
+  expect((input as HTMLInputElement).value).toBe("80");
+  params = new URLSearchParams(splitHash(window.location.hash).search);
+  expect(unpackState(params.get("s")!)).toEqual({
+    v: 1,
+    sex: "men",
+    unit: "kg",
+    weight: 80 / POUNDS_TO_KG,
+  });
+  cleanup();
+  render(<App />);
+  const restored = await screen.findByRole("spinbutton", { name: "Bodyweight (kg)" });
+  expect((restored as HTMLInputElement).value).toBe("80");
+  await user.clear(restored);
+  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  expect((restored as HTMLInputElement).value).toBe("");
+  expect(
+    within(screen.getByRole("table", { name: "Press — Adult men (lb)" })).getAllByRole("row"),
+  ).toHaveLength(13);
+});
+
+it("restores bodyweight from shared links and history, and handles out-of-range inputs", async () => {
+  window.history.replaceState(
+    null,
+    "",
+    `/#/strength-standards?s=${packState({ v: 1, sex: "men", unit: "lb", weight: 173 })}`,
+  );
+  render(<App />);
+  const input = await screen.findByRole("spinbutton", { name: "Bodyweight (lb)" });
+  expect((input as HTMLInputElement).value).toBe("173");
+  act(() => navigateHash("/hello-world"));
+  await screen.findByRole("textbox", { name: "Your name" });
+  window.history.back();
+  const restored = await screen.findByRole("spinbutton", { name: "Bodyweight (lb)" });
+  expect((restored as HTMLInputElement).value).toBe("173");
+  fireEvent.input(restored, { target: { value: "100" } });
+  expect(screen.getByRole("status").textContent).toContain("No standards are listed below 114 lb");
+  expect(screen.queryAllByRole("table")).toHaveLength(0);
+  fireEvent.input(restored, { target: { value: "400" } });
+  expect(
+    within(screen.getByRole("table", { name: "Press — Adult men (lb)" })).getByRole("row", {
+      name: "100 136 171 203 284",
+    }),
+  ).toBeTruthy();
+  fireEvent.focusOut(restored);
+  expect((restored as HTMLInputElement).value).toBe("320");
+});
+
+it("uses the bounded slider to select and persist a bodyweight, adjusting bounds with sex and units", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const slider = await screen.findByRole("slider", { name: "Bodyweight slider (kg)" });
+  expect(slider.getAttribute("min")).toBe("52");
+  expect(slider.getAttribute("max")).toBe("146");
+  fireEvent.input(slider, { target: { value: "80" } });
+  const input = screen.getByRole("spinbutton", { name: "Bodyweight (kg)" });
+  expect((input as HTMLInputElement).value).toBe("80");
+  expect(
+    within(screen.getByRole("table", { name: "Press — Adult men (kg)" })).getAllByRole("row"),
+  ).toHaveLength(2);
+  expect(
+    unpackState(new URLSearchParams(splitHash(window.location.hash).search).get("s")!),
+  ).toEqual({
+    v: 1,
+    sex: "men",
+    unit: "kg",
+    weight: 80 / POUNDS_TO_KG,
+  });
+  fireEvent.input(slider, { target: { value: "146" } });
+  await user.click(screen.getByRole("radio", { name: "Women" }));
+  expect(slider.getAttribute("min")).toBe("44");
+  expect(slider.getAttribute("max")).toBe("91");
+  expect((input as HTMLInputElement).value).toBe("91");
+  await user.click(screen.getByRole("radio", { name: "Pounds (lb)" }));
+  expect(slider.getAttribute("min")).toBe("97");
+  expect(slider.getAttribute("max")).toBe("199");
+  expect((input as HTMLInputElement).value).toBe("199");
+  fireEvent.input(slider, { target: { value: "97" } });
+  await user.click(screen.getByRole("radio", { name: "Men" }));
+  expect((input as HTMLInputElement).value).toBe("114");
+  expect((slider as HTMLInputElement).value).toBe("114");
 });

@@ -1,17 +1,23 @@
 import { describe, expect, it } from "vitest";
-import source from "./data/chrome.txt?raw";
-import { formatWeight, standards } from "./standards.ts";
+import { formatWeight, interpolateStandards, standards } from "./standards.ts";
 
 describe("strength standards data", () => {
-  it("matches all 110 rows in the supplied source transcription, in activity order", () => {
-    const sourceRows = source
-      .split(/\r?\n/)
-      .filter((line) => /^\d+\+?(?: \d+){5}$/.test(line))
-      .map((line) => line.replace("+", "").split(" ").map(Number));
-    expect(sourceRows).toHaveLength(110);
-    expect(standards.flatMap((activity) => [...activity.men, ...activity.women])).toEqual(
-      sourceRows,
-    );
+  it("includes all five activities with the source's bodyweight rows", () => {
+    expect(standards.map((activity) => activity.id)).toEqual([
+      "press",
+      "bench-press",
+      "squat",
+      "deadlift",
+      "power-clean",
+    ]);
+    for (const activity of standards) {
+      expect(activity.men.map((row) => row[0])).toEqual([
+        114, 123, 132, 148, 165, 181, 198, 220, 242, 275, 319, 320,
+      ]);
+      expect(activity.women.map((row) => row[0])).toEqual([
+        97, 105, 114, 123, 132, 148, 165, 181, 198, 199,
+      ]);
+    }
   });
 
   it("retains the PDF's press values for 165 and 181 lb men", () => {
@@ -24,5 +30,30 @@ describe("strength standards data", () => {
     expect(formatWeight(129, "kg")).toBe("58.5");
     expect(formatWeight(320, "kg")).toBe("145.1");
     expect(formatWeight(129, "lb")).toBe("129");
+  });
+
+  it("returns every exact row unchanged", () => {
+    for (const activity of standards) {
+      for (const rows of [activity.men, activity.women]) {
+        for (const row of rows) expect(interpolateStandards(rows, row[0])).toEqual(row);
+      }
+    }
+  });
+
+  it("interpolates each category using its adjacent bodyweight interval", () => {
+    expect(interpolateStandards(standards[0].men, 173)).toEqual([173, 78, 106, 133.5, 158.5, 202]);
+    const result = interpolateStandards(standards[0].men, 169)!;
+    expect(result).toEqual([169, 76.5, 104, 131.25, 155.75, 194]);
+    expect(formatWeight(result[3], "lb")).toBe("131.3");
+    expect(interpolateStandards(standards[0].women, 101)).toEqual([101, 32, 44, 51.5, 68.5, 88]);
+  });
+
+  it("uses the open-ended final row and refuses weights below the table or nonfinite weights", () => {
+    expect(interpolateStandards(standards[0].men, 400)).toEqual([400, 100, 136, 171, 203, 284]);
+    expect(interpolateStandards(standards[0].women, 250)).toEqual([250, 58, 79, 93, 123, 159]);
+    for (const weight of [113, 0, -1, Infinity, NaN]) {
+      expect(interpolateStandards(standards[0].men, weight)).toBeNull();
+    }
+    expect(interpolateStandards([], 165)).toBeNull();
   });
 });

@@ -21,8 +21,27 @@
   margin-block: 2rem;
 }
 
+.strength-standards-weight {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block: 1.5rem;
+}
+
 .strength-standards-scroll {
   overflow-x: auto;
+}
+
+.strength-standards-slider {
+  flex: 1 1 12rem;
+  max-width: 24rem;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.strength-standards-weight input[type="number"] {
+  width: 8rem;
 }
 
 .strength-standards table {

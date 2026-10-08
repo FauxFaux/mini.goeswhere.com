@@ -4,6 +4,8 @@ export interface StrengthStandardsState {
   v: 1;
   sex: "men" | "women";
   unit: "kg" | "lb";
+  /** Bodyweight in pounds, independent of the display unit. Omitted for full tables. */
+  weight?: number;
 }
 
 export const strengthStandardsCodec: UrlCodec<StrengthStandardsState> = {
@@ -15,6 +17,12 @@ export const strengthStandardsCodec: UrlCodec<StrengthStandardsState> = {
     const unit = value.unit === undefined ? "kg" : value.unit;
     if (sex !== "men" && sex !== "women") throw new Error("Invalid strength standards sex.");
     if (unit !== "kg" && unit !== "lb") throw new Error("Invalid strength standards unit.");
-    return { v: 1, sex, unit };
+    if (
+      value.weight !== undefined &&
+      (typeof value.weight !== "number" || !Number.isFinite(value.weight))
+    ) {
+      throw new Error("Bodyweight must be a finite number.");
+    }
+    return { v: 1, sex, unit, ...(value.weight === undefined ? {} : { weight: value.weight }) };
   },
 };

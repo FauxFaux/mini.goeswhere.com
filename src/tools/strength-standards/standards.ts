@@ -175,5 +175,45 @@ export const standards: readonly ActivityStandards[] = [
 ];
 
 export function formatWeight(pounds: number, unit: StrengthStandardsState["unit"]): string {
-  return unit === "kg" ? (pounds * 0.45359237).toFixed(1) : String(pounds);
+  return unit === "kg" ? (pounds * POUNDS_TO_KG).toFixed(1) : String(Number(pounds.toFixed(1)));
+}
+
+export const POUNDS_TO_KG = 0.45359237;
+
+export function bodyweightBounds(
+  sex: StrengthStandardsState["sex"],
+  unit: StrengthStandardsState["unit"],
+) {
+  const rows = standards[0][sex];
+  const factor = unit === "kg" ? POUNDS_TO_KG : 1;
+  return { min: Math.ceil(rows[0][0] * factor), max: Math.ceil(rows[rows.length - 1][0] * factor) };
+}
+
+export function clampBodyweight(
+  weight: number,
+  sex: StrengthStandardsState["sex"],
+  unit: StrengthStandardsState["unit"],
+) {
+  const { min, max } = bodyweightBounds(sex, unit);
+  const factor = unit === "kg" ? POUNDS_TO_KG : 1;
+  return Math.min(max, Math.max(min, weight * factor)) / factor;
+}
+
+/** Linear interpolation in the original units; the final row applies to all larger weights. */
+export function interpolateStandards(
+  rows: readonly StandardRow[],
+  weight: number,
+): StandardRow | null {
+  const first = rows[0];
+  const last = rows.at(-1);
+  if (!first || !last || !Number.isFinite(weight) || weight < first[0]) return null;
+  if (weight >= last[0]) return [weight, last[1], last[2], last[3], last[4], last[5]];
+  const upperIndex = rows.findIndex((row) => row[0] >= weight);
+  const upper = rows[upperIndex];
+  if (upper[0] === weight) return upper;
+  const lower = rows[upperIndex - 1];
+  const fraction = (weight - lower[0]) / (upper[0] - lower[0]);
+  const interpolate = (category: 1 | 2 | 3 | 4 | 5) =>
+    lower[category] + fraction * (upper[category] - lower[category]);
+  return [weight, interpolate(1), interpolate(2), interpolate(3), interpolate(4), interpolate(5)];
 }
