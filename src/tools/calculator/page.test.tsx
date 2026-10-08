@@ -4,9 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Router } from "wouter";
 import type { CalculationResult } from "../../assets/qalculate.mjs";
 import { useMiniLocation, useMiniSearch } from "../../boot/hash-location.ts";
-import { packState, unpackState } from "../../boot/url-state.ts";
 import { Calculator } from "./page.tsx";
-import { MAX_TILES } from "./state.ts";
+import { calculatorCodec, MAX_TILES } from "./state.ts";
 
 const mock = vi.hoisted(() => ({ calculate: vi.fn(), dispose: vi.fn() }));
 vi.mock("./engine.ts", () => ({
@@ -16,13 +15,19 @@ vi.mock("./engine.ts", () => ({
   },
 }));
 
+function queryState(value: unknown) {
+  const params = new URLSearchParams();
+  calculatorCodec.query!.write(params, calculatorCodec.decode(value));
+  return params.toString();
+}
+
 beforeEach(() => {
   mock.calculate.mockReset();
   mock.dispose.mockReset();
   window.history.replaceState(
     null,
     "",
-    `/#/calculator?s=${packState({ v: 1, tiles: [{ id: "one", expression: "first" }] })}`,
+    `/#/calculator?${queryState({ v: 1, tiles: [{ id: "one", expression: "first" }] })}`,
   );
 });
 afterEach(cleanup);
@@ -57,8 +62,8 @@ describe("asynchronous calculator UI", () => {
     fireEvent.input(second, { target: { value: "2 + 2" } });
     fireEvent.keyDown(second, { key: "Enter" });
     expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Expression 3" }));
-    const state = unpackState(
-      new URLSearchParams(window.location.hash.split("?")[1]).get("s")!,
+    const state = calculatorCodec.query!.decode(
+      new URLSearchParams(window.location.hash.split("?")[1]),
     ) as {
       tiles: { expression: string }[];
     };
@@ -72,7 +77,7 @@ describe("asynchronous calculator UI", () => {
     window.history.replaceState(
       null,
       "",
-      `/#/calculator?s=${packState({
+      `/#/calculator?${queryState({
         v: 1,
         tiles: Array.from({ length: MAX_TILES }, (_, index) => ({
           id: String(index),
@@ -130,12 +135,11 @@ describe("asynchronous calculator UI", () => {
     mount();
     const table = screen.getByRole("table", { name: "Bundled libqalculate unit definitions" });
     const filter = screen.getByRole("searchbox", { name: "Filter units" });
-    const originalHash = window.location.hash;
     fireEvent.input(filter, { target: { value: "Kibibyte" } });
     expect(within(table).getByRole("rowheader", { name: "Kibibyte" })).toBeTruthy();
     expect(within(table).queryByRole("rowheader", { name: "Meter" })).toBeNull();
     const filteredHash = window.location.hash;
-    expect(unpackState(new URLSearchParams(filteredHash.split("?")[1]).get("s")!)).toEqual({
+    expect(calculatorCodec.query!.decode(new URLSearchParams(filteredHash.split("?")[1]))).toEqual({
       v: 1,
       tiles: [{ id: "one", expression: "first" }],
       unitFilter: "Kibibyte",
@@ -149,7 +153,7 @@ describe("asynchronous calculator UI", () => {
     expect((filter as HTMLInputElement).value).toBe("Kibibyte");
     expect(within(table).getByRole("rowheader", { name: "Kibibyte" })).toBeTruthy();
     fireEvent.input(filter, { target: { value: "" } });
-    expect(window.location.hash).toBe(originalHash);
+    expect(new URLSearchParams(window.location.hash.split("?")[1]).has("q")).toBe(false);
     expect(within(table).getByRole("rowheader", { name: "Meter" })).toBeTruthy();
     expect(mock.calculate).toHaveBeenCalledOnce();
   });
@@ -158,7 +162,7 @@ describe("asynchronous calculator UI", () => {
     window.history.replaceState(
       null,
       "",
-      `/#/calculator?s=${packState({ v: 1, tiles: [], unitFilter: "Kibibyte" })}&note=keep`,
+      `/#/calculator?${queryState({ v: 1, tiles: [], unitFilter: "Kibibyte" })}&note=keep`,
     );
     const originalUrl = window.location.href;
     mount();
@@ -228,8 +232,13 @@ describe("asynchronous calculator UI", () => {
     fireEvent.input(screen.getByRole("textbox", { name: "Expression 1" }), {
       target: { value: "latest" },
     });
-    const payload = new URLSearchParams(window.location.hash.split("?")[1]).get("s")!;
-    expect(unpackState(payload)).toEqual({ v: 1, tiles: [{ id: "one", expression: "latest" }] });
+    const params = new URLSearchParams(window.location.hash.split("?")[1]);
+    expect(params.getAll("e")).toEqual(["latest"]);
+    expect(params.has("s")).toBe(false);
+    expect(calculatorCodec.query!.decode(params)).toEqual({
+      v: 1,
+      tiles: [{ id: "one", expression: "latest" }],
+    });
     await waitFor(() => expect(screen.getByRole("status").textContent).toBe("= latest result"));
     expect(oldSignal.aborted).toBe(true);
     await act(async () => {
@@ -271,7 +280,7 @@ describe("asynchronous calculator UI", () => {
     window.history.replaceState(
       null,
       "",
-      `/#/calculator?s=${packState({ v: 1, tiles: [{ id: "one", expression: "" }] })}`,
+      `/#/calculator?${queryState({ v: 1, tiles: [{ id: "one", expression: "" }] })}`,
     );
     mount();
     expect(screen.getByRole("status").textContent).toBe("Enter an expression");
