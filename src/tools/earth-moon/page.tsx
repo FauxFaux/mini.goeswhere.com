@@ -15,6 +15,7 @@ import {
   type EarthMoonState,
 } from "./state.ts";
 import { EarthMoonView } from "./view.tsx";
+import { TimeStrips } from "./time-strips.tsx";
 import "./earth-moon.css";
 
 export function EarthMoon() {
@@ -208,23 +209,7 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
               +1 day
             </button>
           </div>
-          <label class="earth-moon-time">
-            Time within this UTC day
-            <input
-              type="range"
-              min={0}
-              max={86399}
-              step={60}
-              value={Math.floor((((us.instant % dayMs) + dayMs) % dayMs) / 1000)}
-              onInput={(event) => {
-                const seconds = Number(event.currentTarget.value);
-                setUs((previous) => ({
-                  ...previous,
-                  instant: Math.floor(previous.instant / dayMs) * dayMs + seconds * 1000,
-                }));
-              }}
-            />
-          </label>
+          <TimeStrips uss={[us, setUs]} />
           <label>
             <input
               type="checkbox"

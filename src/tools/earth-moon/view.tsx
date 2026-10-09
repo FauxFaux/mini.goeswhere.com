@@ -59,8 +59,10 @@ export function EarthMoonView({
 
   const reset = (view: SceneView) => controller.current?.reset(view);
   return (
-    <section class="earth-moon-view" aria-label={sky ? "Local sky" : "Earth and Moon in space"}>
-      <h2>{sky ? "Your horizon" : "Earth and Moon"}</h2>
+    <section
+      class={`earth-moon-view earth-moon-view-${sky ? "sky" : "space"}`}
+      aria-label={sky ? "Local sky" : "Earth and Moon in space"}
+    >
       <canvas
         ref={canvas}
         tabIndex={0}
@@ -78,16 +80,22 @@ export function EarthMoonView({
       ) : (
         !ready && <p role="status">Loading 3D view…</p>
       )}
-      <div class="earth-moon-actions">
-        <button disabled={!ready} onClick={() => reset("overview")}>
-          Reset view
-        </button>
-        {!sky && (
-          <button disabled={!ready} onClick={() => reset("observer")}>
-            Observer close-up
+      <section
+        class="earth-moon-camera-controls"
+        aria-label={sky ? "Horizon camera controls" : "Earth and Moon camera controls"}
+      >
+        <h2>{sky ? "Your horizon" : "Earth and Moon"}</h2>
+        <div class="earth-moon-actions">
+          <button disabled={!ready} onClick={() => reset("overview")}>
+            Reset view
           </button>
-        )}
-      </div>
+          {!sky && (
+            <button disabled={!ready} onClick={() => reset("observer")}>
+              Observer close-up
+            </button>
+          )}
+        </div>
+      </section>
     </section>
   );
 }

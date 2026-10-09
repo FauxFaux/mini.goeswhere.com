@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/preact";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { App } from "../../app.tsx";
@@ -75,9 +75,10 @@ it("edits coordinates and UTC time, preserves unrelated query state, then restor
 it("scrubs time immediately and discards pending writes when a shared link arrives", async () => {
   render(<App />);
   const slider = screen.getByRole("slider", { name: "Time within this UTC day" });
-  fireEvent.input(slider, { target: { value: "3600" } });
+  fireEvent.keyDown(slider, { key: "Home" });
+  fireEvent.keyDown(slider, { key: "PageUp" });
   expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
-    "2026-10-09T01:00",
+    "2026-10-09T00:05",
   );
   const incoming = "#/earth-moon?lat=0&lon=180&at=2026-10-12T18%3A00%3A00.000Z&scale=true";
   act(() => {
@@ -189,4 +190,56 @@ it("uses the map directly without loading cities and synchronizes the single coo
     const snapshot = scene.update.mock.lastCall[0];
     expect(snapshot.frame).toEqual(observerFrame({ latitude: -30, longitude: 150.1 }));
   }
+});
+
+it("routes the separate camera controls to their own 3D view", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(2));
+  const [space, sky] = sceneMocks.create.mock.results.map((result) => result.value);
+  const spaceControls = within(
+    screen.getByRole("region", { name: "Earth and Moon camera controls" }),
+  );
+  const skyControls = within(screen.getByRole("region", { name: "Horizon camera controls" }));
+  await user.click(spaceControls.getByRole("button", { name: "Observer close-up" }));
+  expect(space.reset).toHaveBeenLastCalledWith("observer");
+  expect(sky.reset).not.toHaveBeenCalled();
+  await user.click(skyControls.getByRole("button", { name: "Reset view" }));
+  expect(sky.reset).toHaveBeenLastCalledWith("overview");
+  await user.click(spaceControls.getByRole("button", { name: "Reset view" }));
+  expect(space.reset).toHaveBeenLastCalledWith("overview");
+});
+
+it("scrubs the selected leap year and clamps keyboard edits to its edges", () => {
+  window.history.replaceState(null, "", "/#/earth-moon?at=2024-02-29T12%3A00%3A00.000Z");
+  render(<App />);
+  const year = screen.getByRole("slider", { name: "Time within this UTC year" });
+  const date = screen.getByLabelText("Date and time (UTC)") as HTMLInputElement;
+  fireEvent.keyDown(year, { key: "ArrowRight" });
+  expect(date.value).toBe("2024-03-01T12:00");
+  fireEvent.keyDown(year, { key: "End" });
+  expect(date.value).toBe("2024-12-31T23:59:59");
+  fireEvent.keyDown(year, { key: "ArrowRight" });
+  expect(date.value).toBe("2024-12-31T23:59:59");
+  fireEvent.keyDown(year, { key: "Home" });
+  expect(date.value).toBe("2024-01-01T00:00");
+});
+
+it("anchors pointer scrubbing to the selected day and clamps out-of-bounds dragging", () => {
+  render(<App />);
+  const slider = screen.getByRole("slider", { name: "Time within this UTC day" });
+  vi.spyOn(slider, "getBoundingClientRect").mockReturnValue({ left: 10, width: 100 } as DOMRect);
+  slider.setPointerCapture = vi.fn();
+  slider.hasPointerCapture = vi.fn(() => true);
+  slider.releasePointerCapture = vi.fn();
+  const date = screen.getByLabelText("Date and time (UTC)") as HTMLInputElement;
+  fireEvent.pointerDown(slider, { pointerId: 1, button: 0, clientX: 35 });
+  expect(date.value).toBe("2026-10-09T06:00");
+  fireEvent.pointerMove(slider, { pointerId: 1, clientX: 150 });
+  expect(date.value).toBe("2026-10-09T23:59:59");
+  fireEvent.pointerMove(slider, { pointerId: 2, clientX: 10 });
+  expect(date.value).toBe("2026-10-09T23:59:59");
+  fireEvent.pointerUp(slider, { pointerId: 1, clientX: -10 });
+  expect(date.value).toBe("2026-10-09T00:00");
+  expect(slider.releasePointerCapture).toHaveBeenCalledWith(1);
 });
