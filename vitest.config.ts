@@ -10,6 +10,7 @@ export default defineConfig((env) =>
         execArgv: ["--experimental-vm-modules"],
         // Inlining applies the preset's React → Preact aliases to wouter's imports.
         server: { deps: { inline: ["wouter"] } },
+        fsModuleCache: true,
       },
     }),
   ),

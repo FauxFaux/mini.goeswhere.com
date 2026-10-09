@@ -12,8 +12,7 @@ import { earthMoonCodec } from "./state.ts";
 const sceneMocks = vi.hoisted(() => ({ create: vi.fn() }));
 vi.mock("./scene.ts", () => ({ createEarthMoonScene: sceneMocks.create }));
 
-beforeEach(async () => {
-  await import("./scene.ts");
+beforeEach(() => {
   window.history.replaceState(
     null,
     "",

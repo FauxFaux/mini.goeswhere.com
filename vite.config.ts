@@ -10,6 +10,25 @@ export default defineConfig(({ mode }) => ({
       { find: /^use-sync-external-store\/shim(?:\/index\.js)?$/, replacement: "preact/compat" },
     ],
   },
-  plugins: [preact(), preload(), ...(mode === "analyze" ? [analyzer()] : [])],
+  plugins: [
+    preact(),
+    preload(),
+    ...(mode === "analyze"
+      ? [
+          analyzer({
+            exclude: /.*\.(?:wasm|symbols|txt|avif)/,
+          }),
+        ]
+      : []),
+  ],
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [{ name: "three", test: /node_modules\/three\/build\//, maxSize: 500_000 }],
+        },
+      },
+    },
+  },
   worker: { format: "es" },
 }));

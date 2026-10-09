@@ -1,12 +1,7 @@
 import type { EarthMoonTimings } from "./timings.ts";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { earthMoonSnapshot, Vector } from "./astronomy.ts";
-import type { createEarthMoonScene, SceneView } from "./scene.ts";
-
-let sceneModule: Promise<typeof import("./scene.ts")> | undefined;
-function loadScene() {
-  return (sceneModule ??= import("./scene.ts"));
-}
+import { createEarthMoonScene, type SceneView } from "./scene.ts";
 
 /** Independent of URL transport: can also be mounted with a clock's location and instant. */
 export function EarthMoonView({
@@ -29,29 +24,21 @@ export function EarthMoonView({
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
   useEffect(() => {
-    let disposed = false;
+    if (!canvas.current) return;
     let scene: ReturnType<typeof createEarthMoonScene> | undefined;
-    void loadScene()
-      .then(({ createEarthMoonScene }) => {
-        if (disposed || !canvas.current) return;
-        try {
-          scene = createEarthMoonScene(canvas.current, sky, setError, timings);
-          controller.current = scene;
-          const value = latest.current;
-          scene.update(value.snapshot, value.orbit, value.trueDistance);
-          setReady(true);
-        } catch {
-          scene?.dispose();
-          scene = undefined;
-          controller.current = undefined;
-          setError("The 3D view needs WebGL. The sky bearings are still available below.");
-        }
-      })
-      .catch(() => {
-        if (!disposed) setError("The 3D view could not load. Try reloading this page.");
-      });
+    try {
+      scene = createEarthMoonScene(canvas.current, sky, setError, timings);
+      controller.current = scene;
+      const value = latest.current;
+      scene.update(value.snapshot, value.orbit, value.trueDistance);
+      setReady(true);
+    } catch {
+      scene?.dispose();
+      scene = undefined;
+      controller.current = undefined;
+      setError("The 3D view needs WebGL. The sky bearings are still available below.");
+    }
     return () => {
-      disposed = true;
       controller.current = undefined;
       scene?.dispose();
     };
