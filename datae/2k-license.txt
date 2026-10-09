@@ -2,6 +2,6 @@ Source: https://www.solarsystemscope.com/textures/
 License: https://creativecommons.org/licenses/by/4.0/
 
 Derivations:
-avifenc -y 420 -s 0 -q 40 datae/2k_moon.jpg src/assets/moon.avif
-avifenc -s 0 -q 40 datae/2k_earth_nightmap.jpg src/assets/tex-earth-night.avif
-avifenc -s 0 -q 40 datae/2k_earth_daymap.jpg src/assets/tex-earth-day.avif
+avifenc -y 420 -s 0 -q 28 datae/2k_moon.jpg src/assets/tex-moon.avif
+avifenc -s 0 -q 70 datae/2k_earth_nightmap.jpg src/assets/tex-earth-night.avif
+avifenc -s 0 -q 70 datae/2k_earth_daymap.jpg src/assets/tex-earth-day.avif
