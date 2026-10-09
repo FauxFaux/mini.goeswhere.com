@@ -59,11 +59,6 @@ function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> 
     [us.instant, frozenDays],
   );
   const lunarMonth = useMemo(() => lunarCycle(us.instant), [us.instant]);
-  const shift = (milliseconds: number) =>
-    setUs((previous) => ({
-      ...previous,
-      instant: Math.max(minInstant, Math.min(maxInstant, previous.instant + milliseconds)),
-    }));
 
   return (
     <div class="earth-moon">
@@ -190,6 +185,7 @@ function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> 
               uss={[us, setUs]}
               lunarMonth={lunarMonth}
               observationInstant={observationInstant}
+              daysPlayback={mode === "days"}
               onDayScrub={scrubDay}
             />
             <label>

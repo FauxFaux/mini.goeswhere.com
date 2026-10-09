@@ -98,7 +98,7 @@ it("edits coordinates and UTC time, preserves unrelated query state, then restor
   await user.clear(longitude);
   await user.type(longitude, "151.2");
   fireEvent.input(date, { target: { value: "2026-10-10T06:30:00" } });
-  await user.click(screen.getByRole("button", { name: "Update view" }));
+  await user.click(screen.getByRole("button", { name: "update view" }));
   await user.click(screen.getByRole("checkbox", { name: "True Earth–Moon distance scale" }));
   // Navigation flushes pending debounced edits.
   act(() => navigateHash("/hello-world"));
@@ -207,7 +207,13 @@ it("releases both scenes on navigation and retains numeric sky directions withou
   act(() => navigateHash("/earth-moon"));
   await waitFor(() => expect(screen.getAllByRole("alert")).toHaveLength(2));
   expect(screen.getByText(/Moon: .*bearing from north/)).toBeTruthy();
-  await user.click(screen.getByRole("button", { name: "+1 hour" }));
+  fireEvent.input(screen.getByLabelText("Date and time (UTC)"), {
+    target: { value: "2026-10-09T13:00:00" },
+  });
+  await user.click(screen.getByRole("button", { name: "update view" }));
+  expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
+    "2026-10-09T13:00",
+  );
   expect(screen.getByRole("heading", { name: "Earth, Moon and your sky" })).toBeTruthy();
 });
 
@@ -300,7 +306,7 @@ it("updates both strip gradients when the observer moves, and daylight when the 
   fireEvent.input(screen.getByRole("spinbutton", { name: "Longitude", exact: true }), {
     target: { value: "151.2093" },
   });
-  fireEvent.click(screen.getByRole("button", { name: "Update view" }));
+  fireEvent.click(screen.getByRole("button", { name: "update view" }));
   expect(day.style.background).not.toBe(originalDay);
   expect(year.style.background).not.toBe(originalYear);
   const movedDay = day.style.background;
@@ -418,7 +424,14 @@ it("plays at 9 days per second with smooth frozen lighting and restores ordinary
   expect(dot(initial.sunDirection, scene.update.mock.lastCall[0].sunDirection)).toBeGreaterThan(
     0.995,
   );
-  fireEvent.click(screen.getByRole("button", { name: "+1 hour" }));
+  fireEvent.input(screen.getByLabelText("Date and time (UTC)"), {
+    target: { value: "2026-10-18T13:00:00" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "update view" }));
+  expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
+    "2026-10-18T13:00",
+  );
+  expect(dot(initial.sunDirection, scene.update.mock.lastCall[0].sunDirection)).toBeLessThan(0.995);
   expect(screen.queryByText(/Local time is frozen in the 3D views/)).toBeNull();
 });
 
@@ -464,7 +477,7 @@ it.each([
     fireEvent.input(latitude, { target: { value: "-30" } });
     frames.advance(750);
     expect(latitude.value).toBe("-30");
-    fireEvent.click(screen.getByRole("button", { name: "Update view" }));
+    fireEvent.click(screen.getByRole("button", { name: "update view" }));
     fireEvent.pointerUp(document);
     expect(persisted().location.latitude).toBe(-30);
     frames.advance(1000);
@@ -527,6 +540,9 @@ it("adjusts the held observation clock with the UTC-day strip while fast playbac
     screen.getByRole("button", { name: "Play at 9 days per second (local time frozen)" }),
   );
   frames.advance(500 / 3);
+  expect(screen.getByRole("slider", { name: "Observation time, fixed in this mode (UTC)" })).toBe(
+    day,
+  );
   expect(date.value).toBe("2026-10-11T00:00");
   expect(day.getAttribute("aria-valuetext")).toMatch(/^12:00:00 UTC/);
   const noon = scene.update.mock.lastCall[0];
@@ -568,6 +584,7 @@ it("adjusts the held observation clock with the UTC-day strip while fast playbac
 
   fireEvent.click(screen.getByRole("button", { name: "Play at 3 hours per second" }));
   expect(day.getAttribute("aria-valuetext")).toMatch(/^00:00:00 UTC/);
+  expect(screen.getByRole("slider", { name: "Time within this UTC day" })).toBe(day);
   fireEvent.keyDown(day, { key: "ArrowRight" });
   expect(date.value).toBe("2026-10-17T00:01");
   expect(

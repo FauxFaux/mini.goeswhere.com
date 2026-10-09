@@ -16,11 +16,13 @@ export function TimeStrips({
   uss: [state, setState],
   lunarMonth,
   observationInstant,
+  daysPlayback,
   onDayScrub,
 }: {
   uss: State<EarthMoonState>;
   lunarMonth: ReturnType<typeof lunarCycle>;
   observationInstant: number;
+  daysPlayback: boolean;
   onDayScrub: (instant: number) => void;
 }) {
   const date = new Date(state.instant);
@@ -51,7 +53,9 @@ export function TimeStrips({
   return (
     <div class="earth-moon-time-strips">
       <ProgressStrip
-        label="Time within this UTC day"
+        label={
+          daysPlayback ? "Observation time, fixed in this mode (UTC)" : "Time within this UTC day"
+        }
         valueText={`${new Date(observationInstant).toISOString().slice(11, 19)} UTC. Sunrise ${sun.sunrise}, sunset ${sun.sunset} UTC.`}
         background={sun.gradient}
         instant={observationInstant}
