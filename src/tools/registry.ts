@@ -5,6 +5,7 @@ import { HelloWorld } from "./hello-world/page.tsx";
 import { LocationPicker } from "./location-picker/page.tsx";
 import { StrengthStandards } from "./strength-standards/page.tsx";
 import { WasmExplorer } from "./wasm-explorer/page.tsx";
+import { Words } from "./words/page.tsx";
 
 /** The directory and router both use this catalogue. */
 export const tools = [
@@ -43,6 +44,12 @@ export const tools = [
     title: "WASM explorer",
     description: "Inspect binary sizes, code, data, debug metadata and source attribution.",
     component: WasmExplorer,
+  },
+  {
+    path: "/words",
+    title: "Words",
+    description: "Search a British English dictionary with a regular expression.",
+    component: Words,
   },
   {
     path: "/hello-world",
