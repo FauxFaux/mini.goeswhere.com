@@ -277,3 +277,35 @@ header.earth-moon-navigation {
 .earth-moon-lunar-labels span:last-child {
   right: 0;
 }
+
+.earth-moon-timings {
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.earth-moon-timings summary {
+  cursor: pointer;
+}
+
+.earth-moon-timings p {
+  font-size: 0.85rem;
+}
+
+.earth-moon-timings table {
+  width: 100%;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  border-collapse: collapse;
+}
+
+.earth-moon-timings th,
+.earth-moon-timings td {
+  padding: 0.2rem 0.35rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.earth-moon-timings th:first-child {
+  text-align: left;
+}

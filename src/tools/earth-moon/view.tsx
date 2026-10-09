@@ -1,3 +1,4 @@
+import type { EarthMoonTimings } from "./timings.ts";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { earthMoonSnapshot, Vector } from "./astronomy.ts";
 import type { createEarthMoonScene, SceneView } from "./scene.ts";
@@ -9,11 +10,13 @@ function loadScene() {
 
 /** Independent of URL transport: can also be mounted with a clock's location and instant. */
 export function EarthMoonView({
+  timings,
   snapshot,
   orbit,
   trueDistance,
   sky = false,
 }: {
+  timings?: EarthMoonTimings;
   snapshot: ReturnType<typeof earthMoonSnapshot>;
   orbit: Vector[];
   trueDistance: boolean;
@@ -32,7 +35,7 @@ export function EarthMoonView({
       .then(({ createEarthMoonScene }) => {
         if (disposed || !canvas.current) return;
         try {
-          scene = createEarthMoonScene(canvas.current, sky, setError);
+          scene = createEarthMoonScene(canvas.current, sky, setError, timings);
           controller.current = scene;
           const value = latest.current;
           scene.update(value.snapshot, value.orbit, value.trueDistance);
@@ -52,7 +55,7 @@ export function EarthMoonView({
       controller.current = undefined;
       scene?.dispose();
     };
-  }, [sky]);
+  }, [sky, timings]);
   useEffect(() => {
     controller.current?.update(snapshot, orbit, trueDistance);
   }, [snapshot, orbit, trueDistance]);

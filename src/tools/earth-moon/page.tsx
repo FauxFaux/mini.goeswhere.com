@@ -19,6 +19,8 @@ import {
 import { EarthMoonView } from "./view.tsx";
 import { TimeStrips } from "./time-strips.tsx";
 import { usePlayback } from "./playback.ts";
+import { EarthMoonTimings } from "./timings.ts";
+import { TimingPanel } from "./timing-panel.tsx";
 import "./earth-moon.css";
 
 export function EarthMoon() {
@@ -30,6 +32,7 @@ export function EarthMoon() {
 }
 
 function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> }) {
+  const [timings] = useState(() => new EarthMoonTimings());
   const {
     mode,
     toggle,
@@ -51,14 +54,23 @@ function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> 
     if (!dateEdited) setDateInput(new Date(us.instant).toISOString().slice(0, 19));
   }, [us.instant, dateEdited]);
   const snapshot = useMemo(
-    () => earthMoonSnapshot(new Date(us.instant), us.location, frozenDays),
+    () =>
+      timings.measure("Snapshot", () =>
+        earthMoonSnapshot(new Date(us.instant), us.location, frozenDays),
+      ),
     [us.instant, us.location.latitude, us.location.longitude, frozenDays],
   );
   const orbit = useMemo(
-    () => lunarOrbit(new Date(us.instant), frozenDays),
+    () =>
+      timings.measure("Lunar orbit (113 samples)", () =>
+        lunarOrbit(new Date(us.instant), frozenDays),
+      ),
     [us.instant, frozenDays],
   );
-  const lunarMonth = useMemo(() => lunarCycle(us.instant), [us.instant]);
+  const lunarMonth = useMemo(
+    () => timings.measure("Lunar cycle", () => lunarCycle(us.instant)),
+    [us.instant],
+  );
 
   return (
     <div class="earth-moon">
@@ -198,11 +210,23 @@ function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> 
               />{" "}
               True Earth–Moon distance scale
             </label>
+            <TimingPanel timings={timings} />
           </section>
         </div>
         <div class="earth-moon-views-column">
-          <EarthMoonView snapshot={snapshot} orbit={orbit} trueDistance={us.trueDistance} />
-          <EarthMoonView snapshot={snapshot} orbit={orbit} trueDistance={us.trueDistance} sky />
+          <EarthMoonView
+            timings={timings}
+            snapshot={snapshot}
+            orbit={orbit}
+            trueDistance={us.trueDistance}
+          />
+          <EarthMoonView
+            timings={timings}
+            snapshot={snapshot}
+            orbit={orbit}
+            trueDistance={us.trueDistance}
+            sky
+          />
         </div>
       </div>
       <section class="earth-moon-notes" aria-label="About these views">

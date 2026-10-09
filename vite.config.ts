@@ -1,6 +1,7 @@
 import preact from "@preact/preset-vite";
 import { defineConfig } from "vite";
 import { analyzer } from "vite-bundle-analyzer";
+import preload from "vite-plugin-preload";
 
 export default defineConfig(({ mode }) => ({
   resolve: {
@@ -9,6 +10,6 @@ export default defineConfig(({ mode }) => ({
       { find: /^use-sync-external-store\/shim(?:\/index\.js)?$/, replacement: "preact/compat" },
     ],
   },
-  plugins: [preact(), ...(mode === "analyze" ? [analyzer()] : [])],
+  plugins: [preact(), preload(), ...(mode === "analyze" ? [analyzer()] : [])],
   worker: { format: "es" },
 }));
