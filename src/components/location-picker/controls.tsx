@@ -25,21 +25,6 @@ export function LocationPickerControls({ uss: [location, setLocation] }: { uss: 
     setLatitude(String(location.latitude));
     setLongitude(String(location.longitude));
   }, [location.latitude, location.longitude]);
-  const point = locationToPoint(location);
-
-  function locationAtCursor(event: {
-    currentTarget: HTMLDivElement;
-    clientX: number;
-    clientY: number;
-  }) {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    if (bounds.width === 0 || bounds.height === 0) return null;
-    return pointToLocation(
-      ((event.clientX - bounds.left) / bounds.width) * MAP_WIDTH,
-      ((event.clientY - bounds.top) / bounds.height) * MAP_HEIGHT,
-    );
-  }
-
   function selectLocation(location: Location | null) {
     if (
       location === null ||
@@ -91,58 +76,7 @@ export function LocationPickerControls({ uss: [location, setLocation] }: { uss: 
           <button type="submit">Set location</button>
         </form>
       </div>
-      <div
-        class="location-picker-map"
-        role="button"
-        tabIndex={0}
-        aria-label="Pick a location on the world map"
-        aria-describedby="location-picker-instructions"
-        onClick={(event) => selectLocation(locationAtCursor(event))}
-        onMouseMove={(event) => {
-          if (event.buttons & 1) selectLocation(locationAtCursor(event));
-        }}
-        onKeyDown={(event) => {
-          const step = event.shiftKey ? 0.1 : 1;
-          const deltas: Record<string, [number, number]> = {
-            ArrowLeft: [-step, 0],
-            ArrowRight: [step, 0],
-            ArrowUp: [0, step],
-            ArrowDown: [0, -step],
-            Enter: [0, 0],
-            " ": [0, 0],
-          };
-          if (!Object.hasOwn(deltas, event.key)) return;
-          const delta = deltas[event.key];
-          if (!delta) return;
-          event.preventDefault();
-          setLocation((previous) => {
-            const next = moveLocation(previous, ...delta);
-            return excludeNewZealand && isInNewZealandCutout(...locationToPoint(next))
-              ? previous
-              : next;
-          });
-        }}
-      >
-        <img src={homolosine} width={MAP_WIDTH} height={MAP_HEIGHT} alt="" draggable={false} />
-        {excludeNewZealand && (
-          <svg
-            class="location-picker-cutout"
-            viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
-            aria-hidden="true"
-          >
-            <path d={newZealandCutoutPath} fill="#000" />
-          </svg>
-        )}
-        <span
-          hidden={excludeNewZealand && isInNewZealandCutout(...point)}
-          class="location-picker-marker"
-          aria-hidden="true"
-          style={{
-            left: `${(point[0] / MAP_WIDTH) * 100}%`,
-            top: `${(point[1] / MAP_HEIGHT) * 100}%`,
-          }}
-        />
-      </div>
+      <LocationPickerMap uss={[location, setLocation]} describedBy="location-picker-instructions" />
       <CityBrowser
         catalogue={catalogue}
         retry={retryCities}
@@ -153,6 +87,107 @@ export function LocationPickerControls({ uss: [location, setLocation] }: { uss: 
         Positive latitude is north; positive longitude is east. Your selection is saved in the URL;
         copy the address to share it.
       </p>
+      <LocationPickerMapNotes />
+      <p class="muted">
+        World cities data from <a href="https://simplemaps.com/data/world-cities">Simplemaps</a> (
+        <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>).
+      </p>
+    </>
+  );
+}
+
+/** The interactive map without coordinate controls, city data, or explanatory text. */
+export function LocationPickerMap({
+  uss: [location, setLocation],
+  describedBy,
+}: {
+  uss: State<Location>;
+  describedBy?: string;
+}) {
+  const excludeNewZealand = new URLSearchParams(useSearch()).get("no-nz") === "1";
+  const point = locationToPoint(location);
+
+  function locationAtCursor(event: {
+    currentTarget: HTMLDivElement;
+    clientX: number;
+    clientY: number;
+  }) {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    if (bounds.width === 0 || bounds.height === 0) return null;
+    return pointToLocation(
+      ((event.clientX - bounds.left) / bounds.width) * MAP_WIDTH,
+      ((event.clientY - bounds.top) / bounds.height) * MAP_HEIGHT,
+    );
+  }
+
+  function selectLocation(location: Location | null) {
+    if (
+      location === null ||
+      (excludeNewZealand && isInNewZealandCutout(...locationToPoint(location)))
+    )
+      return;
+    setLocation(roundLocation(location));
+  }
+
+  return (
+    <div
+      class="location-picker-map"
+      role="button"
+      tabIndex={0}
+      aria-label="Pick a location on the world map"
+      aria-describedby={describedBy}
+      onClick={(event) => selectLocation(locationAtCursor(event))}
+      onMouseMove={(event) => {
+        if (event.buttons & 1) selectLocation(locationAtCursor(event));
+      }}
+      onKeyDown={(event) => {
+        const step = event.shiftKey ? 0.1 : 1;
+        const deltas: Record<string, [number, number]> = {
+          ArrowLeft: [-step, 0],
+          ArrowRight: [step, 0],
+          ArrowUp: [0, step],
+          ArrowDown: [0, -step],
+          Enter: [0, 0],
+          " ": [0, 0],
+        };
+        if (!Object.hasOwn(deltas, event.key)) return;
+        const delta = deltas[event.key];
+        if (!delta) return;
+        event.preventDefault();
+        setLocation((previous) => {
+          const next = moveLocation(previous, ...delta);
+          return excludeNewZealand && isInNewZealandCutout(...locationToPoint(next))
+            ? previous
+            : next;
+        });
+      }}
+    >
+      <img src={homolosine} width={MAP_WIDTH} height={MAP_HEIGHT} alt="" draggable={false} />
+      {excludeNewZealand && (
+        <svg
+          class="location-picker-cutout"
+          viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+          aria-hidden="true"
+        >
+          <path d={newZealandCutoutPath} fill="#000" />
+        </svg>
+      )}
+      <span
+        hidden={excludeNewZealand && isInNewZealandCutout(...point)}
+        class="location-picker-marker"
+        aria-hidden="true"
+        style={{
+          left: `${(point[0] / MAP_WIDTH) * 100}%`,
+          top: `${(point[1] / MAP_HEIGHT) * 100}%`,
+        }}
+      />
+    </div>
+  );
+}
+
+export function LocationPickerMapNotes() {
+  return (
+    <>
       <p class="muted">
         Goode’s interrupted homolosine projection preserves area. The black gaps are interruptions
         in the map, not places on Earth. Coordinates are approximate at the image’s resolution.
@@ -165,10 +200,6 @@ export function LocationPickerControls({ uss: [location, setLocation] }: { uss: 
         by Strebe, based on NASA’s Blue Marble imagery (
         <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>). Converted to
         AVIF.
-      </p>
-      <p class="muted">
-        World cities data from <a href="https://simplemaps.com/data/world-cities">Simplemaps</a> (
-        <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>).
       </p>
       <p class="muted">
         Projection math adapted from{" "}

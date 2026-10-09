@@ -4,6 +4,9 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { App } from "../../app.tsx";
 import { navigateHash, splitHash } from "../../boot/hash-location.ts";
+import * as cityFunctions from "../../components/location-picker/cities.ts";
+import { locationToPoint } from "../../components/location-picker/projection.ts";
+import { observerFrame } from "./astronomy.ts";
 import { earthMoonCodec } from "./state.ts";
 
 const sceneMocks = vi.hoisted(() => ({ create: vi.fn() }));
@@ -161,4 +164,29 @@ it("releases both scenes on navigation and retains numeric sky directions withou
   expect(screen.getByText(/Moon: .*bearing from north/)).toBeTruthy();
   await user.click(screen.getByRole("button", { name: "+1 hour" }));
   expect(screen.getByRole("heading", { name: "Earth, Moon and your sky" })).toBeTruthy();
+});
+
+it("uses the map directly without loading cities and synchronizes the single coordinate form", async () => {
+  const loadCities = vi.spyOn(cityFunctions, "loadCities");
+  render(<App />);
+  const map = screen.getByRole("button", { name: "Pick a location on the world map" });
+  expect(screen.getAllByRole("spinbutton")).toHaveLength(2);
+  expect(loadCities).not.toHaveBeenCalled();
+  vi.spyOn(map, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 1029, 450));
+  const point = locationToPoint({ latitude: -30, longitude: 150 });
+  fireEvent.click(map, { clientX: point[0] / 2, clientY: point[1] / 2 });
+  expect((screen.getByRole("spinbutton", { name: "Latitude" }) as HTMLInputElement).value).toBe(
+    "-30",
+  );
+  expect((screen.getByRole("spinbutton", { name: "Longitude" }) as HTMLInputElement).value).toBe(
+    "150",
+  );
+  fireEvent.keyDown(map, { key: "ArrowRight", shiftKey: true });
+  await waitFor(() => expect(persisted().location).toEqual({ latitude: -30, longitude: 150.1 }));
+  expect(new URLSearchParams(splitHash(window.location.hash).search).get("note")).toBe("keep");
+  await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(2));
+  for (const scene of sceneMocks.create.mock.results.map((result) => result.value)) {
+    const snapshot = scene.update.mock.lastCall[0];
+    expect(snapshot.frame).toEqual(observerFrame({ latitude: -30, longitude: 150.1 }));
+  }
 });

@@ -18,6 +18,7 @@ export type SceneView = "overview" | "observer";
 const red = 0xff6262;
 const yellow = 0xffe09a;
 const blue = 0x91bfff;
+const compressedMoonDistance = 4; // Mean separation in Earth radii.
 const vec = (p: Vector) => new THREE.Vector3(...p);
 
 function disposeGroup(group: THREE.Object3D) {
@@ -85,6 +86,28 @@ function ringPoints(center: Vector, north: Vector, east: Vector, radius: number)
   });
 }
 
+/** A schematic globe under the observer, expressed in the local sky's ENU frame.
+ * Rotate the geographic texture with the globe: the GPS position becomes its top,
+ * with geographic north towards the compass's N and east towards E. */
+export function createHorizonEarth(texture: THREE.Texture, { up, north, east }: Snapshot["frame"]) {
+  const radius = 1.2;
+  const earth = new THREE.Mesh(
+    new THREE.SphereGeometry(radius, 64, 32),
+    new THREE.MeshLambertMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.4,
+      depthWrite: false,
+    }),
+  );
+  earth.position.set(0, -radius, 0);
+  const earthToLocal = new THREE.Matrix4()
+    .makeBasis(vec(east), vec(up), vec(scale(north, -1)))
+    .transpose();
+  earth.quaternion.setFromRotationMatrix(earthToLocal);
+  return earth;
+}
+
 /** One demand-rendered canvas. All WebGL resources and subscriptions belong to its mount. */
 export function createEarthMoonScene(
   canvas: HTMLCanvasElement,
@@ -145,15 +168,15 @@ export function createEarthMoonScene(
     textures.push(texture);
     return texture;
   }
-  const earthTexture = sky ? undefined : loadTexture(earthMap);
+  const earthTexture = loadTexture(earthMap);
   const moonTexture = loadTexture(moonMap);
 
   function reset(nextView: SceneView = "overview") {
     view = nextView;
     if (!snapshot) return;
     if (sky) {
-      controls.target.set(0, 0, 0);
-      camera.position.set(3.2, 2.6, 3.2);
+      controls.target.set(0, -0.2, 0);
+      camera.position.set(4, 3, 4);
     } else if (view === "observer") {
       controls.target.copy(vec(scale(snapshot.frame.up, 0.8)));
       camera.position.copy(
@@ -166,7 +189,7 @@ export function createEarthMoonScene(
       );
     } else {
       controls.target.set(0, 0, 0);
-      const orbitRadius = trueDistance ? 65 : 8.5;
+      const orbitRadius = trueDistance ? 65 : compressedMoonDistance + 0.5;
       const distance = (orbitRadius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2))) * 1.15;
       camera.position.copy(
         vec(
@@ -205,6 +228,9 @@ export function createEarthMoonScene(
       const moonPoint = scale(local(next.sight), 2);
       const sunPoint = scale(local(next.sunDirection), 2);
       sunlight.position.copy(vec(scale(local(next.sunDirection), 100)));
+      // Keep depth writes off so below-horizon objects and sight lines remain visible
+      // through the explanatory Earth volume rather than disappearing behind it.
+      content.add(createHorizonEarth(earthTexture, next.frame));
       line(content, ringPoints(origin, [0, 0, -1], [1, 0, 0], 2), red);
       for (const bearing of [0, 45, 90, 135]) {
         const angle = THREE.MathUtils.degToRad(bearing);
@@ -227,6 +253,7 @@ export function createEarthMoonScene(
       ] as [string, Vector][])
         label(content, text, point);
       sphere(content, 0.045, origin, new THREE.MeshBasicMaterial({ color: red }));
+      label(content, "Observer", [0, 0.2, 0], 0.18);
       sphere(content, 0.12, moonPoint, new THREE.MeshLambertMaterial({ map: moonTexture }));
       label(content, "Moon", add(moonPoint, [0, 0.22, 0]), 0.18);
       sphere(content, 0.09, sunPoint, new THREE.MeshBasicMaterial({ color: 0xffc764 }));
@@ -244,7 +271,7 @@ export function createEarthMoonScene(
       sphere(content, 1, [0, 0, 0], new THREE.MeshLambertMaterial({ map: earthTexture }));
       // Physical radii, with optional radial compression of the Moon's distance only.
       const compress = (point: Vector) =>
-        trueDistance ? point : scale(point, 8 / (384400 / earthRadiusKm));
+        trueDistance ? point : scale(point, compressedMoonDistance / (384400 / earthRadiusKm));
       const moonPoint = compress(next.moonPosition);
       const moon = sphere(
         content,
@@ -289,7 +316,7 @@ export function createEarthMoonScene(
         next.geometricMoonAltitude < 0,
       );
       line(content, [observer, moonPoint], yellow, true);
-      const sunPoint = scale(next.sunDirection, trueDistance ? 72 : 10);
+      const sunPoint = scale(next.sunDirection, trueDistance ? 72 : compressedMoonDistance + 1);
       sphere(
         content,
         trueDistance ? 0.6 : 0.3,

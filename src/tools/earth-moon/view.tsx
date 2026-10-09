@@ -66,7 +66,7 @@ export function EarthMoonView({
         tabIndex={0}
         aria-label={
           sky
-            ? "Rotatable local sky with compass directions, Sun and Moon"
+            ? "Rotatable local sky with a translucent Earth beneath your location, compass directions, Sun and Moon"
             : "Rotatable textured Earth, observer tangent, lunar orbit and sunlight direction"
         }
         aria-describedby="earth-moon-view-help"
@@ -88,11 +88,6 @@ export function EarthMoonView({
           </button>
         )}
       </div>
-      <p class="muted">
-        {sky
-          ? "You are at the centre. The red circle is your horizon; objects below it are hidden by Earth. Sun and Moon disks are enlarged."
-          : "Red: GPS position and tangent horizon. Blue: straight up. Yellow: Moon sight line. Grey: 28-day lunar path."}
-      </p>
     </section>
   );
 }
