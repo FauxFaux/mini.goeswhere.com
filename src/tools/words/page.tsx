@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { toWords } from "ts-number-to-words";
-import dictionaryInfoUrl from "../../assets/aspell-wbritish-info.txt?url";
+import dictionaryInfoUrl from "../../assets/aspell-wbritish-info.txt?url&no-inline";
 import { UrlHandler } from "../../boot/url-handler.tsx";
 import type { State } from "../../boot/url-state.ts";
 import { loadDictionary } from "./dictionary.ts";
