@@ -1,9 +1,6 @@
-Regenerate the calculator unit catalogue with `npm run ingest:units`. Python 3's
-standard library reads `data/units.xml.in` from the bundled corresponding sources
-in `src/assets/qalculate-sources.tar.gz`, keeping the catalogue aligned with WASM.
-Run this again after rebuilding or upgrading libqalculate.
-
-To ingest a separate checkout instead:
+Regenerate the calculator unit catalogue from a libqalculate checkout matching
+the commit pinned in `qalculate-wasm/Dockerfile`. Python 3's standard library reads
+`data/units.xml.in`. Run this again after rebuilding or upgrading libqalculate:
 
 ```sh
 npm run ingest:units -- ~/clone/libqalculate/data/units.xml.in

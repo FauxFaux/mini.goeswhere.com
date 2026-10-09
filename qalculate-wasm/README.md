@@ -6,8 +6,6 @@ The scratch export writes these committed files into `src/assets/`:
 - `qalculate.wasm`: calculator, embedded definitions, and bundled exchange rates.
 - `qalculate.mjs` and `qalculate.d.mts`: Emscripten loader and Embind declarations.
 - `qalculate-COPYING`: libqalculate license.
-- `qalculate-sources.tar.gz`: pristine libqalculate, GMP, MPFR, and libxml2 source
-  archives (including their licenses), plus the bindings and build recipe.
 
 The build fetches libqalculate 5.13.1 at commit
 `b245c4194a1a8dc14ba7ecf1e811e6d0b60592aa` from

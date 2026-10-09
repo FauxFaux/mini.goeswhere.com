@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """Convert libqalculate's English unit definitions to the calculator catalogue.
 
-With no input path, read the pristine definitions in the bundled source archive,
-so the table and WASM engine use the same release. Requires only Python 3.
+Read definitions from a libqalculate checkout matching the WASM engine release.
+Requires only Python 3.
 """
 
 import argparse
 import hashlib
-import io
 import json
 from pathlib import Path
-import tarfile
 import xml.etree.ElementTree as ET
 
 
@@ -109,25 +107,12 @@ def ingest(xml):
     }
 
 
-def bundled_xml():
-    with tarfile.open(ROOT / "src/assets/qalculate-sources.tar.gz") as bundle:
-        source = bundle.extractfile("deps/libqalculate.tar.gz")
-        if source is None:
-            raise ValueError("Missing libqalculate source archive")
-        with tarfile.open(fileobj=io.BytesIO(source.read())) as upstream:
-            member = next(m for m in upstream.getmembers() if m.name.endswith("/data/units.xml.in"))
-            xml = upstream.extractfile(member)
-            if xml is None:
-                raise ValueError("Missing unit definitions")
-            return xml.read()
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", nargs="?", type=Path, help="optional units.xml.in path")
+    parser.add_argument("input", type=Path, help="units.xml.in path from a matching libqalculate checkout")
     parser.add_argument("--output", type=Path, default=ROOT / "src/tools/calculator/units.json")
     args = parser.parse_args()
-    catalogue = ingest(args.input.read_bytes() if args.input else bundled_xml())
+    catalogue = ingest(args.input.read_bytes())
     args.output.write_text(json.dumps(catalogue, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {len(catalogue['units'])} units to {args.output}")
 

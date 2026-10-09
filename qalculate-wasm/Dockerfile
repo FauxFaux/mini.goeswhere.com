@@ -30,10 +30,6 @@ WORKDIR /src
 ARG LIBQALCULATE_COMMIT=b245c4194a1a8dc14ba7ecf1e811e6d0b60592aa
 RUN curl -fL --retry 3 https://codeload.github.com/Qalculate/libqalculate/tar.gz/${LIBQALCULATE_COMMIT} -o /deps/libqalculate.tar.gz \
     && tar xf /deps/libqalculate.tar.gz --strip-components=1 -C /src
-# Archive pristine corresponding sources, dependencies, bindings, and the build recipe.
-COPY bindings.cc qalculate.d.mts Dockerfile /recipe/
-RUN mkdir -p /out \
-    && tar czf /out/qalculate-sources.tar.gz -C / deps/gmp.tar.xz deps/mpfr.tar.xz deps/libxml2.tar.xz deps/libqalculate.tar.gz recipe
 # Regenerate in the container; never consume host configure output or libraries.
 RUN autoreconf -fi \
     && PKG_CONFIG_LIBDIR=/opt/wasm/lib/pkgconfig \

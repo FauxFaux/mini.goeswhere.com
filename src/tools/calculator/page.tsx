@@ -3,7 +3,6 @@ import { TrashIcon } from "@primer/octicons-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { UrlHandler } from "../../boot/url-handler.tsx";
 import type { State } from "../../boot/url-state.ts";
-import sourceUrl from "../../assets/qalculate-sources.tar.gz?url";
 import licenseUrl from "../../assets/qalculate-COPYING?url";
 import { CalculatorEngine } from "./engine.ts";
 import { evaluateExpression, type ExpressionResult } from "./evaluate.ts";
@@ -157,8 +156,6 @@ function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
       <CalculatorUnitList uss={[us, setUs]} onInsert={insertUnit} />
       <p class="muted">
         Powered by libqalculate 5.13.1. <a href={licenseUrl}>License</a>
-        {" · "}
-        <a href={sourceUrl}>Source and build recipe</a>
       </p>
     </>
   );
