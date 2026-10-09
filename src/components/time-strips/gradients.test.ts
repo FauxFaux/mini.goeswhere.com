@@ -21,6 +21,25 @@ it("samples the same sunlight in UTC and the observer's local timezone", () => {
   expect(utc.slice(0, 57)).toEqual(local.slice(40));
 });
 
+it.each([
+  ["2026-03-29", "06:", "19:"],
+  ["2026-10-25", "06:", "16:"],
+])("uses local event times across London's DST change on %s", (day, sunrise, sunset) => {
+  const cycle = sunCycle(Temporal.PlainDate.from(day));
+  expect(cycle.sunrise).toMatch(new RegExp(`^${sunrise}`));
+  expect(cycle.sunset).toMatch(new RegExp(`^${sunset}`));
+});
+
+it.each([
+  ["2026-06-21", 86400],
+  ["2026-12-21", 0],
+])("handles polar days without sunrise or sunset on %s", (day, daylightSeconds) => {
+  const cycle = sunCycle(Temporal.PlainDate.from(day), { latitude: 89, longitude: 0 }, "UTC");
+  expect(cycle.sunrise).toBe("unavailable");
+  expect(cycle.sunset).toBe("unavailable");
+  expect(cycle.daylightSeconds).toBe(daylightSeconds);
+});
+
 it("positions seasonal stops within the selected UTC leap year", () => {
   const gradient = seasonGradient(2024, 51.5, "UTC");
   const march = (60 / 366) * 100;

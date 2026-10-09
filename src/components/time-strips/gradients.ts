@@ -1,8 +1,7 @@
 import "temporal-polyfill/global";
 import tzLookup from "@photostructure/tz-lookup";
 import { Temporal } from "temporal-polyfill";
-import { getPosition } from "suncalc";
-import { getSunTimes } from "sunrise-sunset-js/temporal";
+import { getPosition, getTimes } from "suncalc";
 import { londonLocation } from "../location-picker/location.ts";
 import type { Location } from "../location-picker/projection.ts";
 
@@ -17,14 +16,17 @@ export function sunCycle(
   location: Location = londonLocation,
   timezone = timezoneAt(location),
 ) {
-  const times = getSunTimes(location.latitude, location.longitude, date, {
-    timezoneId: timezone,
-  });
-  const local = (instant: { epochMilliseconds: number } | null | undefined) =>
+  const noon = date.toZonedDateTime({ timeZone: timezone, plainTime: "12:00" });
+  const times = getTimes(
+    new Date(noon.epochMilliseconds),
+    location.latitude,
+    location.longitude,
+    0,
+    noon.offsetNanoseconds / 60e9,
+  );
+  const local = (instant: Date | null) =>
     instant
-      ? Temporal.Instant.fromEpochMilliseconds(instant.epochMilliseconds).toZonedDateTimeISO(
-          timezone,
-        )
+      ? Temporal.Instant.fromEpochMilliseconds(instant.getTime()).toZonedDateTimeISO(timezone)
       : undefined;
   const sunrise = local(times.sunrise);
   const sunset = local(times.sunset);

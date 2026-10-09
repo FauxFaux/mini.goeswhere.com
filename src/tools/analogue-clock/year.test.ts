@@ -113,7 +113,9 @@ it("uses local sunrise, sunset and midnight for a different longitude", () => {
   expect(sydney.daylightSeconds).toBeGreaterThan(9 * 3600);
   expect(sydney.daylightSeconds).toBeLessThan(11 * 3600);
   expect(sydney.gradient).not.toBe(london.gradient);
-  expect(sydney.sunrise).toMatch(/^07:/);
+  const sunrise = Temporal.PlainTime.from(sydney.sunrise);
+  expect(sunrise.hour * 60 + sunrise.minute).toBeGreaterThanOrEqual(7 * 60 - 5);
+  expect(sunrise.hour * 60 + sunrise.minute).toBeLessThanOrEqual(7 * 60 + 5);
   expect(sydney.sunset).toMatch(/^16:/);
   expect(sydney.gradient).toMatch(/^linear-gradient\(to right, #101a35 0%/);
 });
