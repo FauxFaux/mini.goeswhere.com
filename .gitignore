@@ -23,3 +23,6 @@ __pycache__/
 *.njsproj
 *.sln
 *.sw?
+qalculate-wasm/analysis/
+qalculate-wasm/analysis-symbols/
+qalculate-wasm/analysis-dwarf/

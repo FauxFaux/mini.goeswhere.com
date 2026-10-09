@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "bundle:analyze": "tsc -b && vite build --mode analyze",
     "build:qalculate-wasm": "docker build --target wasm --output type=local,dest=src/assets qalculate-wasm",
+    "analyze:qalculate-wasm": "docker build --target analysis --build-arg WASM_DEBUG_FLAGS=-g --build-arg WASM_ANALYSIS=source-map --output type=local,dest=qalculate-wasm/analysis qalculate-wasm",
+    "analyze:qalculate-wasm:symbols": "docker build --target analysis --build-arg WASM_ANALYSIS=symbols --output type=local,dest=qalculate-wasm/analysis-symbols qalculate-wasm",
     "ingest:units": "python3 scripts/ingest-qalculate-units.py",
     "deploy": "npm run build && rsync -av dist/ sek:/srv/mini.goeswhere.com/",
     "format": "oxfmt .",

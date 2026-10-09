@@ -1,5 +1,8 @@
 # libqalculate WebAssembly
 
+For binary inspection, source attribution, analysis builds and stripping, see
+[ANALYSIS.md](ANALYSIS.md) and the site's `#/wasm-explorer` tool.
+
 Rebuild from the repository root with `npm run build:qalculate-wasm` (Docker/BuildKit).
 The scratch export writes these committed files into `src/assets/`:
 

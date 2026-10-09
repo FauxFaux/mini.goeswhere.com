@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG GMP_VERSION=6.3.0
 ARG MPFR_VERSION=4.2.1
 ARG LIBXML2_VERSION=2.14.6
-ENV CFLAGS="-O2" CXXFLAGS="-O2"
+# Analysis builds must add DWARF to every archive, not just the final binding.
+ARG WASM_DEBUG_FLAGS=""
+ENV CFLAGS="-O2 ${WASM_DEBUG_FLAGS}" CXXFLAGS="-O2 ${WASM_DEBUG_FLAGS}"
 WORKDIR /deps
 RUN curl -fL --retry 3 https://ftp.gnu.org/gnu/gmp/gmp-${GMP_VERSION}.tar.xz -o gmp.tar.xz \
     && tar xf gmp.tar.xz && cd gmp-${GMP_VERSION} \
@@ -42,8 +44,16 @@ RUN autoreconf -fi \
     && emmake make -C libqalculate -j4 \
     && emmake make -C libqalculate install
 COPY bindings.cc qalculate.d.mts wasm/
+ARG WASM_ANALYSIS=none
 RUN mkdir -p /out \
-    && em++ wasm/bindings.cc -I/opt/wasm/include \
+    && case "$WASM_ANALYSIS" in \
+         none) set -- ;; \
+         symbols) set -- --emit-symbol-map -Wl,-Map=/out/qalculate.linker-map.txt ;; \
+         source-map) set -- -gsource-map --emit-symbol-map -Wl,-Map=/out/qalculate.linker-map.txt ;; \
+         dwarf) set -- -gseparate-dwarf --emit-symbol-map -Wl,-Map=/out/qalculate.linker-map.txt ;; \
+         *) echo "WASM_ANALYSIS must be none, symbols, source-map, or dwarf" >&2; exit 1 ;; \
+       esac \
+    && em++ wasm/bindings.cc -I/opt/wasm/include ${WASM_DEBUG_FLAGS} "$@" \
        /opt/wasm/lib/libqalculate.a /opt/wasm/lib/libmpfr.a /opt/wasm/lib/libgmp.a /opt/wasm/lib/libxml2.a \
        --bind -O2 -sMODULARIZE=1 -sEXPORT_ES6=1 -sENVIRONMENT=web,worker \
        -sINCOMING_MODULE_JS_API='["locateFile","wasmBinary"]' \
@@ -54,4 +64,8 @@ RUN mkdir -p /out \
     && cp COPYING /out/qalculate-COPYING
 
 FROM scratch AS wasm
+COPY --from=build /out/ /
+
+# Export analysis artifacts separately, without replacing the shipped runtime.
+FROM scratch AS analysis
 COPY --from=build /out/ /
