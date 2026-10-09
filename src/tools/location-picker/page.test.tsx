@@ -180,3 +180,32 @@ it("blocks keyboard selections in the cutout without rewriting existing shared c
   fireEvent.pointerUp(document);
   expect(window.location.href).toBe(original);
 });
+
+it("uses the shared GPS control without triggering map selection and rejects invalid positions", async () => {
+  let success: PositionCallback | undefined;
+  Object.defineProperty(navigator, "geolocation", {
+    configurable: true,
+    value: {
+      getCurrentPosition: vi.fn((ok: PositionCallback) => {
+        success = ok;
+      }),
+    },
+  });
+  render(<App />);
+  const map = await screen.findByRole("button", { name: "Pick a location on the world map" });
+  vi.spyOn(map, "getBoundingClientRect").mockReturnValue(new DOMRect(0, 0, 1029, 450));
+  const latitude = screen.getByRole("spinbutton", {
+    name: "Latitude (−90 to 90)",
+  }) as HTMLInputElement;
+  fireEvent.click(screen.getByRole("button", { name: "Use my location" }));
+  expect(latitude.value).toBe("51.5074");
+  expect((screen.getByRole("button", { name: "Locating…" }) as HTMLButtonElement).disabled).toBe(
+    true,
+  );
+  act(() => success!({ coords: { latitude: -33.9, longitude: 151.2 } } as GeolocationPosition));
+  expect(latitude.value).toBe("-33.9");
+  fireEvent.click(screen.getByRole("button", { name: "Use my location" }));
+  act(() => success!({ coords: { latitude: 91, longitude: 0 } } as GeolocationPosition));
+  expect(screen.getByRole("alert").textContent).toContain("Latitude must be between");
+  expect(latitude.value).toBe("-33.9");
+});

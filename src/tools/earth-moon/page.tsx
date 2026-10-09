@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import { UrlHandler } from "../../boot/url-handler.tsx";
 import type { State } from "../../boot/url-state.ts";
 import { decodeLocation, locationLabel } from "../../components/location-picker/location.ts";
@@ -31,22 +31,11 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
   const [longitude, setLongitude] = useState(String(us.location.longitude));
   const [dateInput, setDateInput] = useState(new Date(us.instant).toISOString().slice(0, 19));
   const [locationError, setLocationError] = useState("");
-  const [locating, setLocating] = useState(false);
-  const requestId = useRef(0);
   useEffect(() => {
     setLatitude(String(us.location.latitude));
     setLongitude(String(us.location.longitude));
     setDateInput(new Date(us.instant).toISOString().slice(0, 19));
-    // A GPS result requested for an older view must not overwrite an incoming shared link.
-    requestId.current++;
-    setLocating(false);
   }, [us.location.latitude, us.location.longitude, us.instant, us.trueDistance]);
-  useEffect(
-    () => () => {
-      requestId.current++;
-    },
-    [],
-  );
   const snapshot = useMemo(
     () => earthMoonSnapshot(new Date(us.instant), us.location),
     [us.instant, us.location.latitude, us.location.longitude],
@@ -58,38 +47,6 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
       instant: Math.max(minInstant, Math.min(maxInstant, previous.instant + milliseconds)),
     }));
 
-  function locate() {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is unavailable. Enter coordinates or pick a place on the map.");
-      return;
-    }
-    const id = ++requestId.current;
-    setLocating(true);
-    setLocationError("");
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        if (id !== requestId.current) return;
-        setLocating(false);
-        try {
-          const location = decodeLocation(position.coords);
-          setUs((previous) => ({ ...previous, location }));
-        } catch (error) {
-          setLocationError(error instanceof Error ? error.message : "Invalid GPS position.");
-        }
-      },
-      (error) => {
-        if (id !== requestId.current) return;
-        setLocating(false);
-        setLocationError(
-          error.code === 1
-            ? "Location access was declined. You can enter coordinates instead."
-            : "Could not get your location. Enter coordinates or try again.",
-        );
-      },
-      { timeout: 10000, maximumAge: 60000 },
-    );
-  }
-
   return (
     <div class="earth-moon">
       <h1>Earth, Moon and your sky</h1>
@@ -97,6 +54,7 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
         <section class="earth-moon-map" aria-label="Observer location">
           <h2>Observer location</h2>
           <LocationPickerMap
+            requestContext={us}
             uss={[
               us.location,
               (update) =>
@@ -167,9 +125,6 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
               />
             </label>
             <button type="submit">Update view</button>
-            <button type="button" disabled={locating} onClick={locate}>
-              {locating ? "Locating…" : "Use my location"}
-            </button>
           </form>
           {locationError && (
             <p role="alert" class="error">

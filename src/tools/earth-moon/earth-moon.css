@@ -183,14 +183,6 @@ main:has(.earth-moon) {
   -webkit-touch-callout: none;
 }
 
-.earth-moon-day-strip {
-  background: linear-gradient(to right, #172537, #465362 25%, #77745c 50%, #465362 75%, #172537);
-}
-
-.earth-moon-year-strip {
-  background: linear-gradient(to right, #253a50, #354c39 25%, #594d2b 50%, #59432b 75%, #253a50);
-}
-
 .earth-moon-strip-dragging {
   cursor: grabbing;
 }
@@ -227,4 +219,24 @@ main:has(.earth-moon) {
 .earth-moon-time-strips p {
   margin-block: 0.5rem;
   font-size: 0.85rem;
+}
+
+.earth-moon-lunar-labels {
+  position: relative;
+  height: 1.25rem;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.earth-moon-lunar-labels span {
+  position: absolute;
+}
+
+.earth-moon-lunar-labels span:nth-child(2) {
+  transform: translateX(-50%);
+}
+
+.earth-moon-lunar-labels span:last-child {
+  right: 0;
 }

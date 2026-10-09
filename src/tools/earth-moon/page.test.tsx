@@ -243,3 +243,57 @@ it("anchors pointer scrubbing to the selected day and clamps out-of-bounds dragg
   expect(date.value).toBe("2026-10-09T00:00");
   expect(slider.releasePointerCapture).toHaveBeenCalledWith(1);
 });
+
+it("updates both strip gradients when the observer moves, and daylight when the date changes", () => {
+  render(<App />);
+  const day = screen.getByRole("slider", { name: "Time within this UTC day" });
+  const year = screen.getByRole("slider", { name: "Time within this UTC year" });
+  const originalDay = day.style.background;
+  const originalYear = year.style.background;
+  fireEvent.input(screen.getByRole("spinbutton", { name: "Latitude", exact: true }), {
+    target: { value: "-33.8688" },
+  });
+  fireEvent.input(screen.getByRole("spinbutton", { name: "Longitude", exact: true }), {
+    target: { value: "151.2093" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Update view" }));
+  expect(day.style.background).not.toBe(originalDay);
+  expect(year.style.background).not.toBe(originalYear);
+  const movedDay = day.style.background;
+  const movedYear = year.style.background;
+  fireEvent.keyDown(day, { key: "ArrowRight" });
+  expect(day.style.background).toBe(movedDay);
+  fireEvent.keyDown(year, { key: "Home" });
+  expect(day.style.background).not.toBe(movedDay);
+  expect(year.style.background).toBe(movedYear);
+});
+
+it("scrubs the lunar cycle and keeps its gradient stable at both new-moon edges", () => {
+  render(<App />);
+  const month = screen.getByRole("slider", { name: "Time within this lunar month" });
+  const original = month.style.background;
+  const date = screen.getByLabelText("Date and time (UTC)") as HTMLInputElement;
+  fireEvent.keyDown(month, { key: "Home" });
+  const start = date.value;
+  expect(month.style.background).toBe(original);
+  expect(month.getAttribute("aria-valuetext")).toContain("0% illuminated");
+  fireEvent.keyDown(month, { key: "ArrowRight" });
+  expect(Date.parse(date.value + "Z") - Date.parse(start + "Z")).toBe(86400000);
+  fireEvent.keyDown(month, { key: "End" });
+  const end = date.value;
+  expect(month.style.background).toBe(original);
+  expect(month.getAttribute("aria-valuetext")).toContain("0% illuminated");
+  fireEvent.keyDown(month, { key: "ArrowRight" });
+  expect(date.value).toBe(end);
+});
+
+it("clamps lunar scrubbing to the supported date range", () => {
+  window.history.replaceState(null, "", "/#/earth-moon?at=1900-01-01T00%3A00%3A00.000Z");
+  render(<App />);
+  fireEvent.keyDown(screen.getByRole("slider", { name: "Time within this lunar month" }), {
+    key: "Home",
+  });
+  expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
+    "1900-01-01T00:00",
+  );
+});

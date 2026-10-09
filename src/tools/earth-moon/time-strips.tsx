@@ -1,19 +1,48 @@
 import type { JSX } from "preact";
-import { useRef, useState } from "preact/hooks";
+import { getMoonIllumination } from "suncalc";
+import { lunarCycle, lunarGradient, fullMoonProgress } from "../../components/time-strips/lunar.ts";
+import { Temporal } from "temporal-polyfill";
+import { sunCycle, seasonGradient } from "../../components/time-strips/gradients.ts";
+import { useMemo, useRef, useState } from "preact/hooks";
 import type { State } from "../../boot/url-state.ts";
 import { dayMs } from "./astronomy.ts";
-import type { EarthMoonState } from "./state.ts";
+import { minInstant, maxInstant, type EarthMoonState } from "./state.ts";
 
 export function TimeStrips({ uss: [state, setState] }: { uss: State<EarthMoonState> }) {
   const date = new Date(state.instant);
   const dayStart = Math.floor(state.instant / dayMs) * dayMs;
   const yearStart = Date.UTC(date.getUTCFullYear(), 0, 1);
   const yearSpan = Date.UTC(date.getUTCFullYear() + 1, 0, 1) - yearStart;
+  const { latitude, longitude } = state.location;
+  const year = date.getUTCFullYear();
+  const sun = useMemo(
+    () =>
+      sunCycle(
+        Temporal.PlainDate.from(new Date(dayStart).toISOString().slice(0, 10)),
+        { latitude, longitude },
+        "UTC",
+      ),
+    [dayStart, latitude, longitude],
+  );
+  const seasons = useMemo(() => seasonGradient(year, latitude, "UTC"), [year, latitude]);
+  const { start: lunarStart, span: lunarSpan } = useMemo(
+    () => lunarCycle(state.instant),
+    [state.instant],
+  );
+  const moon = getMoonIllumination(date);
+  const lunar = useMemo(
+    () => ({
+      gradient: lunarGradient(lunarStart, lunarSpan),
+      fullProgress: fullMoonProgress(lunarStart, lunarSpan),
+    }),
+    [lunarStart, lunarSpan],
+  );
   return (
     <div class="earth-moon-time-strips">
       <ProgressStrip
         label="Time within this UTC day"
-        valueText={date.toISOString().slice(11, 19) + " UTC"}
+        valueText={`${date.toISOString().slice(11, 19)} UTC. Sunrise ${sun.sunrise}, sunset ${sun.sunset} UTC.`}
+        background={sun.gradient}
         instant={state.instant}
         start={dayStart}
         span={dayMs}
@@ -34,6 +63,7 @@ export function TimeStrips({ uss: [state, setState] }: { uss: State<EarthMoonSta
         span={yearSpan}
         step={dayMs}
         kind="year"
+        background={seasons}
         onScrub={(instant) => setState((previous) => ({ ...previous, instant }))}
       />
       <div class="earth-moon-strip-labels" aria-hidden="true">
@@ -41,9 +71,29 @@ export function TimeStrips({ uss: [state, setState] }: { uss: State<EarthMoonSta
           <span key={index}>{label}</span>
         ))}
       </div>
+      <ProgressStrip
+        label="Time within this lunar month"
+        valueText={`${date.toISOString().replace("T", " ").slice(0, 19)} UTC. ${(moon.fraction * 100).toFixed(0)}% illuminated, ${moon.waxing ? "waxing" : "waning"}.`}
+        instant={state.instant}
+        start={lunarStart}
+        span={lunarSpan}
+        step={dayMs}
+        kind="month"
+        background={lunar.gradient}
+        onScrub={(instant) => setState((previous) => ({ ...previous, instant }))}
+      />
+      <div class="earth-moon-lunar-labels" aria-hidden="true">
+        <span>New moon</span>
+        <span style={{ left: `${lunar.fullProgress * 100}%` }}>Full moon</span>
+        <span>New moon</span>
+      </div>
+      <p class="muted">
+        Lunar month: {(lunarSpan / dayMs).toFixed(1)} days. Brighter means more of the Moon is
+        illuminated.
+      </p>
       <p id="earth-moon-strip-help" class="muted">
-        Drag to scrub. Arrow keys move one minute or day; Page Up and Page Down move five. Home and
-        End select the edges.
+        Drag to scrub. Arrow keys move one minute on the day strip or one day on the year and lunar
+        strips; Page Up and Page Down move five. Home and End select the edges.
       </p>
     </div>
   );
@@ -58,14 +108,16 @@ function ProgressStrip({
   step,
   kind,
   onScrub,
+  background,
 }: {
+  background: string;
   label: string;
   valueText: string;
   instant: number;
   start: number;
   span: number;
   step: number;
-  kind: "day" | "year";
+  kind: "day" | "year" | "month";
   onScrub: (instant: number) => void;
 }) {
   const drag = useRef<{ pointerId: number; start: number; span: number }>();
@@ -73,8 +125,14 @@ function ProgressStrip({
   const progress = (instant - start) / span;
   const scrub = (origin: number, duration: number, fraction: number) =>
     onScrub(
-      origin +
-        Math.min(duration - 1000, Math.max(0, Math.round((fraction * duration) / 1000) * 1000)),
+      Math.max(
+        minInstant,
+        Math.min(
+          maxInstant,
+          origin +
+            Math.min(duration - 1000, Math.max(0, Math.round((fraction * duration) / 1000) * 1000)),
+        ),
+      ),
     );
   const move: JSX.PointerEventHandler<HTMLDivElement> = (event) => {
     const gesture = drag.current;
@@ -126,6 +184,7 @@ function ProgressStrip({
       <div class="earth-moon-strip-title">{label}</div>
       <div
         class={`earth-moon-progress-strip earth-moon-${kind}-strip${dragging ? " earth-moon-strip-dragging" : ""}`}
+        style={{ background }}
         role="slider"
         tabIndex={0}
         aria-label={label}

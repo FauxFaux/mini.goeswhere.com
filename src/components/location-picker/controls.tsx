@@ -1,5 +1,6 @@
+import { CrosshairsIcon } from "@primer/octicons-react";
 import { useSearch } from "wouter";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import homolosine from "../../assets/homolosine.avif";
 import type { State } from "../../boot/url-state.ts";
 import {
@@ -14,6 +15,7 @@ import {
 import { CityBrowser, useCities } from "./city-browser.tsx";
 import { isInNewZealandCutout, newZealandCutoutPath } from "./new-zealand-cutout.ts";
 import projectionLicense from "./projection-license.txt?url";
+import { decodeLocation } from "./location.ts";
 import "./location-picker.css";
 
 export function LocationPickerControls({ uss: [location, setLocation] }: { uss: State<Location> }) {
@@ -100,12 +102,57 @@ export function LocationPickerControls({ uss: [location, setLocation] }: { uss: 
 export function LocationPickerMap({
   uss: [location, setLocation],
   describedBy,
+  requestContext,
 }: {
   uss: State<Location>;
   describedBy?: string;
+  /** Changes discard GPS requests made for an older view. */
+  requestContext?: unknown;
 }) {
-  const excludeNewZealand = new URLSearchParams(useSearch()).get("no-nz") === "1";
+  const search = useSearch();
+  const excludeNewZealand = new URLSearchParams(search).get("no-nz") === "1";
+  const [locationError, setLocationError] = useState("");
+  const [locating, setLocating] = useState(false);
+  const requestId = useRef(0);
+  useEffect(() => {
+    requestId.current++;
+    setLocating(false);
+    return () => {
+      requestId.current++;
+    };
+  }, [location.latitude, location.longitude, search, requestContext]);
   const point = locationToPoint(location);
+  function locate() {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is unavailable. Enter coordinates or pick a place on the map.");
+      return;
+    }
+    const id = ++requestId.current;
+    setLocating(true);
+    setLocationError("");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (id !== requestId.current) return;
+        setLocating(false);
+        try {
+          const location = decodeLocation(position.coords);
+          selectLocation(location);
+        } catch (error) {
+          setLocationError(error instanceof Error ? error.message : "Invalid GPS position.");
+        }
+      },
+      (error) => {
+        if (id !== requestId.current) return;
+        setLocating(false);
+        setLocationError(
+          error.code === 1
+            ? "Location access was declined. You can enter coordinates instead."
+            : "Could not get your location. Enter coordinates or try again.",
+        );
+      },
+      { timeout: 10000, maximumAge: 60000 },
+    );
+  }
 
   function locationAtCursor(event: {
     currentTarget: HTMLDivElement;
@@ -130,58 +177,77 @@ export function LocationPickerMap({
   }
 
   return (
-    <div
-      class="location-picker-map"
-      role="button"
-      tabIndex={0}
-      aria-label="Pick a location on the world map"
-      aria-describedby={describedBy}
-      onClick={(event) => selectLocation(locationAtCursor(event))}
-      onMouseMove={(event) => {
-        if (event.buttons & 1) selectLocation(locationAtCursor(event));
-      }}
-      onKeyDown={(event) => {
-        const step = event.shiftKey ? 0.1 : 1;
-        const deltas: Record<string, [number, number]> = {
-          ArrowLeft: [-step, 0],
-          ArrowRight: [step, 0],
-          ArrowUp: [0, step],
-          ArrowDown: [0, -step],
-          Enter: [0, 0],
-          " ": [0, 0],
-        };
-        if (!Object.hasOwn(deltas, event.key)) return;
-        const delta = deltas[event.key];
-        if (!delta) return;
-        event.preventDefault();
-        setLocation((previous) => {
-          const next = moveLocation(previous, ...delta);
-          return excludeNewZealand && isInNewZealandCutout(...locationToPoint(next))
-            ? previous
-            : next;
-        });
-      }}
-    >
-      <img src={homolosine} width={MAP_WIDTH} height={MAP_HEIGHT} alt="" draggable={false} />
-      {excludeNewZealand && (
-        <svg
-          class="location-picker-cutout"
-          viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
-          aria-hidden="true"
+    <>
+      <div class="location-picker-map-container">
+        <div
+          class="location-picker-map"
+          role="button"
+          tabIndex={0}
+          aria-label="Pick a location on the world map"
+          aria-describedby={describedBy}
+          onClick={(event) => selectLocation(locationAtCursor(event))}
+          onMouseMove={(event) => {
+            if (event.buttons & 1) selectLocation(locationAtCursor(event));
+          }}
+          onKeyDown={(event) => {
+            const step = event.shiftKey ? 0.1 : 1;
+            const deltas: Record<string, [number, number]> = {
+              ArrowLeft: [-step, 0],
+              ArrowRight: [step, 0],
+              ArrowUp: [0, step],
+              ArrowDown: [0, -step],
+              Enter: [0, 0],
+              " ": [0, 0],
+            };
+            if (!Object.hasOwn(deltas, event.key)) return;
+            const delta = deltas[event.key];
+            if (!delta) return;
+            event.preventDefault();
+            setLocation((previous) => {
+              const next = moveLocation(previous, ...delta);
+              return excludeNewZealand && isInNewZealandCutout(...locationToPoint(next))
+                ? previous
+                : next;
+            });
+          }}
         >
-          <path d={newZealandCutoutPath} fill="#000" />
-        </svg>
+          <img src={homolosine} width={MAP_WIDTH} height={MAP_HEIGHT} alt="" draggable={false} />
+          {excludeNewZealand && (
+            <svg
+              class="location-picker-cutout"
+              viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
+              aria-hidden="true"
+            >
+              <path d={newZealandCutoutPath} fill="#000" />
+            </svg>
+          )}
+          <span
+            hidden={excludeNewZealand && isInNewZealandCutout(...point)}
+            class="location-picker-marker"
+            aria-hidden="true"
+            style={{
+              left: `${(point[0] / MAP_WIDTH) * 100}%`,
+              top: `${(point[1] / MAP_HEIGHT) * 100}%`,
+            }}
+          />
+        </div>
+        <button
+          class="location-picker-locate"
+          type="button"
+          aria-label={locating ? "Locating…" : "Use my location"}
+          title={locating ? "Locating…" : "Use my location"}
+          disabled={locating}
+          onClick={locate}
+        >
+          <CrosshairsIcon size={20} />
+        </button>
+      </div>
+      {locationError && (
+        <p role="alert" class="error">
+          {locationError}
+        </p>
       )}
-      <span
-        hidden={excludeNewZealand && isInNewZealandCutout(...point)}
-        class="location-picker-marker"
-        aria-hidden="true"
-        style={{
-          left: `${(point[0] / MAP_WIDTH) * 100}%`,
-          top: `${(point[1] / MAP_HEIGHT) * 100}%`,
-        }}
-      />
-    </div>
+    </>
   );
 }
 
