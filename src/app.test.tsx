@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/preact";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Link, Router } from "wouter";
@@ -10,19 +10,16 @@ import { UrlHandler } from "./boot/url-handler.tsx";
 import { packState, unpackState } from "./boot/url-state.ts";
 import { calculatorCodec, type CalculatorState } from "./tools/calculator/state.ts";
 
-// Exercise the actual WASM domain in DOM tests; worker transport has its own tests.
-vi.mock("./tools/calculator/engine.ts", async () => {
-  const { loadTestCalculator } = await import("./tools/calculator/test-runtime.ts");
-  const calculator = await loadTestCalculator();
-  return {
-    CalculatorEngine: class {
-      async calculate(expression: string) {
-        return calculator.calculate(expression, 2000);
-      }
-      dispose() {}
-    },
-  };
-});
+// Routing and URL persistence do not depend on calculation results.
+// Real WASM evaluation and calculator interactions have dedicated suites.
+vi.mock("./tools/calculator/engine.ts", () => ({
+  CalculatorEngine: class {
+    async calculate() {
+      return { input: "", output: "", approximate: false, resultIsComparison: false, messages: [] };
+    }
+    dispose() {}
+  },
+}));
 
 beforeEach(() => {
   window.history.replaceState(null, "", "/#/");
@@ -31,7 +28,7 @@ afterEach(cleanup);
 
 function savedState(): CalculatorState {
   const params = new URLSearchParams(splitHash(window.location.hash).search);
-  return unpackState(params.get("s")!) as CalculatorState;
+  return calculatorCodec.query!.decode(params);
 }
 
 describe("mini app routing and state", () => {
@@ -42,49 +39,21 @@ describe("mini app routing and state", () => {
     const input = await screen.findByRole("textbox", { name: "Expression 1" });
     await user.clear(input);
     await user.type(input, "2 + 3 * 4");
-    await waitFor(() =>
-      expect(
-        within(screen.getByRole("region", { name: "Calculation 1" })).getByRole("status")
-          .textContent,
-      ).toBe("= 14"),
-    );
     expect(document.activeElement).toBe(input);
-    expect(window.location.hash).toMatch(/^#\/calculator\?s=/);
+    expect(window.location.hash).toMatch(/^#\/calculator\?e=/);
     expect(window.location.search).toBe("");
     expect(savedState().tiles[0].expression).toBe("2 + 3 * 4");
   });
 
   it("restores shared state on initial load and later external hash changes", async () => {
-    const first = { v: 1, tiles: [{ id: "shared", expression: "6 * 7" }] };
-    window.history.replaceState(null, "", `/#/calculator?s=${packState(first)}`);
+    window.history.replaceState(null, "", "/#/calculator?e=6+*+7");
     const original = window.location.href;
     render(<App />);
     const input = await screen.findByRole("textbox", { name: "Expression 1" });
     expect((input as HTMLInputElement).value).toBe("6 * 7");
     expect(window.location.href).toBe(original);
-    window.location.hash = `/calculator?s=${packState({ ...first, tiles: [{ id: "shared", expression: "9 ^ 2" }] })}`;
+    window.location.hash = "/calculator?e=9+%5E+2";
     await waitFor(() => expect((input as HTMLInputElement).value).toBe("9 ^ 2"));
-    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("= 81"));
-  });
-
-  it("adds and removes independent tiles while keeping results and URL state consistent", async () => {
-    const user = userEvent.setup();
-    navigateHash("/calculator");
-    render(<App />);
-    await screen.findByRole("textbox", { name: "Expression 1" });
-    await user.click(screen.getByRole("button", { name: "Add expression" }));
-    const last = screen.getByRole("textbox", { name: "Expression 5" });
-    await user.type(last, "sqrt(81)");
-    await user.click(screen.getByRole("button", { name: "Remove expression 1" }));
-    expect(screen.getAllByRole("textbox")).toHaveLength(4);
-    expect(screen.getByRole("textbox", { name: "Expression 4" })).toBe(last);
-    expect(savedState().tiles.at(-1)?.expression).toBe("sqrt(81)");
-    await user.clear(last);
-    await user.type(last, "sin()");
-    await waitFor(() => expect(last.getAttribute("aria-invalid")).toBe("true"));
-    expect(
-      within(screen.getByRole("region", { name: "Calculation 4" })).getByRole("status").textContent,
-    ).toContain("sin");
   });
 
   it("restores each tool’s edited state through Back and Forward navigation", async () => {
@@ -127,17 +96,17 @@ describe("mini app routing and state", () => {
 
   it.each([
     ["garbage!", "Corrupt URL state"],
-    [packState({ v: 2, tiles: [] }), "Unrecognised state version"],
+    [packState({ v: 2, name: "saved" }), "Unrecognised state version"],
   ])("preserves invalid links and recovers within the tool", async (payload, heading) => {
     const user = userEvent.setup();
-    navigateHash(`/calculator?s=${payload}`);
+    navigateHash(`/hello-world?s=${payload}`);
     const original = window.location.href;
     render(<App />);
     await screen.findByRole("heading", { name: heading });
     expect(window.location.href).toBe(original);
     await user.click(screen.getByRole("link", { name: "Start fresh" }));
-    await screen.findByRole("textbox", { name: "Expression 1" });
-    expect(window.location.hash).toBe("#/calculator");
+    await screen.findByRole("textbox", { name: "Your name" });
+    expect(window.location.hash).toBe("#/hello-world");
   });
 
   it("preserves the document query and unrelated fragment parameters", async () => {
@@ -173,7 +142,7 @@ describe("mini app routing and state", () => {
       edit!(append);
       edit!(append);
     });
-    expect(savedState().tiles).toHaveLength(6);
+    expect(savedState().tiles.map((tile) => tile.expression)).toEqual(["(12 + 8) * 3", "", ""]);
     const staleEdit = edit!;
     act(() => {
       navigateHash("/hello-world");
