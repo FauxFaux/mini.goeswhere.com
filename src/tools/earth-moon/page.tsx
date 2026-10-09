@@ -148,47 +148,41 @@ function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> 
                   }}
                 />
               </label>
-              <button type="submit">Update view</button>
+              <button type="submit">update view</button>
             </form>
+            <button
+              onClick={() =>
+                setUs((previous) => ({
+                  ...previous,
+                  instant: Math.max(minInstant, Math.min(maxInstant, Date.now())),
+                }))
+              }
+            >
+              now
+            </button>
             {locationError && (
               <p role="alert" class="error">
                 {locationError}
               </p>
             )}
             <div class="earth-moon-actions">
-              <button onClick={() => shift(-dayMs)} disabled={us.instant <= minInstant}>
-                −1 day
-              </button>
-              <button onClick={() => shift(-3600000)} disabled={us.instant <= minInstant}>
-                −1 hour
-              </button>
-              <button
-                onClick={() =>
-                  setUs((previous) => ({
-                    ...previous,
-                    instant: Math.max(minInstant, Math.min(maxInstant, Date.now())),
-                  }))
-                }
-              >
-                Now
-              </button>
-              <button onClick={() => shift(3600000)} disabled={us.instant >= maxInstant}>
-                +1 hour
-              </button>
-              <button onClick={() => shift(dayMs)} disabled={us.instant >= maxInstant}>
-                +1 day
-              </button>
               {(["hours", "days"] as const).map((speed) => (
                 <button
                   class="earth-moon-playback"
                   aria-label={`${mode === speed ? "Pause" : "Play"} at ${speed === "hours" ? "3 hours" : "9 days"} per second${speed === "days" ? " (local time frozen)" : ""}`}
                   aria-pressed={mode === speed}
-                  title={speed === "days" ? "Advance dates with local time frozen" : "Advance time"}
+                  title={
+                    speed === "hours"
+                      ? "Run time forward, allowing the clock, sun, earth, and moon to move around you."
+                      : "Advance time much faster, with the local time frozen; allowing you to see the moon's location at (say) sunset every day of the year"
+                  }
                   disabled={us.instant >= maxInstant && mode !== speed}
                   onClick={() => toggle(speed)}
                 >
                   {mode === speed ? <PauseIcon size={16} /> : <TriangleIcon size={16} />}
-                  {speed === "hours" ? "3h/s" : "9d/s"}
+                  {speed === "hours"
+                    ? "watch the moon orbit (3h/s)"
+                    : "where in the sky is the moon (9d/s)"}
                 </button>
               ))}
             </div>
