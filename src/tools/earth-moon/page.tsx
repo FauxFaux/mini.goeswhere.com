@@ -30,7 +30,14 @@ export function EarthMoon() {
 }
 
 function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> }) {
-  const { mode, toggle, edit: setUs, frozenDays } = usePlayback([us, persist]);
+  const {
+    mode,
+    toggle,
+    edit: setUs,
+    frozenDays,
+    observationInstant,
+    scrubDay,
+  } = usePlayback([us, persist]);
   const [latitude, setLatitude] = useState(String(us.location.latitude));
   const [longitude, setLongitude] = useState(String(us.location.longitude));
   const [dateInput, setDateInput] = useState(new Date(us.instant).toISOString().slice(0, 19));
@@ -174,18 +181,23 @@ function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> 
               {(["hours", "days"] as const).map((speed) => (
                 <button
                   class="earth-moon-playback"
-                  aria-label={`${mode === speed ? "Pause" : "Play"} at ${speed === "hours" ? "3 hours" : "3 days"} per second${speed === "days" ? " (local time frozen)" : ""}`}
+                  aria-label={`${mode === speed ? "Pause" : "Play"} at ${speed === "hours" ? "3 hours" : "9 days"} per second${speed === "days" ? " (local time frozen)" : ""}`}
                   aria-pressed={mode === speed}
                   title={speed === "days" ? "Advance dates with local time frozen" : "Advance time"}
                   disabled={us.instant >= maxInstant && mode !== speed}
                   onClick={() => toggle(speed)}
                 >
                   {mode === speed ? <PauseIcon size={16} /> : <TriangleIcon size={16} />}
-                  {speed === "hours" ? "3h/s" : "3d/s"}
+                  {speed === "hours" ? "3h/s" : "9d/s"}
                 </button>
               ))}
             </div>
-            <TimeStrips uss={[us, setUs]} lunarMonth={lunarMonth} />
+            <TimeStrips
+              uss={[us, setUs]}
+              lunarMonth={lunarMonth}
+              observationInstant={observationInstant}
+              onDayScrub={scrubDay}
+            />
             <label>
               <input
                 type="checkbox"
@@ -207,7 +219,8 @@ function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> 
         <p>See how your position on a globe becomes a horizon, and where to look for the Moon.</p>
         {frozenDays !== 0 && (
           <p class="muted">
-            Local time is frozen in the 3D views; dates and orbital motion advance.
+            Local time is frozen in the 3D views; dates and orbital motion advance. Use the UTC-day
+            strip to change the observation time.
           </p>
         )}
         <p class="muted">

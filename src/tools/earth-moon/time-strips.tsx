@@ -15,9 +15,13 @@ import { minInstant, maxInstant, type EarthMoonState } from "./state.ts";
 export function TimeStrips({
   uss: [state, setState],
   lunarMonth,
+  observationInstant,
+  onDayScrub,
 }: {
   uss: State<EarthMoonState>;
   lunarMonth: ReturnType<typeof lunarCycle>;
+  observationInstant: number;
+  onDayScrub: (instant: number) => void;
 }) {
   const date = new Date(state.instant);
   const dayStart = Math.floor(state.instant / dayMs) * dayMs;
@@ -48,14 +52,14 @@ export function TimeStrips({
     <div class="earth-moon-time-strips">
       <ProgressStrip
         label="Time within this UTC day"
-        valueText={`${date.toISOString().slice(11, 19)} UTC. Sunrise ${sun.sunrise}, sunset ${sun.sunset} UTC.`}
+        valueText={`${new Date(observationInstant).toISOString().slice(11, 19)} UTC. Sunrise ${sun.sunrise}, sunset ${sun.sunset} UTC.`}
         background={sun.gradient}
-        instant={state.instant}
+        instant={observationInstant}
         start={dayStart}
         span={dayMs}
         step={60000}
         kind="day"
-        onScrub={(instant) => setState((previous) => ({ ...previous, instant }))}
+        onScrub={onDayScrub}
       />
       <div class="earth-moon-strip-labels" aria-hidden="true">
         {["00:00", "06:00", "12:00", "18:00", "24:00"].map((label) => (

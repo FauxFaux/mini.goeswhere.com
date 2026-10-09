@@ -389,34 +389,34 @@ it("plays smoothly at 3 hours per second, pauses, persists, and releases the ani
   expect(frames.cancel).toHaveBeenCalled();
 });
 
-it("plays at 3 days per second with smooth frozen lighting and restores ordinary time on manual edits", async () => {
+it("plays at 9 days per second with smooth frozen lighting and restores ordinary time on manual edits", async () => {
   const frames = playbackFrames();
   render(<App />);
   await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(2));
   const scene = sceneMocks.create.mock.results[0]!.value;
   const initial = scene.update.mock.lastCall[0];
   fireEvent.click(
-    screen.getByRole("button", { name: "Play at 3 days per second (local time frozen)" }),
+    screen.getByRole("button", { name: "Play at 9 days per second (local time frozen)" }),
   );
-  frames.advance(1000 / 12);
+  frames.advance(1000 / 36);
   expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
     "2026-10-09T18:00",
   );
   expect(dot(initial.sunDirection, scene.update.mock.lastCall[0].sunDirection)).toBeGreaterThan(
-    0.999,
+    0.995,
   );
   frames.advance(1000);
   expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
-    "2026-10-12T12:00",
+    "2026-10-18T12:00",
   );
   expect(dot(initial.sunDirection, scene.update.mock.lastCall[0].sunDirection)).toBeGreaterThan(
-    0.999,
+    0.995,
   );
   fireEvent.click(
-    screen.getByRole("button", { name: "Pause at 3 days per second (local time frozen)" }),
+    screen.getByRole("button", { name: "Pause at 9 days per second (local time frozen)" }),
   );
   expect(dot(initial.sunDirection, scene.update.mock.lastCall[0].sunDirection)).toBeGreaterThan(
-    0.999,
+    0.995,
   );
   fireEvent.click(screen.getByRole("button", { name: "+1 hour" }));
   expect(screen.queryByText(/Local time is frozen in the 3D views/)).toBeNull();
@@ -447,14 +447,14 @@ it("stops playback for incoming links and at the supported date limit", async ()
 
 it.each([
   ["3 hours", "2026-10-09T16:30"],
-  ["3 days", "2026-10-14T00:00"],
+  ["9 days", "2026-10-23T00:00"],
 ])(
   "keeps playback at %s per second through location and scale changes",
   async (speed, expectedDate) => {
     const frames = playbackFrames();
     render(<App />);
     await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(2));
-    const suffix = speed === "3 days" ? " (local time frozen)" : "";
+    const suffix = speed === "9 days" ? " (local time frozen)" : "";
     fireEvent.click(screen.getByRole("button", { name: `Play at ${speed} per second${suffix}` }));
     frames.advance(501);
     const latitude = screen.getByRole("spinbutton", {
@@ -489,7 +489,7 @@ it.each([
       observerFrame({ latitude: -30, longitude: 0 }),
     );
     expect(Boolean(screen.queryByText(/Local time is frozen in the 3D views/))).toBe(
-      speed === "3 days",
+      speed === "9 days",
     );
   },
 );
@@ -514,4 +514,63 @@ it("accepts a GPS location requested during playback without pausing", () => {
       .getByRole("button", { name: "Pause at 3 hours per second" })
       .getAttribute("aria-pressed"),
   ).toBe("true");
+});
+
+it("adjusts the held observation clock with the UTC-day strip while fast playback keeps advancing", async () => {
+  const frames = playbackFrames();
+  render(<App />);
+  await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(2));
+  const scene = sceneMocks.create.mock.results[0]!.value;
+  const day = screen.getByRole("slider", { name: "Time within this UTC day" });
+  const date = screen.getByLabelText("Date and time (UTC)") as HTMLInputElement;
+  fireEvent.click(
+    screen.getByRole("button", { name: "Play at 9 days per second (local time frozen)" }),
+  );
+  frames.advance(500 / 3);
+  expect(date.value).toBe("2026-10-11T00:00");
+  expect(day.getAttribute("aria-valuetext")).toMatch(/^12:00:00 UTC/);
+  const noon = scene.update.mock.lastCall[0];
+  fireEvent.keyDown(day, { key: "Home" });
+  expect(day.getAttribute("aria-valuetext")).toMatch(/^00:00:00 UTC/);
+  expect(date.value).toBe("2026-10-11T00:00");
+  const midnight = scene.update.mock.lastCall[0];
+  expect(dot(noon.sunDirection, midnight.sunDirection)).toBeLessThan(-0.9);
+  expect(midnight.illumination).toEqual(noon.illumination);
+  frames.advance(1000 / 3);
+  expect(date.value).toBe("2026-10-12T12:00");
+  expect(day.getAttribute("aria-valuetext")).toMatch(/^00:00:00 UTC/);
+  expect(dot(midnight.sunDirection, scene.update.mock.lastCall[0].sunDirection)).toBeGreaterThan(
+    0.999,
+  );
+  fireEvent.keyDown(day, { key: "ArrowRight" });
+  fireEvent.keyDown(day, { key: "ArrowRight" });
+  expect(day.getAttribute("aria-valuetext")).toMatch(/^00:02:00 UTC/);
+
+  vi.spyOn(day, "getBoundingClientRect").mockReturnValue({ left: 0, width: 100 } as DOMRect);
+  day.setPointerCapture = vi.fn();
+  day.hasPointerCapture = vi.fn(() => true);
+  day.releasePointerCapture = vi.fn();
+  fireEvent.pointerDown(day, { pointerId: 1, button: 0, clientX: 25 });
+  expect(day.getAttribute("aria-valuetext")).toMatch(/^06:00:00 UTC/);
+  frames.advance(2000 / 3);
+  expect(date.value).toBe("2026-10-15T12:00");
+  expect(day.getAttribute("aria-valuetext")).toMatch(/^06:00:00 UTC/);
+  fireEvent.pointerUp(day, { pointerId: 1, clientX: 75 });
+  expect(day.getAttribute("aria-valuetext")).toMatch(/^18:00:00 UTC/);
+  frames.advance(2500 / 3);
+  expect(date.value).toBe("2026-10-17T00:00");
+  expect(day.getAttribute("aria-valuetext")).toMatch(/^18:00:00 UTC/);
+  expect(
+    screen
+      .getByRole("button", { name: "Pause at 9 days per second (local time frozen)" })
+      .getAttribute("aria-pressed"),
+  ).toBe("true");
+
+  fireEvent.click(screen.getByRole("button", { name: "Play at 3 hours per second" }));
+  expect(day.getAttribute("aria-valuetext")).toMatch(/^00:00:00 UTC/);
+  fireEvent.keyDown(day, { key: "ArrowRight" });
+  expect(date.value).toBe("2026-10-17T00:01");
+  expect(
+    screen.getByRole("button", { name: "Play at 3 hours per second" }).getAttribute("aria-pressed"),
+  ).toBe("false");
 });

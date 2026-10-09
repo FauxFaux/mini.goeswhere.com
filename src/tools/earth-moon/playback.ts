@@ -52,7 +52,7 @@ export function usePlayback([state, setState]: State<EarthMoonState>) {
     const start = performance.now();
     const instant = latest.current.state.instant;
     let origin = window.location.href;
-    const rate = mode === "hours" ? (3 * dayMs) / 24 : 3 * dayMs;
+    const rate = mode === "hours" ? (3 * dayMs) / 24 : 9 * dayMs;
     const tick = (now: number) => {
       // Never let a frame overwrite a newly opened shared link, even before its event fires.
       if (window.location.href === expectedHref.current) origin = window.location.href;
@@ -98,10 +98,30 @@ export function usePlayback([state, setState]: State<EarthMoonState>) {
     };
   }, []);
 
+  const timeWithinDay = (instant: number) => instant - Math.floor(instant / dayMs) * dayMs;
+  const observationInstant =
+    frozenInstant === undefined
+      ? state.instant
+      : Math.floor(state.instant / dayMs) * dayMs + timeWithinDay(frozenInstant);
+  const scrubDay = (instant: number) => {
+    if (frozenInstant === undefined) {
+      edit((previous) => ({ ...previous, instant }));
+      return;
+    }
+    // Only adjust the held clock. The orbital timeline and its animation origin keep advancing.
+    setFrozenInstant((previous) =>
+      previous === undefined
+        ? previous
+        : Math.floor(previous / dayMs) * dayMs + timeWithinDay(instant),
+    );
+  };
+
   return {
     mode,
     toggle,
     edit,
+    observationInstant,
+    scrubDay,
     frozenDays: frozenInstant === undefined ? 0 : (state.instant - frozenInstant) / dayMs,
   };
 }
