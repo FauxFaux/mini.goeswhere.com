@@ -10,6 +10,7 @@ const phases = [
       "Update",
       "Dispose",
       "Build",
+      "Transform",
       "Spheres",
       "Lines",
       "Labels",
@@ -36,7 +37,7 @@ export function TimingPanel({ timings }: { timings: EarthMoonTimings }) {
     const text = [
       "Earth–Moon performance timings (milliseconds per call)",
       "Mean/max and call counts cover the last 5 seconds. Live is the latest sample.",
-      "Nested phases overlap. Render includes CPU/WebGL calls and shader setup, not GPU completion.",
+      "Build runs once; transform updates persistent objects. Nested phases overlap. Render includes CPU/WebGL calls and shader setup, not GPU completion.",
       "Phase\tLive (ms)\t5s mean (ms)\t5s max (ms)\tCalls",
       ...phases.map((phase) => {
         const value = current.get(phase);
@@ -61,8 +62,9 @@ export function TimingPanel({ timings }: { timings: EarthMoonTimings }) {
       <summary>Performance timings</summary>
       <p class="muted">
         Milliseconds per call. Live is the latest sample; mean and max cover the last 5 seconds.
-        Refreshes four times per second. Build includes spheres, lines and labels; update includes
-        disposal, build and rendering. Nested rows overlap. Render measures CPU work and WebGL
+        Refreshes four times per second. Build runs once and includes spheres, lines and labels.
+        Transform updates existing objects; update includes transform, rendering and the initial
+        build. Disposal runs on unmount. Nested rows overlap. Render measures CPU work and WebGL
         calls, including shader setup, rather than GPU completion.
       </p>
       <div class="earth-moon-actions">
