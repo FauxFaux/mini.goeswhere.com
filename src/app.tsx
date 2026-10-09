@@ -45,6 +45,13 @@ function AppRoutes() {
         </CrashHandler>
       </main>
       <footer>
+        {path === "/earth-moon" && (
+          <p class="muted">
+            Earth and Moon textures by{" "}
+            <a href="https://www.solarsystemscope.com/textures/">Solar System Scope</a> (
+            <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>).
+          </p>
+        )}
         <a
           href="https://github.com/FauxFaux/mini.goeswhere.com"
           aria-label="Source on GitHub"

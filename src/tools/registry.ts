@@ -1,11 +1,18 @@
 import { AnalogueClock } from "./analogue-clock/page.tsx";
 import { Calculator } from "./calculator/page.tsx";
+import { EarthMoon } from "./earth-moon/page.tsx";
 import { HelloWorld } from "./hello-world/page.tsx";
 import { LocationPicker } from "./location-picker/page.tsx";
 import { StrengthStandards } from "./strength-standards/page.tsx";
 
 /** The directory and router both use this catalogue. */
 export const tools = [
+  {
+    path: "/earth-moon",
+    title: "Earth and Moon",
+    description: "A 3D globe, lunar orbit and the sky above your location.",
+    component: EarthMoon,
+  },
   {
     path: "/location-picker",
     title: "Location picker",

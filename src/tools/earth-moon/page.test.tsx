@@ -1,0 +1,164 @@
+// @vitest-environment happy-dom
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/preact";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { App } from "../../app.tsx";
+import { navigateHash, splitHash } from "../../boot/hash-location.ts";
+import { earthMoonCodec } from "./state.ts";
+
+const sceneMocks = vi.hoisted(() => ({ create: vi.fn() }));
+vi.mock("./scene.ts", () => ({ createEarthMoonScene: sceneMocks.create }));
+
+beforeEach(async () => {
+  await import("./scene.ts");
+  window.history.replaceState(
+    null,
+    "",
+    "/#/earth-moon?lat=51.5&lon=-0.1&at=2026-10-09T12%3A00%3A00.000Z&note=keep",
+  );
+  sceneMocks.create.mockImplementation(() => ({
+    update: vi.fn(),
+    reset: vi.fn(),
+    dispose: vi.fn(),
+  }));
+  Object.defineProperty(navigator, "geolocation", {
+    configurable: true,
+    value: { getCurrentPosition: vi.fn() },
+  });
+});
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+  sceneMocks.create.mockReset();
+});
+
+function persisted() {
+  return earthMoonCodec.query!.decode(new URLSearchParams(splitHash(window.location.hash).search));
+}
+
+it("edits coordinates and UTC time, preserves unrelated query state, then restores through Back", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  const original = window.location.href;
+  const length = window.history.length;
+  const latitude = screen.getByRole("spinbutton", { name: "Latitude", exact: true });
+  const longitude = screen.getByRole("spinbutton", { name: "Longitude", exact: true });
+  const date = screen.getByLabelText("Date and time (UTC)") as HTMLInputElement;
+  expect(date.value).toBe("2026-10-09T12:00");
+  expect(window.location.href).toBe(original);
+  await user.clear(latitude);
+  await user.type(latitude, "-33.86");
+  await user.clear(longitude);
+  await user.type(longitude, "151.2");
+  fireEvent.input(date, { target: { value: "2026-10-10T06:30:00" } });
+  await user.click(screen.getByRole("button", { name: "Update view" }));
+  await user.click(screen.getByRole("checkbox", { name: "True Earth–Moon distance scale" }));
+  // Navigation flushes pending debounced edits.
+  act(() => navigateHash("/hello-world"));
+  await screen.findByRole("textbox", { name: "Your name" });
+  act(() => window.history.back());
+  const restored = await screen.findByRole("spinbutton", { name: "Latitude", exact: true });
+  expect((restored as HTMLInputElement).value).toBe("-33.86");
+  expect(persisted()).toMatchObject({
+    location: { latitude: -33.86, longitude: 151.2 },
+    instant: Date.parse("2026-10-10T06:30:00Z"),
+    trueDistance: true,
+  });
+  expect(new URLSearchParams(splitHash(window.location.hash).search).get("note")).toBe("keep");
+  expect(window.location.search).toBe("");
+  expect(window.history.length).toBe(length + 1);
+});
+
+it("scrubs time immediately and discards pending writes when a shared link arrives", async () => {
+  render(<App />);
+  const slider = screen.getByRole("slider", { name: "Time within this UTC day" });
+  fireEvent.input(slider, { target: { value: "3600" } });
+  expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
+    "2026-10-09T01:00",
+  );
+  const incoming = "#/earth-moon?lat=0&lon=180&at=2026-10-12T18%3A00%3A00.000Z&scale=true";
+  act(() => {
+    window.location.hash = incoming;
+  });
+  await waitFor(() =>
+    expect(
+      (screen.getByRole("spinbutton", { name: "Latitude", exact: true }) as HTMLInputElement).value,
+    ).toBe("0"),
+  );
+  await new Promise((resolve) => setTimeout(resolve, 220));
+  expect(window.location.hash).toBe(incoming);
+  expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
+    "2026-10-12T18:00",
+  );
+});
+
+it("updates from GPS and handles denied access locally", async () => {
+  const gps = vi.spyOn(navigator.geolocation, "getCurrentPosition");
+  let success: PositionCallback | undefined;
+  let failure: PositionErrorCallback | null | undefined;
+  gps.mockImplementation((ok, fail) => {
+    success = ok;
+    failure = fail;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole("button", { name: "Use my location" }));
+  act(() => success!({ coords: { latitude: -33.9, longitude: 151.2 } } as GeolocationPosition));
+  expect(
+    (screen.getByRole("spinbutton", { name: "Latitude", exact: true }) as HTMLInputElement).value,
+  ).toBe("-33.9");
+  await user.click(screen.getByRole("button", { name: "Use my location" }));
+  act(() => failure!({ code: 1 } as GeolocationPositionError));
+  expect(screen.getByRole("alert").textContent).toContain("Location access was declined");
+  expect(screen.getByRole("heading", { name: "Earth, Moon and your sky" })).toBeTruthy();
+});
+
+it("ignores a late GPS result after another link arrives", async () => {
+  let success: PositionCallback | undefined;
+  vi.spyOn(navigator.geolocation, "getCurrentPosition").mockImplementation((ok) => {
+    success = ok;
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(screen.getByRole("button", { name: "Use my location" }));
+  act(() => {
+    window.location.hash = "/earth-moon?lat=10&lon=20&at=2026-10-10T00%3A00%3A00.000Z";
+  });
+  await waitFor(() =>
+    expect(
+      (screen.getByRole("spinbutton", { name: "Latitude", exact: true }) as HTMLInputElement).value,
+    ).toBe("10"),
+  );
+  act(() => success!({ coords: { latitude: -33.9, longitude: 151.2 } } as GeolocationPosition));
+  expect(
+    (screen.getByRole("spinbutton", { name: "Latitude", exact: true }) as HTMLInputElement).value,
+  ).toBe("10");
+});
+
+it("preserves invalid links and offers recovery", async () => {
+  window.history.replaceState(null, "", "/#/earth-moon?lat=91&lon=0");
+  const original = window.location.href;
+  render(<App />);
+  expect(screen.getByRole("heading", { name: "Corrupt URL state" })).toBeTruthy();
+  expect(window.location.href).toBe(original);
+  await userEvent.setup().click(screen.getByRole("link", { name: "Start fresh" }));
+  await screen.findByRole("heading", { name: "Earth, Moon and your sky" });
+});
+
+it("releases both scenes on navigation and retains numeric sky directions without WebGL", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(2));
+  const scenes = sceneMocks.create.mock.results.map((result) => result.value);
+  act(() => navigateHash("/hello-world"));
+  await screen.findByRole("textbox", { name: "Your name" });
+  for (const scene of scenes) expect(scene.dispose).toHaveBeenCalledOnce();
+  sceneMocks.create.mockImplementation(() => {
+    throw new Error("No WebGL");
+  });
+  act(() => navigateHash("/earth-moon"));
+  await waitFor(() => expect(screen.getAllByRole("alert")).toHaveLength(2));
+  expect(screen.getByText(/Moon: .*bearing from north/)).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "+1 hour" }));
+  expect(screen.getByRole("heading", { name: "Earth, Moon and your sky" })).toBeTruthy();
+});

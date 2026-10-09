@@ -1,0 +1,46 @@
+.earth-moon-inputs,
+.earth-moon-actions {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-block: 0.75rem;
+}
+
+.earth-moon-inputs label,
+.earth-moon-time {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.earth-moon-inputs input[type="number"] {
+  width: 9rem;
+}
+
+.earth-moon-time {
+  margin-block: 1rem;
+}
+
+.earth-moon-views {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.earth-moon-view {
+  min-width: 0;
+}
+
+.earth-moon-view canvas {
+  display: block;
+  width: 100%;
+  height: clamp(20rem, 38vw, 32rem);
+  border: 1px solid var(--border);
+  touch-action: none;
+}
+
+@media (max-width: 48rem) {
+  .earth-moon-views {
+    grid-template-columns: 1fr;
+  }
+}
