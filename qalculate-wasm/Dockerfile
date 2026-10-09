@@ -60,8 +60,7 @@ RUN mkdir -p /out \
        -sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=16777216 -sSTACK_OVERFLOW_CHECK=2 \
        -sFILESYSTEM=1 -sDYNAMIC_EXECUTION=0 -sASSERTIONS=1 \
        -o /out/qalculate.mjs \
-    && cp wasm/qalculate.d.mts /out/ \
-    && cp COPYING /out/qalculate-COPYING
+    && cp wasm/qalculate.d.mts /out/
 
 FROM scratch AS wasm
 COPY --from=build /out/ /

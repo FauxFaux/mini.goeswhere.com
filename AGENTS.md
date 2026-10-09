@@ -16,7 +16,7 @@ logos, decorative assets, theme switching, or UI framework.
 - `src/boot/` contains routing, URL transport, and crash recovery shared by all tools. It must
   not import tool-specific state or algorithms.
 - `qalculate-wasm/` contains the pinned Docker build and Embind API for libqalculate.
-  `npm run build:qalculate-wasm` exports its runtime, WASM, and license into `src/assets/`. Keep the generated loader out of formatting.
+  `npm run build:qalculate-wasm` exports its runtime, WASM, and declarations into `src/assets/`. Keep the generated loader out of formatting.
 
 Use `src/tools/calculator/` as the worked example and `src/tools/hello-world/` as the smallest
 example. Add shared components or utilities only when multiple tools need them.

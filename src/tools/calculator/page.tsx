@@ -3,7 +3,6 @@ import { TrashIcon } from "@primer/octicons-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { UrlHandler } from "../../boot/url-handler.tsx";
 import type { State } from "../../boot/url-state.ts";
-import licenseUrl from "../../assets/qalculate-COPYING?url";
 import { CalculatorEngine } from "./engine.ts";
 import { evaluateExpression, type ExpressionResult } from "./evaluate.ts";
 import { CalculatorFormattedExpression } from "./formatted-expression.tsx";
@@ -154,9 +153,7 @@ function CalculatorGrid({ uss: [us, setUs] }: { uss: State<CalculatorState> }) {
         <p class="muted">Maximum of {MAX_TILES} expressions reached.</p>
       )}
       <CalculatorUnitList uss={[us, setUs]} onInsert={insertUnit} />
-      <p class="muted">
-        Powered by libqalculate 5.13.1. <a href={licenseUrl}>License</a>
-      </p>
+      <p class="muted">Powered by libqalculate 5.13.1.</p>
     </>
   );
 }
