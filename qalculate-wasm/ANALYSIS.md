@@ -9,6 +9,32 @@ It supports wasm32 Emscripten framing, including passive data segments. It rejec
 memory64 imports and extended data offset expressions with an explanatory error.
 This is an inventory reader, not a full instruction validator.
 
+The two example buttons fetch their assets only when clicked. The production
+example loads `src/assets/qalculate.wasm` with its matching `.symbols` and linker
+map from `src/assets/qalculate-analysis/production/`. The debug example loads
+the binary and all three sidecars from `src/assets/qalculate-analysis/debug/`.
+The debug directory preserves the original filenames for local inspection.
+Both sets are emitted as hashed Vite assets for deployment; the explorer loads
+sidecars using their imported URLs rather than the embedded `sourceMappingURL`.
+The calculator continues to use the production binary.
+
+To refresh the committed examples after rebuilding:
+
+```sh
+npm run analyze:qalculate-wasm:symbols
+npm run analyze:qalculate-wasm
+# Check that production sidecars label the current shipped binary.
+cmp src/assets/qalculate.wasm qalculate-wasm/analysis-symbols/qalculate.wasm
+cp qalculate-wasm/analysis-symbols/qalculate.mjs.symbols \
+   qalculate-wasm/analysis-symbols/qalculate.linker-map.txt \
+   src/assets/qalculate-analysis/production/
+cp qalculate-wasm/analysis/qalculate.wasm \
+   qalculate-wasm/analysis/qalculate.wasm.map \
+   qalculate-wasm/analysis/qalculate.mjs.symbols \
+   qalculate-wasm/analysis/qalculate.linker-map.txt \
+   src/assets/qalculate-analysis/debug/
+```
+
 ## Findings for the committed binary
 
 Verified on 2026-10-09, SHA-256:

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import qalculateUrl from "../../assets/qalculate.wasm?url";
 import type { Analysis } from "./analysis.ts";
 import { analyze } from "./analyze.ts";
 import {
@@ -10,16 +9,10 @@ import {
   stripDiagnostics,
 } from "./binary.ts";
 import { Guidance } from "./guidance.tsx";
+import { examples, loadExample, type LoadedFiles } from "./examples.ts";
 import { searchTree, squarify, type SizeNode } from "./treemap.ts";
 import "./wasm-explorer.css";
 
-type LoadedFiles = {
-  name: string;
-  bytes: Uint8Array;
-  symbols?: string;
-  sourceMap?: string;
-  linkerMap?: string;
-};
 type View = "sections" | "code" | "data" | "sources" | "linker" | "bss";
 const viewLabels: Record<View, string> = {
   sections: "Whole binary / sections",
@@ -136,22 +129,20 @@ export function WasmExplorer() {
             }}
           />
         </label>
-        <button
-          disabled={disabled}
-          onClick={() =>
-            void read(async (signal) => {
-              const response = await fetch(qalculateUrl, { signal });
-              if (!response.ok) throw new Error(`Could not load the example (${response.status}).`);
-              return {
-                name: "qalculate.wasm",
-                bytes: new Uint8Array(await response.arrayBuffer()),
-              };
-            })
-          }
-        >
-          Load this site’s qalculate.wasm
-        </button>
+        {examples.map((example) => (
+          <button
+            key={example.name}
+            disabled={disabled}
+            onClick={() => void read((signal) => loadExample(example, signal))}
+          >
+            {example.label}
+          </button>
+        ))}
       </div>
+      <p class="muted">
+        Both examples include matching function names and a linker map. The debug build also
+        includes DWARF and a source map.
+      </p>
       {files && (
         <fieldset disabled={disabled} class="wasm-explorer-inputs">
           <legend>Matching analysis sidecars (optional)</legend>
