@@ -51,131 +51,135 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
     <div class="earth-moon">
       <h1>Earth, Moon and your sky</h1>
       <div class="earth-moon-display">
-        <section class="earth-moon-map" aria-label="Observer location">
-          <h2>Observer location</h2>
-          <LocationPickerMap
-            requestContext={us}
-            uss={[
-              us.location,
-              (update) =>
-                setUs((previous) => ({
-                  ...previous,
-                  location: typeof update === "function" ? update(previous.location) : update,
-                })),
-            ]}
-          />
-        </section>
-        <EarthMoonView snapshot={snapshot} orbit={orbit} trueDistance={us.trueDistance} />
-        <EarthMoonView snapshot={snapshot} orbit={orbit} trueDistance={us.trueDistance} sky />
-        <section class="earth-moon-controls" aria-label="Location and time controls">
-          <form
-            class="earth-moon-inputs"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (!event.currentTarget.reportValidity()) return;
-              try {
-                const location = decodeLocation({
-                  latitude: Number(latitude),
-                  longitude: Number(longitude),
-                });
-                const instant = Date.parse(`${dateInput}Z`);
-                if (!validInstant(instant))
-                  throw new Error("Choose a UTC date between 1900 and 2099.");
-                setLocationError("");
-                setUs((previous) => ({ ...previous, location, instant }));
-              } catch (error) {
-                setLocationError(error instanceof Error ? error.message : "Invalid inputs.");
-              }
-            }}
-          >
-            <label>
-              Latitude
-              <input
-                type="number"
-                min={-90}
-                max={90}
-                step="any"
-                required
-                value={latitude}
-                onInput={(e) => setLatitude(e.currentTarget.value)}
-              />
-            </label>
-            <label>
-              Longitude
-              <input
-                type="number"
-                min={-180}
-                max={180}
-                step="any"
-                required
-                value={longitude}
-                onInput={(e) => setLongitude(e.currentTarget.value)}
-              />
-            </label>
-            <label>
-              Date and time (UTC)
-              <input
-                type="datetime-local"
-                min="1900-01-01T00:00:00"
-                max="2099-12-31T23:59:59"
-                step="1"
-                required
-                value={dateInput}
-                onInput={(e) => setDateInput(e.currentTarget.value)}
-              />
-            </label>
-            <button type="submit">Update view</button>
-          </form>
-          {locationError && (
-            <p role="alert" class="error">
-              {locationError}
-            </p>
-          )}
-          <p>
-            {locationLabel(us.location)} ·{" "}
-            <time dateTime={new Date(us.instant).toISOString()}>
-              {new Date(us.instant)
-                .toISOString()
-                .replace("T", " ")
-                .replace(/\.\d{3}Z$/, " UTC")}
-            </time>
-          </p>
-          <div class="earth-moon-actions">
-            <button onClick={() => shift(-dayMs)} disabled={us.instant <= minInstant}>
-              −1 day
-            </button>
-            <button onClick={() => shift(-3600000)} disabled={us.instant <= minInstant}>
-              −1 hour
-            </button>
-            <button
-              onClick={() =>
-                setUs((previous) => ({
-                  ...previous,
-                  instant: Math.max(minInstant, Math.min(maxInstant, Date.now())),
-                }))
-              }
+        <div class="earth-moon-location-column">
+          <section class="earth-moon-map" aria-label="Observer location">
+            <h2>Observer location</h2>
+            <LocationPickerMap
+              requestContext={us}
+              uss={[
+                us.location,
+                (update) =>
+                  setUs((previous) => ({
+                    ...previous,
+                    location: typeof update === "function" ? update(previous.location) : update,
+                  })),
+              ]}
+            />
+          </section>
+          <section class="earth-moon-controls" aria-label="Location and time controls">
+            <form
+              class="earth-moon-inputs"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!event.currentTarget.reportValidity()) return;
+                try {
+                  const location = decodeLocation({
+                    latitude: Number(latitude),
+                    longitude: Number(longitude),
+                  });
+                  const instant = Date.parse(`${dateInput}Z`);
+                  if (!validInstant(instant))
+                    throw new Error("Choose a UTC date between 1900 and 2099.");
+                  setLocationError("");
+                  setUs((previous) => ({ ...previous, location, instant }));
+                } catch (error) {
+                  setLocationError(error instanceof Error ? error.message : "Invalid inputs.");
+                }
+              }}
             >
-              Now
-            </button>
-            <button onClick={() => shift(3600000)} disabled={us.instant >= maxInstant}>
-              +1 hour
-            </button>
-            <button onClick={() => shift(dayMs)} disabled={us.instant >= maxInstant}>
-              +1 day
-            </button>
-          </div>
-          <TimeStrips uss={[us, setUs]} />
-          <label>
-            <input
-              type="checkbox"
-              checked={us.trueDistance}
-              onChange={(event) =>
-                setUs((previous) => ({ ...previous, trueDistance: event.currentTarget.checked }))
-              }
-            />{" "}
-            True Earth–Moon distance scale
-          </label>
-        </section>
+              <label>
+                Latitude
+                <input
+                  type="number"
+                  min={-90}
+                  max={90}
+                  step="any"
+                  required
+                  value={latitude}
+                  onInput={(e) => setLatitude(e.currentTarget.value)}
+                />
+              </label>
+              <label>
+                Longitude
+                <input
+                  type="number"
+                  min={-180}
+                  max={180}
+                  step="any"
+                  required
+                  value={longitude}
+                  onInput={(e) => setLongitude(e.currentTarget.value)}
+                />
+              </label>
+              <label>
+                Date and time (UTC)
+                <input
+                  type="datetime-local"
+                  min="1900-01-01T00:00:00"
+                  max="2099-12-31T23:59:59"
+                  step="1"
+                  required
+                  value={dateInput}
+                  onInput={(e) => setDateInput(e.currentTarget.value)}
+                />
+              </label>
+              <button type="submit">Update view</button>
+            </form>
+            {locationError && (
+              <p role="alert" class="error">
+                {locationError}
+              </p>
+            )}
+            <p>
+              {locationLabel(us.location)} ·{" "}
+              <time dateTime={new Date(us.instant).toISOString()}>
+                {new Date(us.instant)
+                  .toISOString()
+                  .replace("T", " ")
+                  .replace(/\.\d{3}Z$/, " UTC")}
+              </time>
+            </p>
+            <div class="earth-moon-actions">
+              <button onClick={() => shift(-dayMs)} disabled={us.instant <= minInstant}>
+                −1 day
+              </button>
+              <button onClick={() => shift(-3600000)} disabled={us.instant <= minInstant}>
+                −1 hour
+              </button>
+              <button
+                onClick={() =>
+                  setUs((previous) => ({
+                    ...previous,
+                    instant: Math.max(minInstant, Math.min(maxInstant, Date.now())),
+                  }))
+                }
+              >
+                Now
+              </button>
+              <button onClick={() => shift(3600000)} disabled={us.instant >= maxInstant}>
+                +1 hour
+              </button>
+              <button onClick={() => shift(dayMs)} disabled={us.instant >= maxInstant}>
+                +1 day
+              </button>
+            </div>
+            <TimeStrips uss={[us, setUs]} />
+            <label>
+              <input
+                type="checkbox"
+                checked={us.trueDistance}
+                onChange={(event) =>
+                  setUs((previous) => ({ ...previous, trueDistance: event.currentTarget.checked }))
+                }
+              />{" "}
+              True Earth–Moon distance scale
+            </label>
+          </section>
+        </div>
+        <div class="earth-moon-views-column">
+          <EarthMoonView snapshot={snapshot} orbit={orbit} trueDistance={us.trueDistance} />
+          <EarthMoonView snapshot={snapshot} orbit={orbit} trueDistance={us.trueDistance} sky />
+        </div>
       </div>
       <section class="earth-moon-notes" aria-label="About these views">
         <p>See how your position on a globe becomes a horizon, and where to look for the Moon.</p>
