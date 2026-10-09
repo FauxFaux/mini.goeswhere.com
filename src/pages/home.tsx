@@ -7,12 +7,14 @@ export function Home() {
       <h1>Mini tools</h1>
       <p>Small calculators, tools, and explainers.</p>
       <ul class="tool-list">
-        {tools.map((tool) => (
-          <li key={tool.path}>
-            <Link href={tool.path}>{tool.title}</Link>
-            <p>{tool.description}</p>
-          </li>
-        ))}
+        {tools
+          .filter((tool) => !("hidden" in tool && tool.hidden))
+          .map((tool) => (
+            <li key={tool.path}>
+              <Link href={tool.path}>{tool.title}</Link>
+              <p>{tool.description}</p>
+            </li>
+          ))}
       </ul>
     </>
   );
