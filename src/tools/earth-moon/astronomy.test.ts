@@ -112,3 +112,26 @@ it("lights the correct lunar hemisphere through the phase cycle", () => {
     expect(fraction).toBeCloseTo(result.illumination.fraction, 2);
   }
 });
+
+it("freezes daily sunlight rotation while preserving lunar phases and orbit geometry", () => {
+  const start = Date.parse("2026-10-09T12:00:00Z");
+  const location = { latitude: 51.5, longitude: -0.1 };
+  const initial = earthMoonSnapshot(new Date(start), location);
+  for (const days of [0.25, 0.5, 1, 3]) {
+    const date = new Date(start + days * dayMs);
+    const normal = earthMoonSnapshot(date, location);
+    const frozen = earthMoonSnapshot(date, location, days);
+    expect(dot(initial.sunDirection, frozen.sunDirection)).toBeGreaterThan(0.999);
+    expect(frozen.illumination).toEqual(normal.illumination);
+    expect(Math.hypot(...frozen.moonPosition)).toBeCloseTo(Math.hypot(...normal.moonPosition), 10);
+    expect(lunarOrbit(date, days)[56]).toEqual(frozen.moonPosition);
+    const expected = horizontalDirection(
+      location,
+      frozen.moon.azimuth,
+      geometricAltitude(frozen.moon.altitude),
+    );
+    expect(dot(frozen.sight, expected)).toBeGreaterThan(Math.cos((0.01 * Math.PI) / 180));
+  }
+  const halfDay = earthMoonSnapshot(new Date(start + dayMs / 2), location);
+  expect(dot(initial.sunDirection, halfDay.sunDirection)).toBeLessThan(-0.9);
+});

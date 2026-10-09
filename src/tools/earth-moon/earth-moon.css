@@ -3,13 +3,53 @@ main:has(.earth-moon) {
 }
 
 .earth-moon h1 {
-  margin-block: 0 0.75rem;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+header.earth-moon-navigation {
+  position: fixed;
+  inset: 0.5rem auto auto 0.5rem;
+  z-index: 10;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.earth-moon-navigation nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.earth-moon-navigation a,
+.earth-moon-navigation button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background: #22252a;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.earth-moon-map h2 {
+  padding-left: 5rem;
+  min-height: 2rem;
 }
 
 .earth-moon-display {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-height: calc(100dvh - 10rem);
+  min-height: calc(100dvh - 2rem);
   gap: 0.75rem;
 }
 
@@ -115,6 +155,12 @@ main:has(.earth-moon) {
 .earth-moon-time {
   display: grid;
   gap: 0.25rem;
+}
+
+.earth-moon-playback {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .earth-moon-inputs input[type="number"] {

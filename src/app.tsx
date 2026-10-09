@@ -1,8 +1,8 @@
-import { MarkGithubIcon as IconGithub } from "@primer/octicons-react";
-import { useEffect } from "preact/hooks";
+import { HomeIcon, IterationsIcon, MarkGithubIcon as IconGithub } from "@primer/octicons-react";
+import { useEffect, useState } from "preact/hooks";
 import { Link, Route, Router, Switch, useLocation } from "wouter";
 import { CrashHandler } from "./boot/crash-handler.tsx";
-import { useMiniLocation, useMiniSearch } from "./boot/hash-location.ts";
+import { navigateHash, useMiniLocation, useMiniSearch } from "./boot/hash-location.ts";
 import { Home } from "./pages/home.tsx";
 import { tools } from "./tools/registry.ts";
 
@@ -16,6 +16,7 @@ export function App() {
 
 function AppRoutes() {
   const [path] = useLocation();
+  const [resetCount, setResetCount] = useState(0);
   const tool = tools.find((item) => item.path === path);
   useEffect(() => {
     document.title = `${tool?.title ?? (path === "/" ? "Mini tools" : "Tool not found")} · mini.goeswhere.com`;
@@ -23,9 +24,27 @@ function AppRoutes() {
 
   return (
     <>
-      <header>
+      <header class={path === "/earth-moon" ? "earth-moon-navigation" : undefined}>
         <nav aria-label="Main navigation">
-          <Link href="/">mini.goeswhere.com</Link>
+          {path === "/earth-moon" ? (
+            <>
+              <Link href="/" aria-label="All tools" title="All tools">
+                <HomeIcon size={20} aria-hidden="true" />
+              </Link>
+              <button
+                aria-label="Reset Earth–Moon"
+                title="Reset Earth–Moon"
+                onClick={() => {
+                  navigateHash("/earth-moon", { replace: true });
+                  setResetCount((count) => count + 1);
+                }}
+              >
+                <IterationsIcon size={20} aria-hidden="true" />
+              </button>
+            </>
+          ) : (
+            <Link href="/">mini.goeswhere.com</Link>
+          )}
         </nav>
       </header>
       <main>
@@ -33,7 +52,11 @@ function AppRoutes() {
           <Switch>
             <Route path="/" component={Home} />
             {tools.map((item) => (
-              <Route key={item.path} path={item.path} component={item.component} />
+              <Route
+                key={`${item.path}:${resetCount}`}
+                path={item.path}
+                component={item.component}
+              />
             ))}
             <Route>
               <h1>Tool not found</h1>

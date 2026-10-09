@@ -1,6 +1,10 @@
 import type { JSX } from "preact";
 import { getMoonIllumination } from "suncalc";
-import { lunarCycle, lunarGradient, fullMoonProgress } from "../../components/time-strips/lunar.ts";
+import {
+  lunarGradient,
+  fullMoonProgress,
+  type lunarCycle,
+} from "../../components/time-strips/lunar.ts";
 import { Temporal } from "temporal-polyfill";
 import { sunCycle, seasonGradient } from "../../components/time-strips/gradients.ts";
 import { useMemo, useRef, useState } from "preact/hooks";
@@ -8,7 +12,13 @@ import type { State } from "../../boot/url-state.ts";
 import { dayMs } from "./astronomy.ts";
 import { minInstant, maxInstant, type EarthMoonState } from "./state.ts";
 
-export function TimeStrips({ uss: [state, setState] }: { uss: State<EarthMoonState> }) {
+export function TimeStrips({
+  uss: [state, setState],
+  lunarMonth,
+}: {
+  uss: State<EarthMoonState>;
+  lunarMonth: ReturnType<typeof lunarCycle>;
+}) {
   const date = new Date(state.instant);
   const dayStart = Math.floor(state.instant / dayMs) * dayMs;
   const yearStart = Date.UTC(date.getUTCFullYear(), 0, 1);
@@ -25,10 +35,7 @@ export function TimeStrips({ uss: [state, setState] }: { uss: State<EarthMoonSta
     [dayStart, latitude, longitude],
   );
   const seasons = useMemo(() => seasonGradient(year, latitude, "UTC"), [year, latitude]);
-  const { start: lunarStart, span: lunarSpan } = useMemo(
-    () => lunarCycle(state.instant),
-    [state.instant],
-  );
+  const { start: lunarStart, span: lunarSpan } = lunarMonth;
   const moon = getMoonIllumination(date);
   const lunar = useMemo(
     () => ({
@@ -87,10 +94,6 @@ export function TimeStrips({ uss: [state, setState] }: { uss: State<EarthMoonSta
         <span style={{ left: `${lunar.fullProgress * 100}%` }}>Full moon</span>
         <span>New moon</span>
       </div>
-      <p class="muted">
-        Lunar month: {(lunarSpan / dayMs).toFixed(1)} days. Brighter means more of the Moon is
-        illuminated.
-      </p>
       <p id="earth-moon-strip-help" class="muted">
         Drag to scrub. Arrow keys move one minute on the day strip or one day on the year and lunar
         strips; Page Up and Page Down move five. Home and End select the edges.

@@ -90,11 +90,11 @@ export function sunEarthDirection(date: Date): Vector {
 /** A 28-day ephemeris trail in the selected instant's Earth orientation.
  * Undo Earth rotation at each sample, otherwise a lunar orbit becomes daily loops.
  * It is a sampled path, not a closed Keplerian ellipse. */
-export function lunarOrbit(date: Date): Vector[] {
+export function lunarOrbit(date: Date, frozenDays = 0): Vector[] {
   return Array.from({ length: 113 }, (_, i) => {
     const offsetDays = (i - 56) / 4;
     const point = moonEarthPosition(new Date(date.getTime() + offsetDays * dayMs));
-    const angle = offsetDays * 360.98564736629 * rad;
+    const angle = (offsetDays * 360.98564736629 + frozenDays * 360) * rad;
     return [
       point[0] * Math.cos(angle) + point[2] * Math.sin(angle),
       point[1],
@@ -103,11 +103,21 @@ export function lunarOrbit(date: Date): Vector[] {
   });
 }
 
-export function earthMoonSnapshot(date: Date, location: Location) {
-  const moon = getMoonPosition(date, location.latitude, location.longitude);
-  const sun = getPosition(date, location.latitude, location.longitude);
+/** Cancel solar-day rotation during fast playback while retaining orbital/seasonal motion. */
+export function earthMoonSnapshot(date: Date, location: Location, frozenDays = 0) {
+  const longitude = location.longitude - frozenDays * 360;
+  const moon = getMoonPosition(date, location.latitude, longitude);
+  const sun = getPosition(date, location.latitude, longitude);
   const frame = observerFrame(location);
-  const moonPosition = moonEarthPosition(date);
+  const rotate = (point: Vector): Vector => {
+    const angle = frozenDays * 360 * rad;
+    return [
+      point[0] * Math.cos(angle) + point[2] * Math.sin(angle),
+      point[1],
+      -point[0] * Math.sin(angle) + point[2] * Math.cos(angle),
+    ];
+  };
+  const moonPosition = rotate(moonEarthPosition(date));
   const sight = unit(add(moonPosition, scale(frame.up, -1)));
   return {
     frame,
@@ -115,7 +125,7 @@ export function earthMoonSnapshot(date: Date, location: Location) {
     sun,
     moonPosition,
     sight,
-    sunDirection: sunEarthDirection(date),
+    sunDirection: rotate(sunEarthDirection(date)),
     illumination: getMoonIllumination(date),
     geometricMoonAltitude: Math.asin(Math.max(-1, Math.min(1, dot(sight, frame.up)))) / rad,
   };

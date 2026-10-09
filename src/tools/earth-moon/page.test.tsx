@@ -6,7 +6,7 @@ import { App } from "../../app.tsx";
 import { navigateHash, splitHash } from "../../boot/hash-location.ts";
 import * as cityFunctions from "../../components/location-picker/cities.ts";
 import { locationToPoint } from "../../components/location-picker/projection.ts";
-import { observerFrame } from "./astronomy.ts";
+import { dot, observerFrame } from "./astronomy.ts";
 import { earthMoonCodec } from "./state.ts";
 
 const sceneMocks = vi.hoisted(() => ({ create: vi.fn() }));
@@ -38,6 +38,50 @@ afterEach(() => {
 function persisted() {
   return earthMoonCodec.query!.decode(new URLSearchParams(splitHash(window.location.hash).search));
 }
+
+it("resets pending edits, playback and cameras to a clean default URL", async () => {
+  const frames = playbackFrames();
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-15T09:00:00Z"));
+  render(<App />);
+  await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(2));
+  const originalScenes = sceneMocks.create.mock.results.map((result) => result.value);
+  fireEvent.click(screen.getByRole("checkbox", { name: "True Earth–Moon distance scale" }));
+  fireEvent.click(screen.getByRole("button", { name: "Play at 3 hours per second" }));
+  frames.advance(500);
+  fireEvent.click(screen.getByRole("button", { name: "Reset Earth–Moon" }));
+  await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(4));
+  expect(window.location.hash).toBe("#/earth-moon");
+  expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
+    "2026-10-15T09:00",
+  );
+  expect((screen.getByRole("spinbutton", { name: "Latitude" }) as HTMLInputElement).value).toBe(
+    String(earthMoonCodec.defaultState.location.latitude),
+  );
+  expect(
+    (screen.getByRole("checkbox", { name: "True Earth–Moon distance scale" }) as HTMLInputElement)
+      .checked,
+  ).toBe(false);
+  expect(screen.getByRole("button", { name: "Play at 3 hours per second" })).toBeTruthy();
+  for (const scene of originalScenes) expect(scene.dispose).toHaveBeenCalledOnce();
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  expect(window.location.hash).toBe("#/earth-moon");
+  // A clean URL still needs to reset transient camera and form state.
+  fireEvent.input(screen.getByRole("spinbutton", { name: "Latitude" }), {
+    target: { value: "-30" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Reset Earth–Moon" }));
+  await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(6));
+  expect((screen.getByRole("spinbutton", { name: "Latitude" }) as HTMLInputElement).value).toBe(
+    String(earthMoonCodec.defaultState.location.latitude),
+  );
+});
+
+it("returns to the tool directory from the floating Home link", async () => {
+  render(<App />);
+  await userEvent.setup().click(screen.getByRole("link", { name: "All tools" }));
+  expect(window.location.hash).toBe("#/");
+  expect(screen.getByRole("link", { name: "Earth and Moon" })).toBeTruthy();
+});
 
 it("edits coordinates and UTC time, preserves unrelated query state, then restores through Back", async () => {
   const user = userEvent.setup();
@@ -296,4 +340,178 @@ it("clamps lunar scrubbing to the supported date range", () => {
   expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
     "1900-01-01T00:00",
   );
+});
+
+function playbackFrames() {
+  let callback: FrameRequestCallback | undefined;
+  vi.spyOn(performance, "now").mockReturnValue(0);
+  const request = vi.spyOn(window, "requestAnimationFrame").mockImplementation((next) => {
+    callback = next;
+    return 1;
+  });
+  const cancel = vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {
+    callback = undefined;
+  });
+  return {
+    request,
+    cancel,
+    advance: (milliseconds: number) =>
+      act(() => {
+        const next = callback;
+        callback = undefined;
+        next?.(milliseconds);
+      }),
+  };
+}
+
+it("plays smoothly at 3 hours per second, pauses, persists, and releases the animation on navigation", async () => {
+  const frames = playbackFrames();
+  render(<App />);
+  const date = screen.getByLabelText("Date and time (UTC)") as HTMLInputElement;
+  fireEvent.click(screen.getByRole("button", { name: "Play at 3 hours per second" }));
+  frames.advance(500);
+  expect(date.value).toBe("2026-10-09T13:30");
+  frames.advance(1000);
+  expect(date.value).toBe("2026-10-09T15:00");
+  // A persistence flush during playback must not be mistaken for an incoming link.
+  fireEvent.pointerUp(document);
+  expect(persisted().instant).toBe(Date.parse("2026-10-09T15:00:00Z"));
+  frames.advance(1500);
+  expect(date.value).toBe("2026-10-09T16:30");
+  fireEvent.click(screen.getByRole("button", { name: "Pause at 3 hours per second" }));
+  const requests = frames.request.mock.calls.length;
+  frames.advance(2000);
+  expect(date.value).toBe("2026-10-09T16:30");
+  expect(frames.request).toHaveBeenCalledTimes(requests);
+  fireEvent.click(screen.getByRole("button", { name: "Play at 3 hours per second" }));
+  act(() => navigateHash("/hello-world"));
+  await screen.findByRole("textbox", { name: "Your name" });
+  expect(frames.cancel).toHaveBeenCalled();
+});
+
+it("plays at 3 days per second with smooth frozen lighting and restores ordinary time on manual edits", async () => {
+  const frames = playbackFrames();
+  render(<App />);
+  await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(2));
+  const scene = sceneMocks.create.mock.results[0]!.value;
+  const initial = scene.update.mock.lastCall[0];
+  fireEvent.click(
+    screen.getByRole("button", { name: "Play at 3 days per second (local time frozen)" }),
+  );
+  frames.advance(1000 / 12);
+  expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
+    "2026-10-09T18:00",
+  );
+  expect(dot(initial.sunDirection, scene.update.mock.lastCall[0].sunDirection)).toBeGreaterThan(
+    0.999,
+  );
+  frames.advance(1000);
+  expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
+    "2026-10-12T12:00",
+  );
+  expect(dot(initial.sunDirection, scene.update.mock.lastCall[0].sunDirection)).toBeGreaterThan(
+    0.999,
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Pause at 3 days per second (local time frozen)" }),
+  );
+  expect(dot(initial.sunDirection, scene.update.mock.lastCall[0].sunDirection)).toBeGreaterThan(
+    0.999,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "+1 hour" }));
+  expect(screen.queryByText(/Local time is frozen in the 3D views/)).toBeNull();
+});
+
+it("stops playback for incoming links and at the supported date limit", async () => {
+  const frames = playbackFrames();
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Play at 3 hours per second" }));
+  frames.advance(500);
+  act(() => navigateHash("/earth-moon?at=2099-12-31T23%3A00%3A00.000Z"));
+  expect(
+    screen.getByRole("button", { name: "Play at 3 hours per second" }).getAttribute("aria-pressed"),
+  ).toBe("false");
+  frames.advance(1000);
+  const date = screen.getByLabelText("Date and time (UTC)") as HTMLInputElement;
+  expect(date.value).toBe("2099-12-31T23:00");
+  fireEvent.click(screen.getByRole("button", { name: "Play at 3 hours per second" }));
+  frames.advance(1000);
+  expect(date.value).toBe("2099-12-31T23:59:59");
+  expect(
+    (screen.getByRole("button", { name: "Play at 3 hours per second" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(true);
+  fireEvent.pointerUp(document);
+  expect(persisted().instant).toBe(Date.parse("2099-12-31T23:59:59.999Z"));
+});
+
+it.each([
+  ["3 hours", "2026-10-09T16:30"],
+  ["3 days", "2026-10-14T00:00"],
+])(
+  "keeps playback at %s per second through location and scale changes",
+  async (speed, expectedDate) => {
+    const frames = playbackFrames();
+    render(<App />);
+    await waitFor(() => expect(sceneMocks.create).toHaveBeenCalledTimes(2));
+    const suffix = speed === "3 days" ? " (local time frozen)" : "";
+    fireEvent.click(screen.getByRole("button", { name: `Play at ${speed} per second${suffix}` }));
+    frames.advance(501);
+    const latitude = screen.getByRole("spinbutton", {
+      name: "Latitude",
+      exact: true,
+    }) as HTMLInputElement;
+    fireEvent.input(latitude, { target: { value: "-30" } });
+    frames.advance(750);
+    expect(latitude.value).toBe("-30");
+    fireEvent.click(screen.getByRole("button", { name: "Update view" }));
+    fireEvent.pointerUp(document);
+    expect(persisted().location.latitude).toBe(-30);
+    frames.advance(1000);
+    fireEvent.keyDown(screen.getByRole("button", { name: "Pick a location on the world map" }), {
+      key: "ArrowRight",
+      shiftKey: true,
+    });
+
+    fireEvent.click(screen.getByRole("checkbox", { name: "True Earth–Moon distance scale" }));
+    fireEvent.pointerUp(document);
+    frames.advance(1500);
+    expect((screen.getByLabelText("Date and time (UTC)") as HTMLInputElement).value).toBe(
+      expectedDate,
+    );
+    expect(
+      screen
+        .getByRole("button", { name: `Pause at ${speed} per second${suffix}` })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    const scene = sceneMocks.create.mock.results[0]!.value;
+    expect(scene.update.mock.lastCall[0].frame).toEqual(
+      observerFrame({ latitude: -30, longitude: 0 }),
+    );
+    expect(Boolean(screen.queryByText(/Local time is frozen in the 3D views/))).toBe(
+      speed === "3 days",
+    );
+  },
+);
+
+it("accepts a GPS location requested during playback without pausing", () => {
+  const frames = playbackFrames();
+  let success: PositionCallback | undefined;
+  vi.spyOn(navigator.geolocation, "getCurrentPosition").mockImplementation((ok) => {
+    success = ok;
+  });
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Play at 3 hours per second" }));
+  fireEvent.click(screen.getByRole("button", { name: "Use my location" }));
+  frames.advance(500);
+  act(() => success!({ coords: { latitude: -33.9, longitude: 151.2 } } as GeolocationPosition));
+  expect(
+    (screen.getByRole("spinbutton", { name: "Latitude", exact: true }) as HTMLInputElement).value,
+  ).toBe("-33.9");
+  frames.advance(1000);
+  expect(
+    screen
+      .getByRole("button", { name: "Pause at 3 hours per second" })
+      .getAttribute("aria-pressed"),
+  ).toBe("true");
 });

@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
+import { PauseIcon, TriangleIcon } from "@primer/octicons-react";
 import { UrlHandler } from "../../boot/url-handler.tsx";
 import type { State } from "../../boot/url-state.ts";
-import { decodeLocation, locationLabel } from "../../components/location-picker/location.ts";
+import { decodeLocation } from "../../components/location-picker/location.ts";
+import { lunarCycle } from "../../components/time-strips/lunar.ts";
 import {
   LocationPickerMap,
   LocationPickerMapNotes,
@@ -16,6 +18,7 @@ import {
 } from "./state.ts";
 import { EarthMoonView } from "./view.tsx";
 import { TimeStrips } from "./time-strips.tsx";
+import { usePlayback } from "./playback.ts";
 import "./earth-moon.css";
 
 export function EarthMoon() {
@@ -26,21 +29,29 @@ export function EarthMoon() {
   );
 }
 
-function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> }) {
+function EarthMoonExplorer({ uss: [us, persist] }: { uss: State<EarthMoonState> }) {
+  const { mode, toggle, edit: setUs, frozenDays } = usePlayback([us, persist]);
   const [latitude, setLatitude] = useState(String(us.location.latitude));
   const [longitude, setLongitude] = useState(String(us.location.longitude));
   const [dateInput, setDateInput] = useState(new Date(us.instant).toISOString().slice(0, 19));
+  const [dateEdited, setDateEdited] = useState(false);
   const [locationError, setLocationError] = useState("");
   useEffect(() => {
     setLatitude(String(us.location.latitude));
     setLongitude(String(us.location.longitude));
-    setDateInput(new Date(us.instant).toISOString().slice(0, 19));
-  }, [us.location.latitude, us.location.longitude, us.instant, us.trueDistance]);
+  }, [us.location.latitude, us.location.longitude]);
+  useEffect(() => {
+    if (!dateEdited) setDateInput(new Date(us.instant).toISOString().slice(0, 19));
+  }, [us.instant, dateEdited]);
   const snapshot = useMemo(
-    () => earthMoonSnapshot(new Date(us.instant), us.location),
-    [us.instant, us.location.latitude, us.location.longitude],
+    () => earthMoonSnapshot(new Date(us.instant), us.location, frozenDays),
+    [us.instant, us.location.latitude, us.location.longitude, frozenDays],
   );
-  const orbit = useMemo(() => lunarOrbit(new Date(us.instant)), [us.instant]);
+  const orbit = useMemo(
+    () => lunarOrbit(new Date(us.instant), frozenDays),
+    [us.instant, frozenDays],
+  );
+  const lunarMonth = useMemo(() => lunarCycle(us.instant), [us.instant]);
   const shift = (milliseconds: number) =>
     setUs((previous) => ({
       ...previous,
@@ -55,7 +66,6 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
           <section class="earth-moon-map" aria-label="Observer location">
             <h2>Observer location</h2>
             <LocationPickerMap
-              requestContext={us}
               uss={[
                 us.location,
                 (update) =>
@@ -77,11 +87,16 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
                     latitude: Number(latitude),
                     longitude: Number(longitude),
                   });
-                  const instant = Date.parse(`${dateInput}Z`);
+                  const instant = dateEdited ? Date.parse(`${dateInput}Z`) : us.instant;
                   if (!validInstant(instant))
                     throw new Error("Choose a UTC date between 1900 and 2099.");
                   setLocationError("");
-                  setUs((previous) => ({ ...previous, location, instant }));
+                  setUs((previous) => ({
+                    ...previous,
+                    location,
+                    instant: dateEdited ? instant : previous.instant,
+                  }));
+                  setDateEdited(false);
                 } catch (error) {
                   setLocationError(error instanceof Error ? error.message : "Invalid inputs.");
                 }
@@ -120,7 +135,10 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
                   step="1"
                   required
                   value={dateInput}
-                  onInput={(e) => setDateInput(e.currentTarget.value)}
+                  onInput={(e) => {
+                    setDateInput(e.currentTarget.value);
+                    setDateEdited(true);
+                  }}
                 />
               </label>
               <button type="submit">Update view</button>
@@ -130,15 +148,6 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
                 {locationError}
               </p>
             )}
-            <p>
-              {locationLabel(us.location)} ·{" "}
-              <time dateTime={new Date(us.instant).toISOString()}>
-                {new Date(us.instant)
-                  .toISOString()
-                  .replace("T", " ")
-                  .replace(/\.\d{3}Z$/, " UTC")}
-              </time>
-            </p>
             <div class="earth-moon-actions">
               <button onClick={() => shift(-dayMs)} disabled={us.instant <= minInstant}>
                 −1 day
@@ -162,8 +171,21 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
               <button onClick={() => shift(dayMs)} disabled={us.instant >= maxInstant}>
                 +1 day
               </button>
+              {(["hours", "days"] as const).map((speed) => (
+                <button
+                  class="earth-moon-playback"
+                  aria-label={`${mode === speed ? "Pause" : "Play"} at ${speed === "hours" ? "3 hours" : "3 days"} per second${speed === "days" ? " (local time frozen)" : ""}`}
+                  aria-pressed={mode === speed}
+                  title={speed === "days" ? "Advance dates with local time frozen" : "Advance time"}
+                  disabled={us.instant >= maxInstant && mode !== speed}
+                  onClick={() => toggle(speed)}
+                >
+                  {mode === speed ? <PauseIcon size={16} /> : <TriangleIcon size={16} />}
+                  {speed === "hours" ? "3h/s" : "3d/s"}
+                </button>
+              ))}
             </div>
-            <TimeStrips uss={[us, setUs]} />
+            <TimeStrips uss={[us, setUs]} lunarMonth={lunarMonth} />
             <label>
               <input
                 type="checkbox"
@@ -183,6 +205,15 @@ function EarthMoonExplorer({ uss: [us, setUs] }: { uss: State<EarthMoonState> })
       </div>
       <section class="earth-moon-notes" aria-label="About these views">
         <p>See how your position on a globe becomes a horizon, and where to look for the Moon.</p>
+        {frozenDays !== 0 && (
+          <p class="muted">
+            Local time is frozen in the 3D views; dates and orbital motion advance.
+          </p>
+        )}
+        <p class="muted">
+          Lunar month: {(lunarMonth.span / dayMs).toFixed(1)} days. Brighter means more of the Moon
+          is illuminated.
+        </p>
         <p id="earth-moon-view-help" class="muted">
           Drag to rotate; scroll or pinch to zoom. Focus a view and use Shift + arrow keys to rotate
           it. Reset view restores its camera.
