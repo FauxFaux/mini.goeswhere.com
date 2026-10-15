@@ -28,3 +28,15 @@ primary capitals regardless of rank or population. Missing populations rank as
 zero; population ties retain CSV order. Countries appear in CSV encounter order,
 with selected cities ordered by descending population within each country.
 The generated JSON is excluded from formatting to preserve its compact layout.
+
+Regenerate the word search dictionary with `python3 scripts/derive-words.py`.
+This selects the 100,000 highest-frequency entries from
+`datae/eng_news_2025_300K/eng_news_2025_300K-words.txt` by its third column,
+retaining source order for ties, and appends missing `src/assets/aspell-wbritish.txt`
+entries in their original order. Both sources are filtered to letters with optional
+internal apostrophes or hyphens; possessives ending in `'s` or `’s` are excluded.
+Filtering happens after the news cutoff, without backfilling removed entries.
+Truncated mojibake consisting of an ASCII word followed by `â` is excluded.
+Case/accent collisions (and straight/curly apostrophe variants) keep the first
+spelling, emitted in lowercase with curly apostrophes normalized to straight ones. The deduplicated output is
+`src/assets/derived-words.txt`; word search preserves this order.

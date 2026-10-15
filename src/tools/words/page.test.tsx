@@ -5,9 +5,35 @@ import { Router } from "wouter";
 import { useMiniLocation, useMiniSearch } from "../../boot/hash-location.ts";
 import { Words } from "./page.tsx";
 
-vi.mock("./dictionary.ts", () => ({ loadDictionary: vi.fn(async () => ["cat", "dog"]) }));
+vi.mock("./dictionary.ts", () => ({ loadDictionary: vi.fn(async () => ["dog", "cat"]) }));
 
 afterEach(cleanup);
+
+it("persists sorting and restores the order from incoming URLs", async () => {
+  window.history.replaceState(null, "", "/#/words");
+  render(
+    <Router hook={useMiniLocation} searchHook={useMiniSearch}>
+      <Words />
+    </Router>,
+  );
+  const matches = () => screen.getAllByRole("listitem").map((item) => item.textContent);
+  const checkbox = screen.getByRole("checkbox", {
+    name: "Sort alphabetically",
+  }) as HTMLInputElement;
+  expect(checkbox.checked).toBe(false);
+  await waitFor(() => expect(matches()).toEqual(["dog", "cat"]));
+  fireEvent.click(checkbox);
+  await waitFor(() => expect(matches()).toEqual(["cat", "dog"]));
+  await waitFor(() => expect(window.location.hash).toContain("sort=1"));
+  window.history.replaceState(null, "", "/#/words");
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+  await waitFor(() => expect(checkbox.checked).toBe(false));
+  await waitFor(() => expect(matches()).toEqual(["dog", "cat"]));
+  window.history.replaceState(null, "", "/#/words?sort=1");
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+  await waitFor(() => expect(checkbox.checked).toBe(true));
+  await waitFor(() => expect(matches()).toEqual(["cat", "dog"]));
+});
 
 it("keeps previous matches dimmed while pending and replaces them when ready", async () => {
   window.history.replaceState(null, "", "/#/words?q=cat");

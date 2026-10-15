@@ -3,9 +3,16 @@ import { readQueryState } from "../../boot/url-state.ts";
 import { MAX_PATTERN_LENGTH, wordsCodec } from "./state.ts";
 
 describe("words URL state", () => {
+  it("defaults old links to unsorted and rejects malformed sort options", () => {
+    expect(wordsCodec.decode({ v: 1, pattern: "cat" }).sort).toBe(false);
+    expect(() => wordsCodec.decode({ v: 1, pattern: "", sort: "true" })).toThrow();
+    for (const query of ["sort=0", "sort=1&sort=1", "sort=true"]) {
+      expect(readQueryState(new URLSearchParams(query), wordsCodec).kind).toBe("unpack-error");
+    }
+  });
   it("round trips regex characters and preserves unrelated parameters", () => {
     const params = new URLSearchParams("other=keep");
-    const state = { v: 1 as const, pattern: "^(café|a+b)\\w{2}$" };
+    const state = { v: 1 as const, pattern: "^(café|a+b)\\w{2}$", sort: true };
     wordsCodec.query!.write(params, state);
     expect(readQueryState(new URLSearchParams(params.toString()), wordsCodec)).toEqual({
       kind: "ok",
@@ -15,7 +22,7 @@ describe("words URL state", () => {
   });
 
   it("defaults to an empty search and clears its own parameters", () => {
-    const params = new URLSearchParams("q=cat&v=1&other=keep");
+    const params = new URLSearchParams("q=cat&v=1&sort=1&other=keep");
     wordsCodec.query!.write(params, wordsCodec.defaultState);
     expect(params.toString()).toBe("other=keep");
     expect(readQueryState(params, wordsCodec)).toEqual({

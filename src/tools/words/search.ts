@@ -6,17 +6,16 @@ export interface SearchResult {
 }
 
 export function parseDictionary(text: string): string[] {
-  const collator = new Intl.Collator("en-GB", { sensitivity: "base" });
-  return text
-    .split(/\r?\n/)
-    .filter((word) => word.length > 0)
-    .sort(collator.compare);
+  return text.split(/\r?\n/).filter((word) => word.length > 0);
 }
 
-export function searchWords(words: readonly string[], pattern: string): SearchResult {
+export function searchWords(words: readonly string[], pattern: string, sort = false): SearchResult {
   const regex = new RegExp(pattern, "iu");
   const matches: string[] = [];
-  for (const word of words) {
+  const ordered = sort
+    ? [...words].sort(new Intl.Collator("en-GB", { sensitivity: "base" }).compare)
+    : words;
+  for (const word of ordered) {
     if (!regex.test(word)) continue;
     if (matches.length === MATCH_LIMIT) return { matches, truncated: true };
     matches.push(word);

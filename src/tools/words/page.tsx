@@ -19,14 +19,18 @@ export function Words() {
 function WordSearch({ uss: [state, setState] }: { uss: State<WordsState> }) {
   const [completed, setCompleted] = useState<{
     pattern: string;
+    sort: boolean;
     retry: number;
     response: SearchResponse;
   }>();
   const [retry, setRetry] = useState(0);
-  const pending = completed?.pattern !== state.pattern || completed?.retry !== retry;
+  const pending =
+    completed?.pattern !== state.pattern ||
+    completed?.retry !== retry ||
+    completed?.sort !== state.sort;
   const response = completed?.response;
   const finish = (response: SearchResponse) =>
-    setCompleted({ pattern: state.pattern, retry, response });
+    setCompleted({ pattern: state.pattern, sort: state.sort, retry, response });
 
   useEffect(() => {
     let cancelled = false;
@@ -34,7 +38,8 @@ function WordSearch({ uss: [state, setState] }: { uss: State<WordsState> }) {
       try {
         new RegExp(state.pattern, "iu");
         const words = await loadDictionary();
-        if (!cancelled) finish({ kind: "result", result: searchWords(words, state.pattern) });
+        if (!cancelled)
+          finish({ kind: "result", result: searchWords(words, state.pattern, state.sort) });
       } catch (error) {
         if (!cancelled)
           finish({
@@ -47,12 +52,15 @@ function WordSearch({ uss: [state, setState] }: { uss: State<WordsState> }) {
       clearTimeout(start);
       cancelled = true;
     };
-  }, [state.pattern, retry]);
+  }, [state.pattern, state.sort, retry]);
 
   return (
     <>
       <h1>Words</h1>
-      <p>Search the British English dictionary with a JavaScript regular expression.</p>
+      <p>
+        Search English news words and the British English dictionary with a JavaScript regular
+        expression.
+      </p>
       <label for="words-pattern">Regular expression</label>
       <input
         class="words-pattern"
@@ -69,6 +77,14 @@ function WordSearch({ uss: [state, setState] }: { uss: State<WordsState> }) {
         Case-insensitive, accent-sensitive; searches within each word. Use ^ and $ to match a whole
         word, and enter the pattern without / delimiters. An empty pattern matches every word.
       </p>
+      <label>
+        <input
+          type="checkbox"
+          checked={state.sort}
+          onChange={(event) => setState({ ...state, sort: event.currentTarget.checked })}
+        />
+        Sort alphabetically
+      </label>
       <div class="words-results" aria-busy={pending}>
         <div aria-live="polite" role="status">
           {response === undefined && <p>Loading dictionary and searching…</p>}
@@ -95,8 +111,18 @@ function WordSearch({ uss: [state, setState] }: { uss: State<WordsState> }) {
         )}
       </div>
       <p class="muted">
-        Matches are sorted alphabetically, ignoring case and accents. Your expression is saved in
-        the URL. Word list: <a href={dictionaryInfoUrl}>ESDB / Aspell attribution and licence</a>.
+        Matches follow news frequency order, with additional Aspell words at the end. Your
+        expression and sort preference are saved in the URL. Enable sorting for alphabetical order,
+        ignoring case and accents. Word lists:{" "}
+        <a href="https://wortschatz.uni-leipzig.de/en/download/">
+          Leipzig Corpora Collection (eng_news_2025_300K)
+        </a>{" "}
+        and <a href={dictionaryInfoUrl}>ESDB / Aspell attribution and licence</a>.
+      </p>
+      <p class="muted">
+        D. Goldhahn, T. Eckart &amp; U. Quasthoff: Building Large Monolingual Dictionaries at the
+        Leipzig Corpora Collection: From 100 to 200 Languages. In: Proceedings of the 8th
+        International Language Resources and Evaluation (LREC 2012), 2012.
       </p>
     </>
   );

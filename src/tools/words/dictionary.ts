@@ -1,4 +1,4 @@
-import dictionaryUrl from "../../assets/aspell-wbritish.txt?url";
+import dictionaryUrl from "../../assets/derived-words.txt?url";
 import { parseDictionary } from "./search.ts";
 
 let dictionary: Promise<string[]> | undefined;

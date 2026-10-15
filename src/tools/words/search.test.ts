@@ -2,20 +2,25 @@ import { describe, expect, it } from "vitest";
 import { MATCH_LIMIT, parseDictionary, searchWords } from "./search.ts";
 
 describe("word search", () => {
+  it("sorts the full dictionary before limiting without mutating popularity order", () => {
+    const words = [...Array.from({ length: MATCH_LIMIT }, () => "zebra"), "éclair", "Eagle"];
+    expect(searchWords(words, "", true).matches.slice(0, 2)).toEqual(["Eagle", "éclair"]);
+    expect(searchWords(words, "").matches[0]).toBe("zebra");
+  });
   const words = ["Cat", "cat", "catch", "dog", "dog's", "café"];
 
   it("parses line endings without including empty entries", () => {
     expect(parseDictionary("cat\r\ndog\r\n\n")).toEqual(["cat", "dog"]);
   });
 
-  it("sorts before limiting matches, ignoring case and accents", () => {
+  it("preserves popularity order, including case and accents", () => {
     const words = parseDictionary("G\nf\nê\nD\nc\nB\na\n");
-    expect(searchWords(words, "").matches).toEqual(["a", "B", "c", "D", "ê", "f", "G"]);
+    expect(searchWords(words, "").matches).toEqual(["G", "f", "ê", "D", "c", "B", "a"]);
     expect(parseDictionary("éclair\nEagle\nzebra\nÉcole\n")).toEqual([
-      "Eagle",
       "éclair",
-      "École",
+      "Eagle",
       "zebra",
+      "École",
     ]);
   });
 
