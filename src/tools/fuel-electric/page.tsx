@@ -158,17 +158,23 @@ function Comparison({ uss: [state, setState] }: { uss: State<FuelElectricState> 
             <input
               type="range"
               aria-label="Petrol efficiency"
-              min={metric ? litresPer100km(60) : 30}
-              max={metric ? litresPer100km(30) : 60}
+              min={metric ? litresPer100km(limits.mpg[1]) : limits.mpg[0]}
+              max={metric ? litresPer100km(limits.mpg[0]) : limits.mpg[1]}
               step="any"
               value={metric ? litresPer100km(state.mpg) : state.mpg}
               onInput={(event) => {
                 const value = event.currentTarget.valueAsNumber;
-                const mpg = Math.max(30, Math.min(60, metric ? mpgConversion / value : value));
+                const mpg = Math.max(
+                  limits.mpg[0],
+                  Math.min(limits.mpg[1], metric ? mpgConversion / value : value),
+                );
                 setState((previous) => ({ ...previous, mpg }));
               }}
             />
-            <span class="muted">30–60 UK mpg ≈ 9.4–4.7 l/100 km</span>
+            <span class="muted">
+              {limits.mpg[0]}–{limits.mpg[1]} UK mpg ≈ {litresPer100km(limits.mpg[0]).toFixed(1)}–
+              {litresPer100km(limits.mpg[1]).toFixed(1)} l/100 km
+            </span>
           </div>
           <p class="muted">
             e.g. {example("mpg", 45, "45 UK mpg")} for{" "}

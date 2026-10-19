@@ -67,7 +67,7 @@ describe("fuel comparison URL state", () => {
       "c=0x20",
       `c=${limits.chargingPence[1] + 1}`,
       "e=31",
-      "m=29",
+      `m=${limits.mpg[0] - 1}`,
       "d=20001",
       "p=49",
       "c=6&c=7",

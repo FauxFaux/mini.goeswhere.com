@@ -20,7 +20,7 @@ export interface FuelElectricState {
 export const limits = {
   chargingPence: [6, 90],
   petrolPence: [50, 300],
-  mpg: [30, 60],
+  mpg: [10, 70],
   kwhPer100km: [12, 30],
   annualKm: [0, 20_000],
 } as const;
