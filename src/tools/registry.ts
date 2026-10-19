@@ -2,6 +2,7 @@ import { AnalogueClock } from "./analogue-clock/page.tsx";
 import { Calculator } from "./calculator/page.tsx";
 import { EarthMoon } from "./earth-moon/page.tsx";
 import { Flash } from "./flash/page.tsx";
+import { FuelElectric } from "./fuel-electric/page.tsx";
 import { HelloWorld } from "./hello-world/page.tsx";
 import { LocationPicker } from "./location-picker/page.tsx";
 import { StrengthStandards } from "./strength-standards/page.tsx";
@@ -10,6 +11,12 @@ import { Words } from "./words/page.tsx";
 
 /** The directory and router both use this catalogue. */
 export const tools = [
+  {
+    path: "/fuel-electric",
+    title: "Petrol vs electric costs",
+    description: "Compare annual driving energy costs with UK mpg or litres per 100 km.",
+    component: FuelElectric,
+  },
   {
     path: "/flash",
     title: "Flash",
